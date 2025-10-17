@@ -165,10 +165,29 @@ export async function GET(req: NextRequest): Promise<Response> {
   if (directVs) consolidated.push(directVs);
 
   if (consolidated.length === 0) {
-    return new Response(
-      JSON.stringify({ error: "No price sources available" }),
-      { status: 502, headers: { "content-type": "application/json; charset=utf-8" } }
-    );
+    // Fallback: try compute via USD and FX
+    if (vs !== 'USD' && fxRates && fxRates[vs]) {
+      const fx = fxRates[vs];
+      if (usdSources.length > 0) {
+        for (const s of usdSources) {
+          consolidated.push({ source: `${s.source}->${vs}`, price: s.price * fx });
+        }
+      }
+    }
+  }
+
+  if (consolidated.length === 0) {
+    const body: PricesResponse = {
+      base: 'BTC',
+      vs,
+      price: NaN,
+      sources: [],
+      updatedAt: new Date().toISOString(),
+    };
+    return new Response(JSON.stringify(body), {
+      headers: { "content-type": "application/json; charset=utf-8" },
+      status: 200,
+    });
   }
 
   const price = weightedAverage(consolidated);

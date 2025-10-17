@@ -183,10 +183,17 @@ export async function GET(req: NextRequest): Promise<Response> {
   }
 
   if (mergedData.length === 0) {
-    return new Response(
-      JSON.stringify({ error: "No historical data available" }),
-      { status: 502, headers: { "content-type": "application/json; charset=utf-8" } }
-    );
+    const empty: HistoryResponse = {
+      base: "BTC",
+      vs,
+      interval,
+      data: [],
+      updatedAt: new Date().toISOString(),
+    };
+    return new Response(JSON.stringify(empty), {
+      status: 200,
+      headers: { "content-type": "application/json; charset=utf-8" },
+    });
   }
 
   const body: HistoryResponse = {

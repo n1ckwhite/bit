@@ -37,10 +37,15 @@ const PriceChart = memo(function PriceChart({ vs, className }: PriceChartProps) 
     try {
       const limit = currentInterval === "1h" ? "24" : "30";
       const res = await fetch(`/api/history?vs=${encodeURIComponent(currentVs)}&interval=${currentInterval}&limit=${limit}`);
-      const data: HistoryData = await res.json();
-      setHistory(data);
+      const json: any = await res.json();
+      if (!res.ok || !json || !Array.isArray(json.data)) {
+        setHistory({ base: "BTC", vs: currentVs, interval: currentInterval, data: [], updatedAt: new Date().toISOString() });
+      } else {
+        setHistory(json as HistoryData);
+      }
     } catch (error) {
       console.error("Failed to fetch history:", error);
+      setHistory({ base: "BTC", vs: currentVs, interval: currentInterval, data: [], updatedAt: new Date().toISOString() });
     } finally {
       setLoading(false);
     }
@@ -123,7 +128,7 @@ const PriceChart = memo(function PriceChart({ vs, className }: PriceChartProps) 
         </div>
       ) : (
         <>
-          {history && history.data.length > 0 && (
+          {Array.isArray(history?.data) && history!.data.length > 0 && (
             <div className="mb-4 sm:mb-6">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
                 <div>
