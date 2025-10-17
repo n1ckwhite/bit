@@ -8,13 +8,15 @@ const geistSans = Geist({
   subsets: ["latin"],
   display: 'swap',
   preload: true,
+  fallback: ['system-ui', '-apple-system', 'sans-serif'],
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
   display: 'swap',
-  preload: false, // Only preload primary font
+  preload: false,
+  fallback: ['ui-monospace', 'SFMono-Regular', 'monospace'],
 });
 
 export const metadata: Metadata = {
@@ -70,10 +72,16 @@ export default function RootLayout({
   return (
     <html lang="ru" suppressHydrationWarning className="bg-white dark:bg-slate-900">
       <head>
-        {/* Preconnect hints for performance optimization */}
+        {/* Preconnect hints for performance optimization - only for actually used resources */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://assets.coingecko.com" />
+        
+        {/* DNS prefetch for local resources */}
+        <link rel="dns-prefetch" href="//localhost" />
+        
+        {/* Preload critical fonts */}
+        <link rel="preload" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" as="style" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" />
         
         {/* Critical CSS inlined for faster rendering */}
         <style dangerouslySetInnerHTML={{
@@ -98,6 +106,10 @@ export default function RootLayout({
             @media (min-width:1024px){.lg\\:grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}}
             @media (min-width:1024px){.lg\\:gap-8{gap:2rem}}
             @media (min-width:1280px){.xl\\:grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}}
+            /* Font loading optimization */
+            @font-face{font-family:Geist;font-style:normal;font-weight:400;font-display:swap;src:url('https://fonts.gstatic.com/s/geist/v1/Geist-Regular.woff2') format('woff2')}
+            @font-face{font-family:Geist;font-style:normal;font-weight:500;font-display:swap;src:url('https://fonts.gstatic.com/s/geist/v1/Geist-Medium.woff2') format('woff2')}
+            @font-face{font-family:Geist;font-style:normal;font-weight:600;font-display:swap;src:url('https://fonts.gstatic.com/s/geist/v1/Geist-SemiBold.woff2') format('woff2')}
           `
         }} />
         
