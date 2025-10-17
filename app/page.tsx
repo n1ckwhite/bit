@@ -330,9 +330,9 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white dark:bg-slate-900 overflow-x-hidden">
       {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-40">
+      <div className="fixed inset-0 opacity-40 pointer-events-none z-0">
         <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900" />
-        <div className="absolute inset-0" style={{
+      <div className="absolute inset-0" style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
         }} />
       </div>
@@ -535,12 +535,12 @@ export default function Home() {
                   </select>
         </div>
 
-                {/* Fiat Amount */}
+                {/* Fiat Amount with inline currency picker */}
                 <div className="space-y-2">
                   <label htmlFor="fiatAmount" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                     Сумма, фиат
                   </label>
-                  <div className="relative">
+                  <div className="relative" ref={currencyRef}>
                     <input
                       type="number"
                       id="fiatAmount"
@@ -570,40 +570,25 @@ export default function Home() {
                           setBtcAmount(fromBtc(btc, unit));
                         }
                       }}
-                      className={`w-full px-2.5 sm:px-3 lg:px-4 py-2.5 sm:py-3 lg:py-3.5 pl-10 sm:pl-12 lg:pl-16 pr-14 sm:pr-16 lg:pr-20 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm ${loading ? 'text-transparent caret-transparent' : ''}`}
+                      className={`w-full px-2.5 sm:px-3 lg:px-4 py-2.5 sm:py-3 lg:py-3.5 pl-16 sm:pl-20 lg:pl-24 pr-14 sm:pr-16 lg:pr-20 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm ${loading ? 'text-transparent caret-transparent' : ''}`}
                       placeholder="0.00"
                       step="100"
                       min="0"
                     />
                     {loading && (
-                      <div className="absolute left-10 sm:left-12 lg:left-16 right-14 sm:right-16 lg:right-20 top-1/2 -translate-y-1/2 h-3.5 sm:h-4 bg-slate-300/60 dark:bg-slate-500/50 rounded animate-pulse" aria-hidden="true" />
+                      <div className="absolute left-16 sm:left-20 lg:left-24 right-14 sm:right-16 lg:right-20 top-1/2 -translate-y-1/2 h-3.5 sm:h-4 bg-slate-300/60 dark:bg-slate-500/50 rounded animate-pulse" aria-hidden="true" />
                     )}
-                    <div className="absolute left-2 sm:left-2.5 lg:left-3 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-600 dark:text-slate-300">
-                      {vs}
-                    </div>
-                    {/* Custom arrow buttons removed by request */}
-                  </div>
-                </div>
-
-                {/* Currency Select with search */}
-                <div className="space-y-2" ref={currencyRef}>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-                    Валюта
-                  </label>
-                  <div className="relative">
                     <button
                       type="button"
                       onClick={() => setCurrencyOpen(v => !v)}
-                      className="w-full px-2.5 sm:px-3 lg:px-4 py-2.5 sm:py-3 lg:py-3.5 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm flex items-center justify-between"
+                      className="absolute left-2 sm:left-2.5 lg:left-3 top-1/2 -translate-y-1/2 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-600 px-2 py-1 rounded-md"
                       aria-haspopup="listbox"
                       aria-expanded={currencyOpen}
                     >
-                      <span className="font-medium">{vs}</span>
-                      <svg className={`w-4 h-4 transition-transform ${currencyOpen ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clipRule="evenodd"/></svg>
+                      {vs}
                     </button>
-
                     {currencyOpen && (
-                      <div className="absolute z-50 mt-2 w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md sm:rounded-lg shadow-lg overflow-hidden">
+                      <div className="absolute z-50 mt-2 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md sm:rounded-lg shadow-lg overflow-hidden">
                         <div className="p-2 border-b border-slate-200 dark:border-slate-700">
                           <input
                             autoFocus
@@ -639,6 +624,7 @@ export default function Home() {
                         </ul>
                       </div>
                     )}
+                    {/* Custom arrow buttons removed by request */}
                   </div>
                 </div>
               </div>
