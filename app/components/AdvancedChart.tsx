@@ -140,9 +140,9 @@ const AdvancedChart = memo(function AdvancedChart({ vs, className }: AdvancedCha
                   ? "bg-emerald-700 text-white shadow-lg"
                   : "bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-600"
               }`}
-              title="MA7"
+              title={t('movingAverage7')}
             >
-              MA7
+              {t('ma7')}
             </button>
           </div>
           <div className="flex items-center space-x-2">
@@ -153,8 +153,9 @@ const AdvancedChart = memo(function AdvancedChart({ vs, className }: AdvancedCha
                   ? "bg-purple-700 text-white shadow-lg"
                   : "bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-600"
               }`}
+              title={t('for7days')}
             >
-              7d
+              {t('days7')}
             </button>
             <button
               onClick={() => setHours(336)}
@@ -163,8 +164,9 @@ const AdvancedChart = memo(function AdvancedChart({ vs, className }: AdvancedCha
                   ? "bg-purple-700 text-white shadow-lg"
                   : "bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-600"
               }`}
+              title={t('for14days')}
             >
-              14d
+              {t('days14')}
             </button>
           </div>
         </div>
@@ -192,7 +194,7 @@ const AdvancedChart = memo(function AdvancedChart({ vs, className }: AdvancedCha
                       <span>{isPositive ? "↗" : "↘"}</span>
                       <span>{Math.abs(priceChange).toFixed(2)}%</span>
                     </div>
-                    <span className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm">{hours === 168 ? '7d' : '14d'}</span>
+                    <span className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm">{hours === 168 ? t('days7') : t('days14')}</span>
                   </div>
                 </div>
                 
