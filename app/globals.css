@@ -73,25 +73,34 @@ input[type="number"]:focus, input[type="text"]:focus, select:focus {
 
 /* Custom arrow buttons styling */
 .custom-arrow-button {
-  cursor: pointer;
+  cursor: pointer !important;
   transition: all 0.15s ease-in-out;
 }
 
 .custom-arrow-button:hover {
-  background-color: rgba(59, 130, 246, 0.1);
+  background-color: rgba(59, 130, 246, 0.1) !important;
   transform: scale(1.1);
 }
 
 .custom-arrow-button:active {
   transform: scale(0.95);
-  background-color: rgba(59, 130, 246, 0.2);
+  background-color: rgba(59, 130, 246, 0.2) !important;
 }
 
 /* Dark mode arrow buttons */
 .dark .custom-arrow-button:hover {
-  background-color: rgba(96, 165, 250, 0.1);
+  background-color: rgba(96, 165, 250, 0.1) !important;
 }
 
 .dark .custom-arrow-button:active {
-  background-color: rgba(96, 165, 250, 0.2);
+  background-color: rgba(96, 165, 250, 0.2) !important;
+}
+
+/* Additional button cursor fix */
+button.custom-arrow-button {
+  cursor: pointer !important;
+}
+
+button.custom-arrow-button:hover {
+  cursor: pointer !important;
 }

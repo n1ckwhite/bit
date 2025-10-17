@@ -261,6 +261,7 @@ export default function Home() {
                         type="button"
                         onClick={() => setBtcAmount(prev => prev + 0.1)}
                         className="custom-arrow-button w-4 h-3 flex items-center justify-center rounded-t-sm"
+                        style={{ cursor: 'pointer' }}
                       >
                         <svg className="w-2 h-2 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <polyline points="18,15 12,9 6,15"></polyline>
@@ -270,6 +271,7 @@ export default function Home() {
                         type="button"
                         onClick={() => setBtcAmount(prev => Math.max(0, prev - 0.1))}
                         className="custom-arrow-button w-4 h-3 flex items-center justify-center rounded-b-sm"
+                        style={{ cursor: 'pointer' }}
                       >
                         <svg className="w-2 h-2 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <polyline points="6,9 12,15 18,9"></polyline>
@@ -349,6 +351,7 @@ export default function Home() {
                           setBtcAmount(fromBtc(btc, unit));
                         }}
                         className="custom-arrow-button w-4 h-3 flex items-center justify-center rounded-t-sm"
+                        style={{ cursor: 'pointer' }}
                       >
                         <svg className="w-2 h-2 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <polyline points="18,15 12,9 6,15"></polyline>
@@ -363,6 +366,7 @@ export default function Home() {
                           setBtcAmount(fromBtc(btc, unit));
                         }}
                         className="custom-arrow-button w-4 h-3 flex items-center justify-center rounded-b-sm"
+                        style={{ cursor: 'pointer' }}
                       >
                         <svg className="w-2 h-2 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <polyline points="6,9 12,15 18,9"></polyline>
