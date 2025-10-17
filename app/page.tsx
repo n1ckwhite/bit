@@ -352,7 +352,7 @@ export default function Home() {
                   </div>
                   <div>
                     <h1 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-slate-900 dark:text-white">
-                      Курс {currentSymbol}
+                      {t('title', { sym: currentSymbol })}
                     </h1>
                     <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 hidden sm:block">
                       Конвертер и график в реальном времени
@@ -690,43 +690,28 @@ export default function Home() {
                   
                   {/* Main Description */}
                   <section>
-                    <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mb-4">
-                      Этот сайт позволяет вам:
-                    </h2>
+                    <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mb-4">{t('infoMainTitle')}</h2>
                     <ul className="space-y-2 text-slate-700 dark:text-slate-300 text-sm sm:text-base">
                       <li className="flex items-start">
                         <span className="text-blue-500 mr-2">•</span>
-                        Просматривать текущий курс в реальном времени
+                        {t('bulletView')}
                       </li>
                       <li className="flex items-start">
                         <span className="text-blue-500 mr-2">•</span>
-                        Конвертировать любую сумму в предпочитаемую валюту и обратно
+                        {t('bulletConvert')}
                       </li>
                     </ul>
-                    <p className="mt-4 text-slate-600 dark:text-slate-400 text-sm sm:text-base">
-                      Биткоин — это цифровая валюта, которая позволяет отправлять деньги онлайн без посредников. 
-                      Подробнее о технологии блокчейн можно узнать <a href="https://bitcoin.org" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 underline">здесь</a>.
-                    </p>
+                    <p className="mt-4 text-slate-600 dark:text-slate-400 text-sm sm:text-base">{t('desc_p1')} <a href="https://bitcoin.org" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 underline">{t('learnMore')}</a>.</p>
                   </section>
 
                   {/* Usage Section */}
                   <section>
-                    <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-4">
-                      Использование
-                    </h3>
+                    <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-4">{t('usageTitle')}</h3>
                     <div className="space-y-3 text-slate-700 dark:text-slate-300 text-sm sm:text-base">
-                      <p>
-                        <strong>Отслеживание цены биткоина:</strong> Оставьте сайт открытым во вкладке браузера для мониторинга цены.
-                      </p>
-                      <p>
-                        <strong>Покупка биткоина:</strong> Используйте поля ввода для просмотра эквивалентных сумм в биткоинах.
-                      </p>
-                      <p>
-                        <strong>Проверка стоимости биткоина:</strong> Введите количество имеющихся биткоинов для наблюдения за изменением стоимости.
-                      </p>
-                      <p>
-                        <strong>Мобильные устройства:</strong> Сайт оптимизирован для мобильных устройств. Добавьте его на главный экран для быстрого доступа.
-                      </p>
+                      <p>{t('usage_p1')}</p>
+                      <p>{t('usage_p2')}</p>
+                      <p>{t('usage_p3')}</p>
+                      <p>{t('usage_p4')}</p>
                       <p>
                         <strong>Конвертация в меньшие единицы:</strong> Используйте единицы <button onClick={setConverterToSats} className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 underline">сатоши (s)</button>, <button onClick={setConverterToMBTC} className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 underline">микробиткоины (μ)</button>, <button onClick={setConverterToBTC} className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 underline">миллибиткоины (m)</button> и горячие клавиши (S, u, m, k) для переключения.
                       </p>
@@ -735,36 +720,20 @@ export default function Home() {
 
                   {/* Data Sources */}
                   <section>
-                    <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-4">
-                      Данные
-                    </h3>
-                    <p className="text-slate-700 dark:text-slate-300 text-sm sm:text-base">
-                      Данные о ценах собираются с множественных рынков и обновляются каждую минуту. 
-                      По умолчанию отображается средневзвешенная цена по объему торгов, 
-                      но вы можете выбрать конкретные источники в настройках.
-                    </p>
+                    <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-4">{t('dataTitle')}</h3>
+                    <p className="text-slate-700 dark:text-slate-300 text-sm sm:text-base">{t('data_p')}</p>
                   </section>
 
                   {/* Contact */}
                   <section>
-                    <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-4">
-                      Контакт
-                    </h3>
-                    <p className="text-slate-700 dark:text-slate-300 text-sm sm:text-base">
-                      Свяжитесь с нами через <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 underline">Twitter/X</a> для предложений, 
-                      сообщений об ошибках или рекламных запросов.
-                    </p>
+                    <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-4">{t('contactTitle')}</h3>
+                    <p className="text-slate-700 dark:text-slate-300 text-sm sm:text-base">{t('contact_p')} <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 underline">Twitter/X</a>.</p>
                   </section>
 
                   {/* Disclaimer */}
                   <section>
-                    <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-4">
-                      Отказ от ответственности
-                    </h3>
-                    <p className="text-slate-700 dark:text-slate-300 text-sm sm:text-base">
-                      Курсы валют предоставляются исключительно в информационных целях. 
-                      Их точность не гарантируется и может изменяться без предварительного уведомления.
-                    </p>
+                    <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-4">{t('disclaimerTitle')}</h3>
+                    <p className="text-slate-700 dark:text-slate-300 text-sm sm:text-base">{t('disclaimer_p')}</p>
                   </section>
 
 
