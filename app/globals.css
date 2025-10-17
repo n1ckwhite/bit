@@ -252,6 +252,20 @@ input[type="number"]:focus, input[type="text"]:focus, select:focus {
   background-color: rgba(255, 255, 255, 0.2);
 }
 
+/* Stabilize card heights to reduce CLS */
+.stable-card {
+  min-height: 260px;
+  content-visibility: auto;
+  contain-intrinsic-size: 260px;
+}
+
+@media (min-width: 640px) {
+  .stable-card {
+    min-height: 280px;
+    contain-intrinsic-size: 280px;
+  }
+}
+
 /* Responsive text sizing */
 @media (max-width: 640px) {
   .text-responsive {

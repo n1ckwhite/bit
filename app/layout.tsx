@@ -7,7 +7,7 @@ const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
   display: 'swap',
-  preload: true,
+  preload: false,
   adjustFontFallback: true,
   fallback: ['system-ui', '-apple-system', 'sans-serif'],
 });
@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
   display: 'swap',
-  preload: true,
+  preload: false,
   adjustFontFallback: true,
   fallback: ['ui-monospace', 'SFMono-Regular', 'monospace'],
 });

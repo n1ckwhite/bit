@@ -10,8 +10,7 @@ const nextConfig: NextConfig = {
     ],
   },
   
-  /* Output configuration for modern browsers */
-  output: 'standalone',
+  /* Output configuration */
   
   /* Compiler optimizations */
   compiler: {
@@ -105,7 +104,29 @@ const nextConfig: NextConfig = {
             key: 'X-Content-Type-Options',
             value: 'nosniff'
           },
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=60, s-maxage=300, stale-while-revalidate=600'
+          },
         ],
+      },
+      {
+        source: '/_next/static/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable'
+          }
+        ]
+      },
+      {
+        source: '/media/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable'
+          }
+        ]
       },
       {
         source: '/manifest.json',

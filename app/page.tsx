@@ -358,13 +358,15 @@ export default function Home() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 lg:gap-4 xl:gap-6">
                 {/* BTC Input */}
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                  <label htmlFor="btcAmount" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                     Биткоин
                   </label>
                   <div className="relative">
                     <input
                       ref={inputBtcRef}
                       type="number"
+                      id="btcAmount"
+                      name="btcAmount"
                       value={btcAmount}
                       onChange={(e) => {
                         const value = Number(e.target.value);
@@ -396,10 +398,12 @@ export default function Home() {
 
                 {/* Unit Select */}
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                  <label htmlFor="unitSelect" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                     Единица
                   </label>
                   <select
+                    id="unitSelect"
+                    name="unit"
                     value={unit}
                     onChange={(e) => setUnit(parseUnit(e.target.value))}
                     className="w-full px-2.5 sm:px-3 lg:px-4 py-2.5 sm:py-3 lg:py-3.5 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm"
@@ -415,12 +419,14 @@ export default function Home() {
 
                 {/* Fiat Amount */}
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                  <label htmlFor="fiatAmount" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                     Сумма, фиат
                   </label>
                   <div className="relative">
                     <input
                       type="number"
+                      id="fiatAmount"
+                      name="fiatAmount"
                       value={fiatAmount.toFixed(2)}
                       onChange={(e) => {
                         const v = Number(e.target.value);
@@ -458,10 +464,12 @@ export default function Home() {
 
                 {/* Currency Select */}
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                  <label htmlFor="currencySelect" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                     Валюта
                   </label>
                   <select
+                    id="currencySelect"
+                    name="currency"
                     value={vs}
                     onChange={(e) => setVs(e.target.value)}
                     className="w-full px-2.5 sm:px-3 lg:px-4 py-2.5 sm:py-3 lg:py-3.5 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm"
