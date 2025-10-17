@@ -1,25 +1,23 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, lazy, Suspense, memo, useCallback } from "react";
 import { 
   ArrowTrendingUpIcon, 
   ArrowTrendingDownIcon, 
   ArrowPathIcon,
-  BellIcon,
-  ChartBarIcon,
-  DocumentArrowDownIcon,
-  ShareIcon,
   CurrencyDollarIcon,
   ClockIcon,
   ChevronUpIcon
 } from "@heroicons/react/24/outline";
 import ThemeToggle from "./components/ThemeToggle";
-import PriceChart from "./components/PriceChart";
-import PriceAlerts from "./components/PriceAlerts";
-import DataExport from "./components/DataExport";
-import AdvancedChart from "./components/AdvancedChart";
 import { DEFAULT_FIATS } from "./lib/currencies";
 import { BitcoinUnit, fromBtc, parseUnit, toBtc } from "./lib/units";
+
+// Lazy load heavy components
+const PriceChart = lazy(() => import("./components/PriceChart"));
+const PriceAlerts = lazy(() => import("./components/PriceAlerts"));
+const DataExport = lazy(() => import("./components/DataExport"));
+const AdvancedChart = lazy(() => import("./components/AdvancedChart"));
 
 type Quote = {
   base: "BTC";
@@ -41,34 +39,34 @@ export default function Home() {
   const inputBtcRef = useRef<HTMLInputElement>(null);
   const mainContainerRef = useRef<HTMLDivElement>(null);
 
-  // Functions for converter links
-  const scrollToConverter = () => {
+  // Functions for converter links - memoized
+  const scrollToConverter = useCallback(() => {
     const converterElement = document.querySelector('[data-converter]');
     if (converterElement) {
       converterElement.scrollIntoView({ behavior: 'smooth' });
     }
-  };
+  }, []);
 
-  const setConverterToBTC = () => {
+  const setConverterToBTC = useCallback(() => {
     setUnit("BTC");
     setBtcAmount(1);
     scrollToConverter();
-  };
+  }, [scrollToConverter]);
 
-  const setConverterToSats = () => {
+  const setConverterToSats = useCallback(() => {
     setUnit("sats");
     setBtcAmount(100000);
     scrollToConverter();
-  };
+  }, [scrollToConverter]);
 
-  const setConverterToMBTC = () => {
+  const setConverterToMBTC = useCallback(() => {
     setUnit("mBTC");
     setBtcAmount(1000);
     scrollToConverter();
-  };
+  }, [scrollToConverter]);
 
-  // Scroll to top function
-  const scrollToTop = () => {
+  // Scroll to top function - memoized
+  const scrollToTop = useCallback(() => {
     try {
       // Method 1: Scroll main container if it exists
       if (mainContainerRef.current) {
@@ -89,9 +87,9 @@ export default function Home() {
       // Fallback to instant scroll
       window.scrollTo(0, 0);
     }
-  };
+  }, []);
 
-  const fetchQuote = async (currentVs: string) => {
+  const fetchQuote = useCallback(async (currentVs: string) => {
     setLoading(true);
     try {
       const [priceRes, historyRes] = await Promise.all([
@@ -108,18 +106,18 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   // initial and vs change
   useEffect(() => {
     fetchQuote(vs);
-  }, [vs]);
+  }, [vs, fetchQuote]);
 
   // polling every 60s
   useEffect(() => {
     const id = setInterval(() => fetchQuote(vs), 60000);
     return () => clearInterval(id);
-  }, [vs]);
+  }, [vs, fetchQuote]);
 
   // recalc fiat when quote or amounts change
   useEffect(() => {
@@ -148,7 +146,7 @@ export default function Home() {
     : 0;
   const isPositive = priceChange >= 0;
 
-  const handleAlertTriggered = (alert: any) => {
+  const handleAlertTriggered = useCallback((alert: any) => {
     if (navigator.serviceWorker && 'showNotification' in ServiceWorkerRegistration.prototype) {
       navigator.serviceWorker.ready.then(registration => {
         registration.showNotification('Уведомление о цене', {
@@ -161,7 +159,7 @@ export default function Home() {
     } else {
       alert(`🚨 Цена BTC достигла ${alert.targetPrice} ${alert.currency}!`);
     }
-  };
+  }, []);
 
   return (
     <div className="h-screen bg-white dark:bg-slate-900 overflow-hidden">
@@ -461,27 +459,37 @@ export default function Home() {
 
             {/* Charts - Hidden on mobile, shown on tablet+ */}
             <div className="hidden sm:grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
-              <PriceChart vs={vs} />
-              <AdvancedChart vs={vs} />
+              <Suspense fallback={<div className="h-64 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse flex items-center justify-center"><div className="text-slate-600 dark:text-slate-300">Загрузка графика...</div></div>}>
+                <PriceChart vs={vs} />
+              </Suspense>
+              <Suspense fallback={<div className="h-64 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse flex items-center justify-center"><div className="text-slate-600 dark:text-slate-300">Загрузка продвинутого графика...</div></div>}>
+                <AdvancedChart vs={vs} />
+              </Suspense>
             </div>
 
             {/* Mobile Chart - Single chart on mobile */}
             <div className="sm:hidden">
-              <PriceChart vs={vs} />
+              <Suspense fallback={<div className="h-64 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse flex items-center justify-center"><div className="text-slate-600 dark:text-slate-300">Загрузка графика...</div></div>}>
+                <PriceChart vs={vs} />
+              </Suspense>
             </div>
 
             {/* Additional Features */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
-              <PriceAlerts 
-                currentPrice={currentPrice}
-                currency={vs}
-                onAlertTriggered={handleAlertTriggered}
-              />
-              <DataExport 
-                currentPrice={currentPrice}
-                currency={vs}
-                history={historyData}
-              />
+              <Suspense fallback={<div className="h-48 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse flex items-center justify-center"><div className="text-slate-600 dark:text-slate-300">Загрузка уведомлений...</div></div>}>
+                <PriceAlerts 
+                  currentPrice={currentPrice}
+                  currency={vs}
+                  onAlertTriggered={handleAlertTriggered}
+                />
+              </Suspense>
+              <Suspense fallback={<div className="h-48 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse flex items-center justify-center"><div className="text-slate-600 dark:text-slate-300">Загрузка экспорта...</div></div>}>
+                <DataExport 
+                  currentPrice={currentPrice}
+                  currency={vs}
+                  history={historyData}
+                />
+              </Suspense>
             </div>
 
             {/* Information Section */}

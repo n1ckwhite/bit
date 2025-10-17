@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
 import { ChartBarSquareIcon, ClockIcon } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
-import { ru } from "date-fns/locale";
 import { useTheme } from "../contexts/ThemeContext";
 
 type CandleData = {
@@ -82,9 +81,9 @@ export default function AdvancedChart({ vs, className }: AdvancedChartProps) {
   const formatXAxis = (timestamp: number) => {
     const date = new Date(timestamp * 1000);
     if (timeframe === "1h") {
-      return format(date, "HH:mm", { locale: ru });
+      return format(date, "HH:mm");
     } else {
-      return format(date, "dd.MM", { locale: ru });
+      return format(date, "dd.MM");
     }
   };
 

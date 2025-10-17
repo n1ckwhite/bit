@@ -6,14 +6,19 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: 'swap',
+  preload: true,
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: 'swap',
+  preload: false, // Only preload primary font
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://bitcoin-price-converter.com'),
   title: "Курс Биткоина · Конвертер",
   description: "Онлайн‑конвертер BTC ↔ фиат. Котировки c бирж, обновление каждые 60 секунд.",
   keywords: "биткоин, курс биткоина, конвертер биткоин, BTC, криптовалюта, обменник, курс валют, сатоши, mBTC, µBTC",
@@ -65,12 +70,36 @@ export default function RootLayout({
   return (
     <html lang="ru" suppressHydrationWarning className="bg-white dark:bg-slate-900">
       <head>
+        {/* Preconnect hints for performance optimization */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://assets.coingecko.com" />
+        
+        {/* Critical CSS inlined for faster rendering */}
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            /* Critical CSS for above-the-fold content - dark theme default */
+            body{margin:0;font-family:var(--font-geist-sans),system-ui,-apple-system,sans-serif;background:#0f172a;color:#fff}
+            .light body{background:#fff;color:#0f172a}
+            .antialiased{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+            .bg-white{background-color:#fff}
+            .dark .bg-slate-900{background-color:#0f172a}
+            .text-slate-900{color:#0f172a}
+            .dark .text-white{color:#fff}
+            /* Prevent layout shift */
+            .min-h-screen{min-height:100vh}
+            .container{margin:0 auto;padding:0 1rem}
+            @media (min-width:640px){.container{padding:0 1.5rem}}
+            @media (min-width:1024px){.container{padding:0 2rem}}
+          `
+        }} />
+        
         <script
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
                 try {
-                  var theme = localStorage.getItem('theme') || 'light';
+                  var theme = localStorage.getItem('theme') || 'dark';
                   document.documentElement.classList.add(theme);
                 } catch (e) {}
               })();

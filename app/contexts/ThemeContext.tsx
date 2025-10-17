@@ -13,7 +13,7 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("light");
+  const [theme, setThemeState] = useState<Theme>("dark");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -23,7 +23,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     if (typeof window !== "undefined") {
       // Get saved theme from localStorage
       const savedTheme = localStorage.getItem("theme") as Theme | null;
-      const currentTheme = savedTheme || "light";
+      const currentTheme = savedTheme || "dark";
       
       // Check if theme is already applied to avoid duplicate application
       const htmlElement = document.documentElement;
