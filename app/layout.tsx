@@ -7,7 +7,12 @@ const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
   display: 'swap',
+<<<<<<< HEAD
   preload: true,
+=======
+  preload: false,
+  adjustFontFallback: true,
+>>>>>>> refs/remotes/origin/main
   fallback: ['system-ui', '-apple-system', 'sans-serif'],
 });
 
@@ -16,6 +21,10 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
   display: 'swap',
   preload: false,
+<<<<<<< HEAD
+=======
+  adjustFontFallback: true,
+>>>>>>> refs/remotes/origin/main
   fallback: ['ui-monospace', 'SFMono-Regular', 'monospace'],
 });
 
@@ -87,13 +96,15 @@ export default function RootLayout({
         <style dangerouslySetInnerHTML={{
           __html: `
             /* Critical CSS for above-the-fold content */
-            body{margin:0;font-family:var(--font-geist-sans),system-ui,-apple-system,sans-serif}
+            body{margin:0;font-family:var(--font-geist-sans),system-ui,-apple-system,sans-serif;background:#fff}
+            .dark body{background:#0f172a}
             .antialiased{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
             /* Prevent layout shift */
             .min-h-screen{min-height:100vh}
             .container{margin:0 auto;padding:0 1rem}
             @media (min-width:640px){.container{padding:0 1.5rem}}
             @media (min-width:1024px){.container{padding:0 2rem}}
+<<<<<<< HEAD
             /* CLS prevention */
             .min-h-80{min-height:20rem}
             .grid{display:grid}
@@ -110,6 +121,14 @@ export default function RootLayout({
             @font-face{font-family:Geist;font-style:normal;font-weight:400;font-display:swap;src:url('https://fonts.gstatic.com/s/geist/v1/Geist-Regular.woff2') format('woff2')}
             @font-face{font-family:Geist;font-style:normal;font-weight:500;font-display:swap;src:url('https://fonts.gstatic.com/s/geist/v1/Geist-Medium.woff2') format('woff2')}
             @font-face{font-family:Geist;font-style:normal;font-weight:600;font-display:swap;src:url('https://fonts.gstatic.com/s/geist/v1/Geist-SemiBold.woff2') format('woff2')}
+=======
+            /* Optimize rendering */
+            *{box-sizing:border-box}
+            img{max-width:100%;height:auto}
+            /* Reduce paint complexity */
+            .backdrop-blur-sm{backdrop-filter:blur(4px)}
+            .shadow-xl{box-shadow:0 20px 25px -5px rgba(0,0,0,0.1),0 10px 10px -5px rgba(0,0,0,0.04)}
+>>>>>>> refs/remotes/origin/main
           `
         }} />
         

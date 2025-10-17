@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo, useCallback, useMemo } from "react";
 import { 
   BellIcon, 
   PlusIcon, 
@@ -27,7 +27,7 @@ interface PriceAlertsProps {
   onAlertTriggered: (alert: PriceAlert) => void;
 }
 
-export default function PriceAlerts({ currentPrice, currency, onAlertTriggered }: PriceAlertsProps) {
+const PriceAlerts = memo(function PriceAlerts({ currentPrice, currency, onAlertTriggered }: PriceAlertsProps) {
   const [alerts, setAlerts] = useState<PriceAlert[]>([]);
   const [open, setOpen] = useState(false);
   const [newAlert, setNewAlert] = useState({
@@ -72,7 +72,7 @@ export default function PriceAlerts({ currentPrice, currency, onAlertTriggered }
     });
   }, [currentPrice, currency, alerts, onAlertTriggered]);
 
-  const handleAddAlert = () => {
+  const handleAddAlert = useCallback(() => {
     if (!newAlert.targetPrice || Number(newAlert.targetPrice) <= 0) {
       setNotification({ message: "Введите корректную цену", severity: "error" });
       return;
@@ -92,25 +92,36 @@ export default function PriceAlerts({ currentPrice, currency, onAlertTriggered }
     setNewAlert({ targetPrice: "", isAbove: true, unit: "BTC" });
     setOpen(false);
     setNotification({ message: "Уведомление добавлено", severity: "success" });
-  };
+  }, [newAlert, currency]);
 
-  const handleDeleteAlert = (id: string) => {
+  const handleDeleteAlert = useCallback((id: string) => {
     setAlerts(prev => prev.filter(alert => alert.id !== id));
     setNotification({ message: "Уведомление удалено", severity: "success" });
-  };
+  }, []);
 
-  const handleToggleAlert = (id: string) => {
+  const handleToggleAlert = useCallback((id: string) => {
     setAlerts(prev => prev.map(alert => 
       alert.id === id ? { ...alert, isActive: !alert.isActive } : alert
     ));
-  };
+  }, []);
 
-  const activeAlerts = alerts.filter(alert => alert.currency === currency && alert.isActive);
-  const triggeredAlerts = alerts.filter(alert => alert.currency === currency && !alert.isActive);
+  const activeAlerts = useMemo(() => 
+    alerts.filter(alert => alert.currency === currency && alert.isActive), 
+    [alerts, currency]
+  );
+  
+  const triggeredAlerts = useMemo(() => 
+    alerts.filter(alert => alert.currency === currency && !alert.isActive), 
+    [alerts, currency]
+  );
 
   return (
     <>
+<<<<<<< HEAD
       <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-lg sm:rounded-xl lg:rounded-2xl xl:rounded-3xl shadow-xl border border-slate-200/50 dark:border-slate-700/50 p-2.5 sm:p-3 lg:p-4 xl:p-6 min-h-80">
+=======
+      <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-lg sm:rounded-xl lg:rounded-2xl xl:rounded-3xl shadow-xl border border-slate-200/50 dark:border-slate-700/50 p-2.5 sm:p-3 lg:p-4 xl:p-6 stable-card">
+>>>>>>> refs/remotes/origin/main
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3 sm:gap-0">
           <div className="flex items-center space-x-2 sm:space-x-3">
             <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center">
@@ -324,4 +335,6 @@ export default function PriceAlerts({ currentPrice, currency, onAlertTriggered }
       )}
     </>
   );
-}
+});
+
+export default PriceAlerts;

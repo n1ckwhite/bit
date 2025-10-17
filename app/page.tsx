@@ -13,11 +13,19 @@ import ThemeToggle from "./components/ThemeToggle";
 import { DEFAULT_FIATS } from "./lib/currencies";
 import { BitcoinUnit, fromBtc, parseUnit, toBtc } from "./lib/units";
 
-// Lazy load heavy components
+// Lazy load heavy components with preload
 const PriceChart = lazy(() => import("./components/PriceChart"));
 const PriceAlerts = lazy(() => import("./components/PriceAlerts"));
 const DataExport = lazy(() => import("./components/DataExport"));
 const AdvancedChart = lazy(() => import("./components/AdvancedChart"));
+
+// Preload components after initial render
+const preloadComponents = () => {
+  import("./components/PriceChart");
+  import("./components/PriceAlerts");
+  import("./components/DataExport");
+  import("./components/AdvancedChart");
+};
 
 type Quote = {
   base: "BTC";
@@ -36,6 +44,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<string>("");
   const [historyData, setHistoryData] = useState<Array<{ timestamp: number; price: number }>>([]);
+  const [showScrollButton, setShowScrollButton] = useState(false);
   const inputBtcRef = useRef<HTMLInputElement>(null);
   const mainContainerRef = useRef<HTMLDivElement>(null);
 
@@ -68,24 +77,33 @@ export default function Home() {
   // Scroll to top function - memoized
   const scrollToTop = useCallback(() => {
     try {
-      // Method 1: Scroll main container if it exists
-      if (mainContainerRef.current) {
+      // Method 1: Scroll main container if it exists and has scroll
+      if (mainContainerRef.current && mainContainerRef.current.scrollTop > 0) {
         mainContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
         return;
       }
       
       // Method 2: Try window scroll
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (window.pageYOffset > 0 || document.documentElement.scrollTop > 0) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
       
       // Method 3: Fallback methods
       setTimeout(() => {
         document.documentElement.scrollTop = 0;
         document.body.scrollTop = 0;
+        if (mainContainerRef.current) {
+          mainContainerRef.current.scrollTop = 0;
+        }
       }, 100);
     } catch (error) {
       console.error('Scroll error:', error);
       // Fallback to instant scroll
       window.scrollTo(0, 0);
+      if (mainContainerRef.current) {
+        mainContainerRef.current.scrollTop = 0;
+      }
     }
   }, []);
 
@@ -113,9 +131,20 @@ export default function Home() {
     fetchQuote(vs);
   }, [vs, fetchQuote]);
 
-  // polling every 60s
+  // Preload components after initial render
   useEffect(() => {
-    const id = setInterval(() => fetchQuote(vs), 60000);
+    const timer = setTimeout(preloadComponents, 1000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // polling every 60s with optimized interval
+  useEffect(() => {
+    const id = setInterval(() => {
+      // Only fetch if page is visible
+      if (!document.hidden) {
+        fetchQuote(vs);
+      }
+    }, 60000);
     return () => clearInterval(id);
   }, [vs, fetchQuote]);
 
@@ -126,25 +155,72 @@ export default function Home() {
     setFiatAmount(btc * quote.price);
   }, [quote, btcAmount, unit]);
 
-  // keyboard shortcuts: s,u,m,k
+  // keyboard shortcuts: s,u,m,k with optimized handler
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "s") setUnit("sats");
-      if (e.key === "u") setUnit("µBTC");
-      if (e.key === "m") setUnit("mBTC");
-      if (e.key === "k") setUnit("BTC");
+      // Only handle if no input is focused
+      if (document.activeElement?.tagName === 'INPUT') return;
+      
+      switch (e.key) {
+        case "s": setUnit("sats"); break;
+        case "u": setUnit("µBTC"); break;
+        case "m": setUnit("mBTC"); break;
+        case "k": setUnit("BTC"); break;
+      }
     };
-    window.addEventListener("keydown", onKey);
+    
+    window.addEventListener("keydown", onKey, { passive: true });
     return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  // Track scroll position to show/hide scroll button
+  useEffect(() => {
+    const handleScroll = () => {
+      // Check both window scroll and main container scroll
+      const windowScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const containerScrollTop = mainContainerRef.current?.scrollTop || 0;
+      const scrollTop = Math.max(windowScrollTop, containerScrollTop);
+      
+      const shouldShow = scrollTop > 100;
+      setShowScrollButton(shouldShow);
+      
+      // Debug logging (remove in production)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Scroll position:', { windowScrollTop, containerScrollTop, scrollTop, shouldShow });
+      }
+    };
+
+    // Add scroll listener to both window and main container
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    
+    const mainContainer = mainContainerRef.current;
+    if (mainContainer) {
+      mainContainer.addEventListener("scroll", handleScroll, { passive: true });
+    }
+
+    // Initial check
+    handleScroll();
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (mainContainer) {
+        mainContainer.removeEventListener("scroll", handleScroll);
+      }
+    };
   }, []);
 
   const fiatOptions = useMemo(() => DEFAULT_FIATS.map((c) => c.code), []);
 
-  const currentPrice = quote?.price || 0;
-  const priceChange = historyData.length >= 2 
-    ? ((historyData[historyData.length - 1].price - historyData[0].price) / historyData[0].price) * 100
-    : 0;
-  const isPositive = priceChange >= 0;
+  const currentPrice = useMemo(() => quote?.price || 0, [quote?.price]);
+  
+  const priceChange = useMemo(() => {
+    if (historyData.length < 2) return 0;
+    const firstPrice = historyData[0].price;
+    const lastPrice = historyData[historyData.length - 1].price;
+    return ((lastPrice - firstPrice) / firstPrice) * 100;
+  }, [historyData]);
+  
+  const isPositive = useMemo(() => priceChange >= 0, [priceChange]);
 
   const handleAlertTriggered = useCallback((alert: any) => {
     if (navigator.serviceWorker && 'showNotification' in ServiceWorkerRegistration.prototype) {
@@ -196,7 +272,7 @@ export default function Home() {
                 <button
                   onClick={() => fetchQuote(vs)}
                   disabled={loading}
-                  className="group relative p-1.5 sm:p-2 lg:p-3 rounded-lg sm:rounded-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 hover:bg-white dark:hover:bg-slate-800 transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl"
+                  className="group relative p-1.5 sm:p-2 lg:p-3 rounded-lg sm:rounded-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 hover:bg-white dark:hover:bg-slate-800 transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl flex items-center justify-center"
                   title="Обновить данные"
                   aria-label="Обновить данные"
                 >
@@ -210,10 +286,10 @@ export default function Home() {
 
         {/* Main Content */}
         <main ref={mainContainerRef} className="flex-1 overflow-y-auto px-3 sm:px-4 lg:px-6 xl:px-8 pb-3 sm:pb-4 lg:pb-6">
-          <div className="max-w-7xl mx-auto space-y-3 sm:space-y-4 lg:space-y-6">
+          <div className="max-w-7xl mx-auto space-y-3 sm:space-y-4 lg:space-y-6 will-change-[height]">
             
             {/* Price Display Card */}
-            <div className="relative overflow-hidden rounded-lg sm:rounded-xl lg:rounded-2xl xl:rounded-3xl bg-gradient-to-r from-orange-500 via-yellow-500 to-orange-600 shadow-2xl">
+            <div className="price-card relative overflow-hidden rounded-lg sm:rounded-xl lg:rounded-2xl xl:rounded-3xl bg-gradient-to-r from-orange-500 via-yellow-500 to-orange-600 shadow-2xl">
               <div className="absolute inset-0 bg-black/10" />
               <div className="relative p-2.5 sm:p-3 lg:p-4 xl:p-6">
                 <div className="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between">
@@ -223,7 +299,7 @@ export default function Home() {
                         <CurrencyDollarIcon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                       </div>
                       <div>
-                        <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-white">
+                        <h2 className="price-display text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-white">
                           {currentPrice.toLocaleString(undefined, { maximumFractionDigits: 2 })}
                         </h2>
                         <p className="text-lg sm:text-xl text-white/90 font-medium">{vs}</p>
@@ -245,24 +321,26 @@ export default function Home() {
                     </div>
                   </div>
                   
-                  <div className="mt-4 sm:mt-0 text-left sm:text-right space-y-2 sm:space-y-3">
-                    <div className="flex items-center space-x-2 text-white/80">
-                      <ClockIcon className="w-3 h-3 sm:w-4 sm:h-4" />
-                      <span className="text-xs sm:text-sm">Обновлено {lastUpdated}</span>
+                  <div className="update-info-container mt-4 sm:mt-0 text-left sm:text-right space-y-2 sm:space-y-3 min-h-[60px] sm:min-h-[80px]">
+                    <div className="flex items-center space-x-2 text-white/80 min-h-[20px]">
+                      <ClockIcon className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                      <span className="update-time text-xs sm:text-sm font-medium font-mono">Обновлено {lastUpdated}</span>
                     </div>
                     
-                    {quote && (
-                      <div className="flex flex-wrap gap-1 sm:gap-2 justify-start sm:justify-end">
-                        {quote.sources.slice(0, 3).map((source) => (
-                          <span
-                            key={source.source}
-                            className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-white/20 backdrop-blur-sm rounded text-xs text-white font-medium"
-                          >
-                            {source.source.split(":")[0]}
-                          </span>
-                        ))}
-                      </div>
-                    )}
+                    <div className="sources-container min-h-[24px] sm:min-h-[28px]">
+                      {quote && (
+                        <div className="flex flex-wrap gap-1 sm:gap-2 justify-start sm:justify-end">
+                          {quote.sources.slice(0, 3).map((source) => (
+                            <span
+                              key={source.source}
+                              className="source-tag px-1.5 sm:px-2 py-0.5 sm:py-1 bg-white/20 backdrop-blur-sm rounded text-xs text-white font-medium inline-block"
+                            >
+                              {source.source.split(":")[0]}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -271,24 +349,29 @@ export default function Home() {
             {/* Converter Card */}
             <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-lg sm:rounded-xl lg:rounded-2xl xl:rounded-3xl shadow-xl border border-slate-200/50 dark:border-slate-700/50 p-2.5 sm:p-3 lg:p-4 xl:p-6" data-converter>
               <div className="flex items-center space-x-2 sm:space-x-3 mb-2.5 sm:mb-3 lg:mb-4">
-                <div className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 xl:w-10 xl:h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-md sm:rounded-lg lg:rounded-xl flex items-center justify-center">
-                  <CurrencyDollarIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4 xl:w-5 xl:h-5 text-white" />
+                <div className="w-7 h-7 sm:w-8 sm:h-8 lg:w-10 lg:h-10 xl:w-12 xl:h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-md sm:rounded-lg lg:rounded-xl flex items-center justify-center">
+                  <CurrencyDollarIcon className="w-4 h-4 sm:w-4 sm:h-4 lg:w-5 lg:h-5 xl:w-6 xl:h-6 text-white" />
                 </div>
-                <h3 className="text-sm sm:text-base lg:text-lg xl:text-xl font-bold text-slate-900 dark:text-white">Конвертер</h3>
+                <h3 className="text-base sm:text-lg lg:text-xl xl:text-2xl font-bold text-slate-900 dark:text-white">Конвертер</h3>
               </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 lg:gap-4 xl:gap-6">
                 {/* BTC Input */}
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                  <label htmlFor="btcAmount" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                     Биткоин
                   </label>
                   <div className="relative">
                     <input
                       ref={inputBtcRef}
                       type="number"
+                      id="btcAmount"
+                      name="btcAmount"
                       value={btcAmount}
-                      onChange={(e) => setBtcAmount(Number(e.target.value))}
+                      onChange={(e) => {
+                        const value = Number(e.target.value);
+                        if (!isNaN(value)) setBtcAmount(value);
+                      }}
                       onKeyDown={(e) => {
                         if (e.key === 'ArrowUp') {
                           e.preventDefault();
@@ -298,7 +381,7 @@ export default function Home() {
                           setBtcAmount(prev => Math.max(0, prev - 0.1));
                         }
                       }}
-                      className="w-full px-2.5 sm:px-3 lg:px-4 py-2 sm:py-2.5 lg:py-3 pl-10 sm:pl-12 lg:pl-16 pr-2.5 sm:pr-3 lg:pr-4 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm"
+                      className="w-full px-2.5 sm:px-3 lg:px-4 py-2.5 sm:py-3 lg:py-3.5 pl-10 sm:pl-12 lg:pl-16 pr-14 sm:pr-16 lg:pr-20 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm"
                       placeholder="1.0"
                       step="0.1"
                       min="0"
@@ -306,33 +389,7 @@ export default function Home() {
                     <div className="absolute left-2 sm:left-2.5 lg:left-3 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-600 dark:text-slate-300">
                       {unit}
                     </div>
-                    {/* Custom arrow buttons */}
-                    <div className="absolute right-1 top-1/2 -translate-y-1/2 flex flex-col space-y-0.5">
-                      <button
-                        type="button"
-                        onClick={() => setBtcAmount(prev => prev + 0.1)}
-                        className="custom-arrow-button w-8 h-8 flex items-center justify-center rounded-t-sm"
-                        style={{ cursor: 'pointer' }}
-                        title="Увеличить на 0.1"
-                        aria-label="Увеличить на 0.1"
-                      >
-                        <svg className="w-4 h-4 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                          <polyline points="18,15 12,9 6,15"></polyline>
-                        </svg>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setBtcAmount(prev => Math.max(0, prev - 0.1))}
-                        className="custom-arrow-button w-8 h-8 flex items-center justify-center rounded-b-sm"
-                        style={{ cursor: 'pointer' }}
-                        title="Уменьшить на 0.1"
-                        aria-label="Уменьшить на 0.1"
-                      >
-                        <svg className="w-4 h-4 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                          <polyline points="6,9 12,15 18,9"></polyline>
-                        </svg>
-                      </button>
-                    </div>
+                    {/* Custom arrow buttons removed by request */}
                   </div>
                   <p className="text-xs text-slate-600 dark:text-slate-300">
                     Клавиши: k — BTC, m — mBTC, u — µBTC, s — сатоши
@@ -341,13 +398,15 @@ export default function Home() {
 
                 {/* Unit Select */}
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                  <label htmlFor="unitSelect" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                     Единица
                   </label>
                   <select
+                    id="unitSelect"
+                    name="unit"
                     value={unit}
                     onChange={(e) => setUnit(parseUnit(e.target.value))}
-                    className="w-full px-2.5 sm:px-3 lg:px-4 py-2 sm:py-2.5 lg:py-3 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm"
+                    className="w-full px-2.5 sm:px-3 lg:px-4 py-2.5 sm:py-3 lg:py-3.5 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm"
                     aria-label="Выберите единицу измерения биткоина"
                   >
                     {(["BTC", "mBTC", "µBTC", "sats"] as BitcoinUnit[]).map((u) => (
@@ -360,18 +419,21 @@ export default function Home() {
 
                 {/* Fiat Amount */}
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                  <label htmlFor="fiatAmount" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                     Сумма, фиат
                   </label>
                   <div className="relative">
                     <input
                       type="number"
+                      id="fiatAmount"
+                      name="fiatAmount"
                       value={fiatAmount.toFixed(2)}
                       onChange={(e) => {
                         const v = Number(e.target.value);
-                        if (!quote) return;
-                        const btc = v / quote.price;
-                        setBtcAmount(fromBtc(btc, unit));
+                        if (!isNaN(v) && quote) {
+                          const btc = v / quote.price;
+                          setBtcAmount(fromBtc(btc, unit));
+                        }
                       }}
                       onKeyDown={(e) => {
                         if (e.key === 'ArrowUp') {
@@ -388,7 +450,7 @@ export default function Home() {
                           setBtcAmount(fromBtc(btc, unit));
                         }
                       }}
-                      className="w-full px-2.5 sm:px-3 lg:px-4 py-2 sm:py-2.5 lg:py-3 pl-10 sm:pl-12 lg:pl-16 pr-2.5 sm:pr-3 lg:pr-4 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm"
+                      className="w-full px-2.5 sm:px-3 lg:px-4 py-2.5 sm:py-3 lg:py-3.5 pl-10 sm:pl-12 lg:pl-16 pr-14 sm:pr-16 lg:pr-20 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm"
                       placeholder="0.00"
                       step="100"
                       min="0"
@@ -396,55 +458,21 @@ export default function Home() {
                     <div className="absolute left-2 sm:left-2.5 lg:left-3 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-600 dark:text-slate-300">
                       {vs}
                     </div>
-                    {/* Custom arrow buttons */}
-                    <div className="absolute right-1 top-1/2 -translate-y-1/2 flex flex-col space-y-0.5">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (!quote) return;
-                          const newFiat = fiatAmount + 100;
-                          const btc = newFiat / quote.price;
-                          setBtcAmount(fromBtc(btc, unit));
-                        }}
-                        className="custom-arrow-button w-8 h-8 flex items-center justify-center rounded-t-sm"
-                        style={{ cursor: 'pointer' }}
-                        title="Увеличить на 100"
-                        aria-label="Увеличить на 100"
-                      >
-                        <svg className="w-4 h-4 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                          <polyline points="18,15 12,9 6,15"></polyline>
-                        </svg>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (!quote) return;
-                          const newFiat = Math.max(0, fiatAmount - 100);
-                          const btc = newFiat / quote.price;
-                          setBtcAmount(fromBtc(btc, unit));
-                        }}
-                        className="custom-arrow-button w-8 h-8 flex items-center justify-center rounded-b-sm"
-                        style={{ cursor: 'pointer' }}
-                        title="Уменьшить на 100"
-                        aria-label="Уменьшить на 100"
-                      >
-                        <svg className="w-4 h-4 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                          <polyline points="6,9 12,15 18,9"></polyline>
-                        </svg>
-                      </button>
-                    </div>
+                    {/* Custom arrow buttons removed by request */}
                   </div>
                 </div>
 
                 {/* Currency Select */}
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                  <label htmlFor="currencySelect" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                     Валюта
                   </label>
                   <select
+                    id="currencySelect"
+                    name="currency"
                     value={vs}
                     onChange={(e) => setVs(e.target.value)}
-                    className="w-full px-2.5 sm:px-3 lg:px-4 py-2 sm:py-2.5 lg:py-3 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm"
+                    className="w-full px-2.5 sm:px-3 lg:px-4 py-2.5 sm:py-3 lg:py-3.5 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm"
                     aria-label="Выберите валюту для конвертации"
                   >
                     {fiatOptions.map((c) => (
@@ -457,33 +485,72 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Charts - Hidden on mobile, shown on tablet+ */}
+            {/* Charts - Hidden on mobile, shown on tablet+ with optimized rendering */}
             <div className="hidden sm:grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
+<<<<<<< HEAD
               <Suspense fallback={<div className="h-80 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse flex items-center justify-center"><div className="text-slate-600 dark:text-slate-300">Загрузка графика...</div></div>}>
                 <PriceChart vs={vs} />
               </Suspense>
               <Suspense fallback={<div className="h-80 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse flex items-center justify-center"><div className="text-slate-600 dark:text-slate-300">Загрузка продвинутого графика...</div></div>}>
+=======
+              <Suspense fallback={
+                <div className="loading-placeholder h-64 rounded-lg flex items-center justify-center">
+                  <div className="text-slate-600 dark:text-slate-300">Загрузка графика...</div>
+                </div>
+              }>
+                <PriceChart vs={vs} />
+              </Suspense>
+              <Suspense fallback={
+                <div className="h-64 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center">
+                  <div className="text-slate-600 dark:text-slate-300">Загрузка продвинутого графика...</div>
+                </div>
+              }>
+>>>>>>> refs/remotes/origin/main
                 <AdvancedChart vs={vs} />
               </Suspense>
             </div>
 
-            {/* Mobile Chart - Single chart on mobile */}
+            {/* Mobile Chart - Single chart on mobile with optimized rendering */}
             <div className="sm:hidden">
+<<<<<<< HEAD
               <Suspense fallback={<div className="h-80 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse flex items-center justify-center"><div className="text-slate-600 dark:text-slate-300">Загрузка графика...</div></div>}>
+=======
+              <Suspense fallback={
+                <div className="loading-placeholder h-64 rounded-lg flex items-center justify-center">
+                  <div className="text-slate-600 dark:text-slate-300">Загрузка графика...</div>
+                </div>
+              }>
+>>>>>>> refs/remotes/origin/main
                 <PriceChart vs={vs} />
               </Suspense>
             </div>
 
-            {/* Additional Features */}
+            {/* Additional Features with optimized rendering */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
+<<<<<<< HEAD
               <Suspense fallback={<div className="h-80 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse flex items-center justify-center"><div className="text-slate-600 dark:text-slate-300">Загрузка уведомлений...</div></div>}>
+=======
+              <Suspense fallback={
+                <div className="loading-placeholder h-48 rounded-lg flex items-center justify-center">
+                  <div className="text-slate-600 dark:text-slate-300">Загрузка уведомлений...</div>
+                </div>
+              }>
+>>>>>>> refs/remotes/origin/main
                 <PriceAlerts 
                   currentPrice={currentPrice}
                   currency={vs}
                   onAlertTriggered={handleAlertTriggered}
                 />
               </Suspense>
+<<<<<<< HEAD
               <Suspense fallback={<div className="h-80 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse flex items-center justify-center"><div className="text-slate-600 dark:text-slate-300">Загрузка экспорта...</div></div>}>
+=======
+              <Suspense fallback={
+                <div className="h-48 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center">
+                  <div className="text-slate-600 dark:text-slate-300">Загрузка экспорта...</div>
+                </div>
+              }>
+>>>>>>> refs/remotes/origin/main
                 <DataExport 
                   currentPrice={currentPrice}
                   currency={vs}
@@ -587,8 +654,11 @@ export default function Home() {
       {/* Scroll to top button */}
       <button
         onClick={scrollToTop}
-        className="fixed bottom-6 right-6 z-50 p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-110 active:scale-95"
+        className={`fixed bottom-6 right-6 z-50 p-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 active:scale-95 border border-blue-500/20 ${
+          showScrollButton ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
+        }`}
         title="Наверх"
+        aria-label="Прокрутить наверх"
       >
         <ChevronUpIcon className="w-5 h-5" />
       </button>

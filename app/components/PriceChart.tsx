@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo, useMemo, useCallback } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { ChartBarIcon, ClockIcon } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
@@ -25,56 +25,66 @@ interface PriceChartProps {
   className?: string;
 }
 
-export default function PriceChart({ vs, className }: PriceChartProps) {
+const PriceChart = memo(function PriceChart({ vs, className }: PriceChartProps) {
   const [history, setHistory] = useState<HistoryData | null>(null);
   const [interval, setInterval] = useState<"1h" | "1d">("1h");
   const [loading, setLoading] = useState(false);
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
-  const fetchHistory = async (currentVs: string, currentInterval: "1h" | "1d") => {
+  const fetchHistory = useCallback(async (currentVs: string, currentInterval: "1h" | "1d") => {
     setLoading(true);
     try {
       const limit = currentInterval === "1h" ? "24" : "30";
       const res = await fetch(`/api/history?vs=${encodeURIComponent(currentVs)}&interval=${currentInterval}&limit=${limit}`);
-      const data: HistoryData = await res.json();
-      setHistory(data);
+      const json: any = await res.json();
+      if (!res.ok || !json || !Array.isArray(json.data)) {
+        setHistory({ base: "BTC", vs: currentVs, interval: currentInterval, data: [], updatedAt: new Date().toISOString() });
+      } else {
+        setHistory(json as HistoryData);
+      }
     } catch (error) {
       console.error("Failed to fetch history:", error);
+      setHistory({ base: "BTC", vs: currentVs, interval: currentInterval, data: [], updatedAt: new Date().toISOString() });
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchHistory(vs, interval);
-  }, [vs, interval]);
+  }, [vs, interval, fetchHistory]);
 
-  const formatXAxis = (timestamp: number) => {
+  const formatXAxis = useCallback((timestamp: number) => {
     const date = new Date(timestamp * 1000);
     if (interval === "1h") {
       return format(date, "HH:mm");
     } else {
       return format(date, "dd.MM");
     }
-  };
+  }, [interval]);
 
-  const formatTooltip = (value: number, name: string) => {
+  const formatTooltip = useCallback((value: number, name: string) => {
     if (name === "price") {
       return [`${value.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${vs}`, "Цена"];
     }
     return [value, name];
-  };
+  }, [vs]);
 
-  const chartData = history?.data.map(point => ({
-    timestamp: point.timestamp,
-    price: point.price,
-    time: formatXAxis(point.timestamp),
-  })) || [];
+  const chartData = useMemo(() => {
+    if (!history?.data) return [];
+    // Optimize data processing with reduced precision for better performance
+    return history.data.map(point => ({
+      timestamp: point.timestamp,
+      price: Math.round(point.price * 100) / 100, // Round to 2 decimal places
+      time: formatXAxis(point.timestamp),
+    }));
+  }, [history?.data, formatXAxis]);
 
-  const priceChange = chartData.length >= 2 
-    ? ((chartData[chartData.length - 1].price - chartData[0].price) / chartData[0].price) * 100
-    : 0;
+  const priceChange = useMemo(() => {
+    if (chartData.length < 2) return 0;
+    return ((chartData[chartData.length - 1].price - chartData[0].price) / chartData[0].price) * 100;
+  }, [chartData]);
 
   const isPositive = priceChange >= 0;
 
@@ -118,7 +128,7 @@ export default function PriceChart({ vs, className }: PriceChartProps) {
         </div>
       ) : (
         <>
-          {history && history.data.length > 0 && (
+          {Array.isArray(history?.data) && history!.data.length > 0 && (
             <div className="mb-4 sm:mb-6">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
                 <div>
@@ -150,9 +160,9 @@ export default function PriceChart({ vs, className }: PriceChartProps) {
             </div>
           )}
 
-          <div className="h-[150px] sm:h-[200px] lg:h-[250px] xl:h-[300px]">
+          <div className="chart-container h-[150px] sm:h-[200px] lg:h-[250px] xl:h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData}>
+              <LineChart data={chartData} margin={{ top: 8, right: 20, left: 6, bottom: 0 }}>
                 <CartesianGrid 
                   strokeDasharray="3 3" 
                   stroke={isDark ? "#475569" : "#94a3b8"} 
@@ -164,6 +174,7 @@ export default function PriceChart({ vs, className }: PriceChartProps) {
                   stroke={isDark ? "#64748b" : "#94a3b8"}
                   opacity={0.7}
                   tickLine={{ stroke: isDark ? "#64748b" : "#94a3b8" }}
+                  padding={{ right: 14 }}
                 />
                 <YAxis 
                   tick={{ fontSize: 9, fill: isDark ? "#e2e8f0" : "#1e293b" }}
@@ -181,12 +192,19 @@ export default function PriceChart({ vs, className }: PriceChartProps) {
                     borderRadius: "12px",
                     boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
                     fontSize: "11px",
-                    color: isDark ? "#e2e8f0" : "#1e293b",
+                    color: isDark ? "#e2e8f0" : "#0f172a",
                   }}
                   labelStyle={{
-                    color: isDark ? "#e2e8f0" : "#1e293b",
+                    color: isDark ? "#e2e8f0" : "#0f172a",
                     fontSize: "11px",
+                    fontWeight: "500",
                   }}
+                  itemStyle={{
+                    color: isDark ? "#e2e8f0" : "#0f172a",
+                    fontSize: "11px",
+                    fontWeight: "500",
+                  }}
+                  cursor={{ stroke: isDark ? "#64748b" : "#94a3b8", strokeWidth: 1 }}
                 />
                 <Line 
                   type="monotone" 
@@ -201,6 +219,7 @@ export default function PriceChart({ vs, className }: PriceChartProps) {
                     fill: "white",
                     filter: "drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))"
                   }}
+                  isAnimationActive={false}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -209,4 +228,6 @@ export default function PriceChart({ vs, className }: PriceChartProps) {
       )}
     </div>
   );
-}
+});
+
+export default PriceChart;

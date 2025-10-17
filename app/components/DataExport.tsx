@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, memo, useCallback } from "react";
 import { 
   DocumentArrowDownIcon, 
   ShareIcon, 
@@ -16,17 +16,17 @@ interface DataExportProps {
   className?: string;
 }
 
-export default function DataExport({ currentPrice, currency, history, className }: DataExportProps) {
+const DataExport = memo(function DataExport({ currentPrice, currency, history, className }: DataExportProps) {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const handleClick = () => {
+  const handleClick = useCallback(() => {
     setOpen(!open);
-  };
+  }, [open]);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setOpen(false);
-  };
+  }, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -45,7 +45,7 @@ export default function DataExport({ currentPrice, currency, history, className 
     };
   }, [open]);
 
-  const exportCurrentPrice = (format: "json" | "csv") => {
+  const exportCurrentPrice = useCallback((format: "json" | "csv") => {
     const data = {
       timestamp: new Date().toISOString(),
       price: currentPrice,
@@ -71,9 +71,9 @@ export default function DataExport({ currentPrice, currency, history, className 
       a.click();
       URL.revokeObjectURL(url);
     }
-  };
+  }, [currentPrice, currency]);
 
-  const exportHistory = (format: "json" | "csv") => {
+  const exportHistory = useCallback((format: "json" | "csv") => {
     if (!history || history.length === 0) {
       alert("Нет исторических данных для экспорта");
       return;
@@ -112,9 +112,9 @@ export default function DataExport({ currentPrice, currency, history, className 
       a.click();
       URL.revokeObjectURL(url);
     }
-  };
+  }, [history, currency]);
 
-  const shareCurrentPrice = async () => {
+  const shareCurrentPrice = useCallback(async () => {
     const text = `₿ Bitcoin: ${currentPrice.toLocaleString()} ${currency}\n\nКурс обновлён в реальном времени на Bitcoin Price Converter`;
     
     if (navigator.share) {
@@ -136,10 +136,14 @@ export default function DataExport({ currentPrice, currency, history, className 
         console.error("Failed to copy:", err);
       }
     }
-  };
+  }, [currentPrice, currency]);
 
   return (
+<<<<<<< HEAD
     <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-lg sm:rounded-xl lg:rounded-2xl xl:rounded-3xl shadow-xl border border-slate-200/50 dark:border-slate-700/50 p-2.5 sm:p-3 lg:p-4 xl:p-6 min-h-80">
+=======
+    <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-lg sm:rounded-xl lg:rounded-2xl xl:rounded-3xl shadow-xl border border-slate-200/50 dark:border-slate-700/50 p-2.5 sm:p-3 lg:p-4 xl:p-6 stable-card">
+>>>>>>> refs/remotes/origin/main
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3 sm:gap-0">
         <div className="flex items-center space-x-2 sm:space-x-3">
           <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl flex items-center justify-center">
@@ -151,7 +155,7 @@ export default function DataExport({ currentPrice, currency, history, className 
         <div className="flex items-center space-x-2 sm:space-x-3">
           <button
             onClick={shareCurrentPrice}
-            className="group relative p-2 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-all duration-200"
+            className="group relative p-2 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-all duration-200 flex items-center justify-center"
             title="Поделиться текущей ценой"
             aria-label="Поделиться текущей ценой"
           >
@@ -262,4 +266,6 @@ export default function DataExport({ currentPrice, currency, history, className 
       </div>
     </div>
   );
-}
+});
+
+export default DataExport;

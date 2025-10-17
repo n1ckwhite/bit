@@ -31,7 +31,7 @@ async function fetchWithTimeout(url: string, timeoutMs: number): Promise<Respons
 async function getCoinGeckoHistory(vs: string, days: number): Promise<HistoryPoint[]> {
   try {
     const res = await fetchWithTimeout(
-      `https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=${encodeURIComponent(vs)}&days=${days}&interval=${days <= 1 ? "hourly" : "daily"}`,
+      `https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=${encodeURIComponent(vs.toLowerCase())}&days=${days}&interval=${days <= 1 ? "hourly" : "daily"}`,
       8000
     );
     if (!res.ok) return [];
@@ -39,6 +39,26 @@ async function getCoinGeckoHistory(vs: string, days: number): Promise<HistoryPoi
     const prices = data?.prices || [];
     return prices.map(([timestamp, price]: [number, number]) => ({
       timestamp: Math.floor(timestamp / 1000),
+      price: Number(price),
+    }));
+  } catch {
+    return [];
+  }
+}
+
+async function getCoindeskUsdHistory(days: number): Promise<HistoryPoint[]> {
+  try {
+    // Coindesk historical close in USD per day
+    const end = new Date();
+    const start = new Date(end.getTime() - days * 24 * 60 * 60 * 1000);
+    const fmt = (d: Date) => d.toISOString().slice(0, 10);
+    const url = `https://api.coindesk.com/v1/bpi/historical/close.json?currency=USD&start=${fmt(start)}&end=${fmt(end)}`;
+    const res = await fetchWithTimeout(url, 6000);
+    if (!res.ok) return [];
+    const data: any = await res.json();
+    const bpi = data?.bpi || {};
+    return Object.entries(bpi).map(([date, price]: any) => ({
+      timestamp: Math.floor(new Date(date).getTime() / 1000),
       price: Number(price),
     }));
   } catch {
@@ -62,6 +82,39 @@ async function getBinanceHistory(vs: string, interval: string, limit: number): P
     }));
   } catch {
     return [];
+  }
+}
+
+async function getBinanceUsdHistory(interval: string, limit: number): Promise<HistoryPoint[]> {
+  try {
+    const res = await fetchWithTimeout(
+      `https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=${interval}&limit=${limit}`,
+      6000
+    );
+    if (!res.ok) return [];
+    const data: any = await res.json();
+    return data.map(([openTime, open, high, low, close, volume]: any[]) => ({
+      timestamp: Math.floor(openTime / 1000),
+      price: Number(close),
+      volume: Number(volume),
+    }));
+  } catch {
+    return [];
+  }
+}
+
+async function getFxRate(base: string, target: string): Promise<number | null> {
+  try {
+    const res = await fetchWithTimeout(
+      `https://api.exchangerate.host/latest?base=${encodeURIComponent(base)}`,
+      5000
+    );
+    if (!res.ok) return null;
+    const data: any = await res.json();
+    const rate = data?.rates?.[target];
+    return typeof rate === "number" && Number.isFinite(rate) ? rate : null;
+  } catch {
+    return null;
   }
 }
 
@@ -139,18 +192,69 @@ export async function GET(req: NextRequest): Promise<Response> {
   }
 
   // Fetch from multiple sources
-  const [coingeckoData, binanceData] = await Promise.all([
+  let [coingeckoData, binanceData] = await Promise.all([
     getCoinGeckoHistory(vs, config.days),
     getBinanceHistory(vs, config.binance, limit),
   ]);
 
-  const mergedData = mergeHistoryData([coingeckoData, binanceData]);
+  // Fallback: if both are empty or CoinGecko for target currency is empty,
+  // fetch USD history and convert to target currency via latest FX rate.
+  if (coingeckoData.length === 0 && vs !== "USD") {
+    const [usdHistory, fx] = await Promise.all([
+      getCoinGeckoHistory("USD", config.days),
+      getFxRate("USD", vs),
+    ]);
+    if (usdHistory.length > 0 && fx) {
+      coingeckoData = usdHistory.map((p) => ({
+        timestamp: p.timestamp,
+        price: p.price * fx,
+        volume: p.volume,
+      }));
+    }
+  }
+
+  // If fx for rare currencies like KZT was not available initially, try fallback FX chain
+  if (coingeckoData.length === 0 && binanceData.length === 0 && vs !== 'USD') {
+    const [usdCandles, altFxRates] = await Promise.all([
+      (config.days > 1 ? getCoindeskUsdHistory(config.days) : getBinanceUsdHistory(config.binance, limit)),
+      getFxRate('USD', vs),
+    ]);
+    if (usdCandles.length > 0 && altFxRates) {
+      coingeckoData = usdCandles.map(p => ({ timestamp: p.timestamp, price: p.price * altFxRates, volume: p.volume }));
+    }
+  }
+
+  let mergedData = mergeHistoryData([coingeckoData, binanceData]);
+
+  // Final fallback: if still empty, try building from one available source or convert USD candles via FX
+  if (mergedData.length === 0) {
+    if (coingeckoData.length > 0) {
+      mergedData = coingeckoData;
+    } else if (binanceData.length > 0) {
+      mergedData = binanceData;
+    } else if (vs !== 'USD') {
+      const [usdCandles, fx] = await Promise.all([
+        (config.days > 1 ? getCoindeskUsdHistory(config.days) : getBinanceUsdHistory(config.binance, limit)),
+        getFxRate('USD', vs),
+      ]);
+      if (usdCandles.length > 0 && fx) {
+        mergedData = usdCandles.map(p => ({ timestamp: p.timestamp, price: p.price * fx, volume: p.volume }));
+      }
+    }
+  }
 
   if (mergedData.length === 0) {
-    return new Response(
-      JSON.stringify({ error: "No historical data available" }),
-      { status: 502, headers: { "content-type": "application/json; charset=utf-8" } }
-    );
+    const empty: HistoryResponse = {
+      base: "BTC",
+      vs,
+      interval,
+      data: [],
+      updatedAt: new Date().toISOString(),
+    };
+    return new Response(JSON.stringify(empty), {
+      status: 200,
+      headers: { "content-type": "application/json; charset=utf-8" },
+    });
   }
 
   const body: HistoryResponse = {

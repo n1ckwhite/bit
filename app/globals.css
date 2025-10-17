@@ -2,9 +2,167 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Performance optimizations */
+* {
+  box-sizing: border-box;
+}
+
+/* Optimize rendering performance */
+.backdrop-blur-sm {
+  will-change: backdrop-filter;
+}
+
+.shadow-xl {
+  will-change: transform;
+}
+
+/* GPU acceleration for smooth animations */
+.hover\:scale-105:hover {
+  transform: scale(1.05);
+  will-change: transform;
+}
+
+.hover\:scale-110:hover {
+  transform: scale(1.1);
+  will-change: transform;
+}
+
+.active\:scale-95:active {
+  transform: scale(0.95);
+  will-change: transform;
+}
+
+/* Optimize transitions */
+.transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Accessibility improvements for chart tooltips */
+.recharts-default-tooltip {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+.dark .recharts-default-tooltip {
+  background-color: #1e293b !important;
+  color: #e2e8f0 !important;
+  border: 1px solid #334155 !important;
+}
+
+.recharts-tooltip-item-name,
+.recharts-tooltip-item-value {
+  color: #0f172a !important;
+  font-weight: 500 !important;
+}
+
+.dark .recharts-tooltip-item-name,
+.dark .recharts-tooltip-item-value {
+  color: #e2e8f0 !important;
+  font-weight: 500 !important;
+}
+
+/* Layout stability improvements */
+/* Prevent layout shift for images */
+img {
+  height: auto;
+  max-width: 100%;
+  display: block;
+}
+
+/* Reserve space for dynamic content */
+.chart-container {
+  min-height: 300px;
+  contain: layout paint;
+  cursor: crosshair; /* удобнее позиционировать курсор на графике */
+}
+
+.price-card {
+  min-height: 200px;
+  contain: layout paint;
+}
+
+/* Prevent text reflow */
+.price-display {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* Stabilize button sizes */
+button {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Optimize update info section */
+.update-info-container {
+  contain: layout;
+  will-change: auto;
+}
+
+.sources-container {
+  contain: layout;
+  min-width: 120px;
+}
+
+.source-tag {
+  contain: layout;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.update-time {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+  min-width: 120px;
+  text-align: inherit;
+}
+
+/* Prevent layout shift during loading */
+.loading-placeholder {
+  min-height: 200px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  contain: layout paint;
+}
+
+.dark .loading-placeholder {
+  background: linear-gradient(90deg, #374151 25%, #4b5563 50%, #374151 75%);
+  background-size: 200% 100%;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
 /* Optimized transitions - only for interactive elements */
 button, a, input, select, [role="button"] {
   transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+/* Pointer cursor for all buttons site-wide */
+button,
+[role="button"] {
+  cursor: pointer;
+}
+
+/* Improve contrast for dark theme secondary buttons */
+.dark .text-slate-200 { /* ensure text appears brighter on dark bg */
+  color: #e5e7eb !important;
+}
+
+/* Ensure pointer also when hovering inner elements like SVGs inside buttons */
+button *,
+[role="button"] * {
+  cursor: pointer;
 }
 
 /* Optimized select styling */
@@ -50,266 +208,89 @@ input[type="number"], input[type="text"], select {
   transition: all 0.2s ease-in-out;
 }
 
-input[type="number"]:hover, input[type="text"]:hover, select:hover {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.1);
-  transform: translateY(-1px);
-}
-
 input[type="number"]:focus, input[type="text"]:focus, select:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1), 0 0 0 1px #3b82f6;
-  transform: translateY(-1px);
-}
-
-/* Dark mode hover and focus effects */
-.dark input[type="number"]:hover, .dark input[type="text"]:hover, .dark select:hover {
-  border-color: #60a5fa;
-  box-shadow: 0 0 0 1px rgba(96, 165, 250, 0.1);
-}
-
-.dark input[type="number"]:focus, .dark input[type="text"]:focus, .dark select:focus {
-  border-color: #60a5fa;
-  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1), 0 0 0 1px #60a5fa;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 /* Custom arrow buttons styling */
 .custom-arrow-button {
-  cursor: pointer !important;
-  transition: all 0.15s ease-in-out;
-  background-color: transparent !important;
-  border: none !important;
-  min-width: 32px !important;
-  min-height: 32px !important;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  /* Override global minimum touch target for these tiny in-input controls */
+  min-height: 0;
+  min-width: 0;
+}
+
+/* Increase tap targets and spacing on mobile */
+@media (max-width: 640px) {
+  .custom-arrow-button {
+    min-width: 40px;
+    min-height: 40px;
+  }
 }
 
 .custom-arrow-button:hover {
-  background-color: rgba(59, 130, 246, 0.08) !important;
-  transform: scale(1.02);
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.dark .custom-arrow-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .custom-arrow-button:active {
-  transform: scale(0.98);
-  background-color: rgba(59, 130, 246, 0.12) !important;
-}
-
-/* Dark mode arrow buttons */
-.dark .custom-arrow-button:hover {
-  background-color: rgba(96, 165, 250, 0.08) !important;
+  background-color: rgba(0, 0, 0, 0.1);
 }
 
 .dark .custom-arrow-button:active {
-  background-color: rgba(96, 165, 250, 0.12) !important;
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
-/* Additional button cursor fix */
-button.custom-arrow-button {
-  cursor: pointer !important;
+/* Stabilize card heights to reduce CLS */
+.stable-card {
+  min-height: 260px;
+  content-visibility: auto;
+  contain-intrinsic-size: 260px;
 }
 
-button.custom-arrow-button:hover {
-  cursor: pointer !important;
+@media (min-width: 640px) {
+  .stable-card {
+    min-height: 280px;
+    contain-intrinsic-size: 280px;
+  }
 }
 
-/* Global cursor pointer for all interactive elements */
-button, 
-select, 
-[role="button"], 
-[role="menuitem"],
-.cursor-pointer {
-  cursor: pointer !important;
+/* Responsive text sizing */
+@media (max-width: 640px) {
+  .text-responsive {
+    font-size: 0.875rem;
+  }
 }
 
-button:hover, 
-select:hover, 
-[role="button"]:hover, 
-[role="menuitem"]:hover {
-  cursor: pointer !important;
+@media (min-width: 641px) and (max-width: 1024px) {
+  .text-responsive {
+    font-size: 1rem;
+  }
 }
 
-/* Specific styles for common interactive elements */
-button:not(:disabled):hover {
-  cursor: pointer !important;
+@media (min-width: 1025px) {
+  .text-responsive {
+    font-size: 1.125rem;
+  }
 }
 
-select:not(:disabled):hover {
-  cursor: pointer !important;
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
 }
 
-/* Ensure all clickable elements have pointer cursor */
-[onclick], 
-[onClick],
-.clickable {
-  cursor: pointer !important;
-}
-
-/* Accessibility: Ensure minimum contrast ratio of 4.5:1 for interactive elements */
-button, 
-a, 
-[role="button"], 
-[role="menuitem"],
-input[type="button"],
-input[type="submit"],
-input[type="reset"] {
-  /* Ensure sufficient contrast for text on colored backgrounds */
-  color: inherit;
-}
-
-/* Specific contrast improvements for common button patterns */
-.btn-primary {
-  background-color: #2563eb; /* blue-600 */
-  color: #ffffff;
-}
-
-.btn-primary:hover {
-  background-color: #1d4ed8; /* blue-700 */
-}
-
-.btn-secondary {
-  background-color: #64748b; /* slate-500 */
-  color: #ffffff;
-}
-
-.btn-secondary:hover {
-  background-color: #475569; /* slate-600 */
-}
-
-.btn-success {
-  background-color: #059669; /* emerald-600 */
-  color: #ffffff;
-}
-
-.btn-success:hover {
-  background-color: #047857; /* emerald-700 */
-}
-
-.btn-warning {
-  background-color: #d97706; /* amber-600 */
-  color: #ffffff;
-}
-
-.btn-warning:hover {
-  background-color: #b45309; /* amber-700 */
-}
-
-.btn-danger {
-  background-color: #dc2626; /* red-600 */
-  color: #ffffff;
-}
-
-.btn-danger:hover {
-  background-color: #b91c1c; /* red-700 */
-}
-
-/* Dark mode contrast improvements */
-.dark .btn-primary {
-  background-color: #3b82f6; /* blue-500 */
-  color: #ffffff;
-}
-
-.dark .btn-primary:hover {
-  background-color: #2563eb; /* blue-600 */
-}
-
-.dark .btn-secondary {
-  background-color: #64748b; /* slate-500 */
-  color: #ffffff;
-}
-
-.dark .btn-secondary:hover {
-  background-color: #475569; /* slate-600 */
-}
-
-.dark .btn-success {
-  background-color: #10b981; /* emerald-500 */
-  color: #ffffff;
-}
-
-.dark .btn-success:hover {
-  background-color: #059669; /* emerald-600 */
-}
-
-.dark .btn-warning {
-  background-color: #f59e0b; /* amber-500 */
-  color: #ffffff;
-}
-
-.dark .btn-warning:hover {
-  background-color: #d97706; /* amber-600 */
-}
-
-.dark .btn-danger {
-  background-color: #ef4444; /* red-500 */
-  color: #ffffff;
-}
-
-.dark .btn-danger:hover {
-  background-color: #dc2626; /* red-600 */
-}
-
-/* Additional contrast improvements for specific color combinations */
-.bg-purple-500 {
-  background-color: #8b5cf6 !important; /* purple-500 */
-}
-
-.bg-purple-600 {
-  background-color: #7c3aed !important; /* purple-600 */
-}
-
-.bg-blue-500 {
-  background-color: #3b82f6 !important; /* blue-500 */
-}
-
-.bg-blue-600 {
-  background-color: #2563eb !important; /* blue-600 */
-}
-
-.bg-amber-500 {
-  background-color: #f59e0b !important; /* amber-500 */
-}
-
-.bg-amber-600 {
-  background-color: #d97706 !important; /* amber-600 */
-}
-
-.bg-amber-700 {
-  background-color: #b45309 !important; /* amber-700 */
-}
-
-.bg-indigo-500 {
-  background-color: #6366f1 !important; /* indigo-500 */
-}
-
-.bg-indigo-600 {
-  background-color: #4f46e5 !important; /* indigo-600 */
-}
-
-.bg-red-700 {
-  background-color: #b91c1c !important; /* red-700 */
-}
-
-/* Ensure white text on colored backgrounds has sufficient contrast */
-.bg-purple-500, .bg-purple-600,
-.bg-blue-500, .bg-blue-600,
-.bg-amber-500, .bg-amber-600, .bg-amber-700,
-.bg-indigo-500, .bg-indigo-600,
-.bg-green-500, .bg-green-600,
-.bg-red-500, .bg-red-600, .bg-red-700 {
-  color: #ffffff !important;
-}
-
-/* Accessibility: Ensure all interactive elements have proper focus indicators */
-button:focus,
-a:focus,
-input:focus,
-select:focus,
-[role="button"]:focus,
-[role="menuitem"]:focus {
-  outline: 2px solid #3b82f6;
-  outline-offset: 2px;
-}
-
-/* Improve focus visibility for better accessibility */
+/* Focus styles for accessibility */
 button:focus-visible,
 a:focus-visible,
 input:focus-visible,
@@ -318,32 +299,14 @@ select:focus-visible {
   outline-offset: 2px;
 }
 
-/* Screen reader only text for better accessibility */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-/* Ensure all form elements have proper focus indicators */
-select:focus,
-input:focus {
-  outline: 2px solid #3b82f6;
-  outline-offset: 2px;
-}
-
-/* Improve form element accessibility */
-label {
-  font-weight: 500;
-  color: #374151;
-}
-
-.dark label {
-  color: #d1d5db;
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  body {
+    background: white !important;
+    color: black !important;
+  }
 }

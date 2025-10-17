@@ -2,13 +2,14 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* Performance optimizations */
-  experimental: {
-    optimizePackageImports: ['lucide-react', 'recharts'],
-  },
+  experimental: {},
+  
+  /* Output configuration */
   
   /* Compiler optimizations */
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
+    styledComponents: true,
   },
   
   /* Modern browser support - ES2020+ */
@@ -17,10 +18,11 @@ const nextConfig: NextConfig = {
   /* Bundle optimization */
   webpack: (config, { dev, isServer }) => {
     if (!dev && !isServer) {
-      // Tree shaking optimization
+      // Enhanced tree shaking optimization
       config.optimization.usedExports = true;
       config.optimization.sideEffects = false;
       
+<<<<<<< HEAD
       // Modern browser support - reduce polyfills
       config.resolve.fallback = {
         ...config.resolve.fallback,
@@ -45,29 +47,50 @@ const nextConfig: NextConfig = {
       };
       
       // Bundle splitting for better caching
+=======
+      // More aggressive bundle splitting
+>>>>>>> refs/remotes/origin/main
       config.optimization.splitChunks = {
         chunks: 'all',
         maxInitialRequests: 25,
         maxAsyncRequests: 25,
         cacheGroups: {
+          // Core React libraries
+          react: {
+            test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
+            name: 'react',
+            chunks: 'all',
+            priority: 40,
+          },
+          // Chart libraries
+          charts: {
+            test: /[\\/]node_modules[\\/]recharts[\\/]/,
+            name: 'charts',
+            chunks: 'all',
+            priority: 30,
+          },
+          // UI libraries
+          ui: {
+            test: /[\\/]node_modules[\\/]@heroicons[\\/]/,
+            name: 'ui',
+            chunks: 'all',
+            priority: 25,
+          },
+          // Date utilities
+          date: {
+            test: /[\\/]node_modules[\\/]date-fns[\\/]/,
+            name: 'date',
+            chunks: 'all',
+            priority: 20,
+          },
+          // Other vendors
           vendor: {
             test: /[\\/]node_modules[\\/]/,
             name: 'vendors',
             chunks: 'all',
             priority: 10,
           },
-          recharts: {
-            test: /[\\/]node_modules[\\/]recharts[\\/]/,
-            name: 'recharts',
-            chunks: 'all',
-            priority: 20,
-          },
-          heroicons: {
-            test: /[\\/]node_modules[\\/]@heroicons[\\/]/,
-            name: 'heroicons',
-            chunks: 'all',
-            priority: 20,
-          },
+          // Common chunks
           common: {
             name: 'common',
             minChunks: 2,
@@ -76,12 +99,6 @@ const nextConfig: NextConfig = {
             priority: 5,
           },
         },
-      };
-      
-      // Optimize module resolution
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        'date-fns': 'date-fns',
       };
     }
     return config;
@@ -111,7 +128,29 @@ const nextConfig: NextConfig = {
             key: 'X-Content-Type-Options',
             value: 'nosniff'
           },
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=60, s-maxage=300, stale-while-revalidate=600'
+          },
         ],
+      },
+      {
+        source: '/_next/static/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable'
+          }
+        ]
+      },
+      {
+        source: '/media/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable'
+          }
+        ]
       },
       {
         source: '/manifest.json',
