@@ -238,7 +238,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="h-screen bg-white dark:bg-slate-900 overflow-hidden">
+    <div className="min-h-screen bg-white dark:bg-slate-900 overflow-x-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-40">
         <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900" />
@@ -247,7 +247,7 @@ export default function Home() {
         }} />
       </div>
       
-      <div className="relative z-10 h-full flex flex-col">
+      <div className="relative z-10 flex flex-col">
         {/* Header */}
         <header className="px-3 sm:px-4 lg:px-6 xl:px-8 py-2 sm:py-3 lg:py-4 flex-shrink-0">
           <div className="max-w-7xl mx-auto">
@@ -285,7 +285,7 @@ export default function Home() {
         </header>
 
         {/* Main Content */}
-        <main ref={mainContainerRef} className="flex-1 overflow-y-auto px-3 sm:px-4 lg:px-6 xl:px-8 pb-3 sm:pb-4 lg:pb-6">
+        <main ref={mainContainerRef} className="px-3 sm:px-4 lg:px-6 xl:px-8 pb-3 sm:pb-4 lg:pb-6">
           <div className="max-w-7xl mx-auto space-y-3 sm:space-y-4 lg:space-y-6 will-change-[height]">
             
             {/* Price Display Card */}
