@@ -154,8 +154,13 @@ button {
 }
 
 /* Optimized transitions - only for interactive elements */
-button, a, input, select, [role="button"] {
-  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+button,
+a,
+input,
+select,
+[role="button"] {
+  transition: background-color 0.2s ease, color 0.2s ease,
+    border-color 0.2s ease;
 }
 
 /* Pointer cursor for all buttons site-wide */
@@ -165,7 +170,8 @@ button,
 }
 
 /* Improve contrast for dark theme secondary buttons */
-.dark .text-slate-200 { /* ensure text appears brighter on dark bg */
+.dark .text-slate-200 {
+  /* ensure text appears brighter on dark bg */
   color: #e5e7eb !important;
 }
 
@@ -214,11 +220,15 @@ input[type="number"]::-webkit-inner-spin-button {
 /* Custom number input arrows - no background images, using custom buttons instead */
 
 /* Enhanced input hover and focus effects */
-input[type="number"], input[type="text"], select {
+input[type="number"],
+input[type="text"],
+select {
   transition: all 0.2s ease-in-out;
 }
 
-input[type="number"]:focus, input[type="text"]:focus, select:focus {
+input[type="number"]:focus,
+input[type="text"]:focus,
+select:focus {
   outline: none;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
@@ -314,7 +324,7 @@ select:focus-visible {
   .no-print {
     display: none !important;
   }
-  
+
   body {
     background: white !important;
     color: black !important;

@@ -5,7 +5,8 @@ export function parseUnit(u: string): BitcoinUnit {
   if (v === "btc") return "BTC";
   if (v === "mbtc") return "mBTC";
   if (v === "µbtc" || v === "ubtc" || v === "microbtc") return "µBTC";
-  if (v === "s" || v === "sat" || v === "sats" || v === "satoshi") return "sats";
+  if (v === "s" || v === "sat" || v === "sats" || v === "satoshi")
+    return "sats";
   return "BTC";
 }
 
@@ -34,5 +35,3 @@ export function fromBtc(btc: number, unit: BitcoinUnit): number {
       return Math.round(btc * 100_000_000);
   }
 }
-
-

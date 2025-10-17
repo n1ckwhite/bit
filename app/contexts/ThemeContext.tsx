@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
 
 type Theme = "light" | "dark";
 
@@ -18,11 +24,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     setMounted(true);
-    
+
     if (typeof window !== "undefined") {
       const savedTheme = localStorage.getItem("theme") as Theme | null;
       const currentTheme = savedTheme || "dark";
-      
+
       setThemeState(currentTheme);
       applyTheme(currentTheme);
     }
@@ -30,18 +36,20 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const applyTheme = (newTheme: Theme) => {
     if (typeof window === "undefined") return;
-    
+
     const root = document.documentElement;
-    
+
     root.classList.remove("light", "dark");
-    
+
     root.classList.add(newTheme);
-    
+
     localStorage.setItem("theme", newTheme);
-    
-    window.dispatchEvent(new CustomEvent('themeChange', { 
-      detail: { theme: newTheme } 
-    }));
+
+    window.dispatchEvent(
+      new CustomEvent("themeChange", {
+        detail: { theme: newTheme },
+      })
+    );
   };
 
   const setTheme = (newTheme: Theme) => {

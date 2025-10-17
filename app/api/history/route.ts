@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 
 type HistoryPoint = {
-  timestamp: number; 
+  timestamp: number;
   price: number;
   volume?: number;
 };
@@ -14,13 +14,16 @@ type HistoryResponse = {
   updatedAt: string;
 };
 
-async function fetchWithTimeout(url: string, timeoutMs: number): Promise<Response> {
+async function fetchWithTimeout(
+  url: string,
+  timeoutMs: number
+): Promise<Response> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const res = await fetch(url, { 
-      signal: controller.signal, 
-      next: { revalidate: 300 } 
+    const res = await fetch(url, {
+      signal: controller.signal,
+      next: { revalidate: 300 },
     });
     return res;
   } finally {
@@ -28,10 +31,15 @@ async function fetchWithTimeout(url: string, timeoutMs: number): Promise<Respons
   }
 }
 
-async function getCoinGeckoHistory(vs: string, days: number): Promise<HistoryPoint[]> {
+async function getCoinGeckoHistory(
+  vs: string,
+  days: number
+): Promise<HistoryPoint[]> {
   try {
     const res = await fetchWithTimeout(
-      `https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=${encodeURIComponent(vs.toLowerCase())}&days=${days}&interval=${days <= 1 ? "hourly" : "daily"}`,
+      `https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=${encodeURIComponent(
+        vs.toLowerCase()
+      )}&days=${days}&interval=${days <= 1 ? "hourly" : "daily"}`,
       8000
     );
     if (!res.ok) return [];
@@ -51,7 +59,9 @@ async function getCoindeskUsdHistory(days: number): Promise<HistoryPoint[]> {
     const end = new Date();
     const start = new Date(end.getTime() - days * 24 * 60 * 60 * 1000);
     const fmt = (d: Date) => d.toISOString().slice(0, 10);
-    const url = `https://api.coindesk.com/v1/bpi/historical/close.json?currency=USD&start=${fmt(start)}&end=${fmt(end)}`;
+    const url = `https://api.coindesk.com/v1/bpi/historical/close.json?currency=USD&start=${fmt(
+      start
+    )}&end=${fmt(end)}`;
     const res = await fetchWithTimeout(url, 6000);
     if (!res.ok) return [];
     const data: any = await res.json();
@@ -65,7 +75,11 @@ async function getCoindeskUsdHistory(days: number): Promise<HistoryPoint[]> {
   }
 }
 
-async function getBinanceHistory(vs: string, interval: string, limit: number): Promise<HistoryPoint[]> {
+async function getBinanceHistory(
+  vs: string,
+  interval: string,
+  limit: number
+): Promise<HistoryPoint[]> {
   try {
     const symbol = vs === "USD" ? "BTCUSDT" : `BTC${vs}`;
     const res = await fetchWithTimeout(
@@ -84,7 +98,10 @@ async function getBinanceHistory(vs: string, interval: string, limit: number): P
   }
 }
 
-async function getBinanceUsdHistory(interval: string, limit: number): Promise<HistoryPoint[]> {
+async function getBinanceUsdHistory(
+  interval: string,
+  limit: number
+): Promise<HistoryPoint[]> {
   try {
     const res = await fetchWithTimeout(
       `https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=${interval}&limit=${limit}`,
@@ -140,17 +157,19 @@ function mergeHistoryData(sources: HistoryPoint[][]): HistoryPoint[] {
   const result: HistoryPoint[] = [];
   for (const [timestamp, prices] of priceMap.entries()) {
     if (prices.length === 0) continue;
-    
+
     const sortedPrices = [...prices].sort((a, b) => a - b);
     const mid = Math.floor(sortedPrices.length / 2);
-    const medianPrice = sortedPrices.length % 2 === 0 
-      ? (sortedPrices[mid - 1] + sortedPrices[mid]) / 2 
-      : sortedPrices[mid];
+    const medianPrice =
+      sortedPrices.length % 2 === 0
+        ? (sortedPrices[mid - 1] + sortedPrices[mid]) / 2
+        : sortedPrices[mid];
 
     const volumes = volumeMap.get(timestamp) || [];
-    const avgVolume = volumes.length > 0 
-      ? volumes.reduce((sum, v) => sum + v, 0) / volumes.length 
-      : undefined;
+    const avgVolume =
+      volumes.length > 0
+        ? volumes.reduce((sum, v) => sum + v, 0) / volumes.length
+        : undefined;
 
     result.push({
       timestamp,
@@ -181,10 +200,10 @@ export async function GET(req: NextRequest): Promise<Response> {
 
   const config = intervalMap[interval];
   if (!config) {
-    return new Response(
-      JSON.stringify({ error: "Invalid interval" }),
-      { status: 400, headers: { "content-type": "application/json; charset=utf-8" } }
-    );
+    return new Response(JSON.stringify({ error: "Invalid interval" }), {
+      status: 400,
+      headers: { "content-type": "application/json; charset=utf-8" },
+    });
   }
 
   let [coingeckoData, binanceData] = await Promise.all([
@@ -206,13 +225,19 @@ export async function GET(req: NextRequest): Promise<Response> {
     }
   }
 
-  if (coingeckoData.length === 0 && binanceData.length === 0 && vs !== 'USD') {
+  if (coingeckoData.length === 0 && binanceData.length === 0 && vs !== "USD") {
     const [usdCandles, altFxRates] = await Promise.all([
-      (config.days > 1 ? getCoindeskUsdHistory(config.days) : getBinanceUsdHistory(config.binance, limit)),
-      getFxRate('USD', vs),
+      config.days > 1
+        ? getCoindeskUsdHistory(config.days)
+        : getBinanceUsdHistory(config.binance, limit),
+      getFxRate("USD", vs),
     ]);
     if (usdCandles.length > 0 && altFxRates) {
-      coingeckoData = usdCandles.map(p => ({ timestamp: p.timestamp, price: p.price * altFxRates, volume: p.volume }));
+      coingeckoData = usdCandles.map((p) => ({
+        timestamp: p.timestamp,
+        price: p.price * altFxRates,
+        volume: p.volume,
+      }));
     }
   }
 
@@ -223,13 +248,19 @@ export async function GET(req: NextRequest): Promise<Response> {
       mergedData = coingeckoData;
     } else if (binanceData.length > 0) {
       mergedData = binanceData;
-    } else if (vs !== 'USD') {
+    } else if (vs !== "USD") {
       const [usdCandles, fx] = await Promise.all([
-        (config.days > 1 ? getCoindeskUsdHistory(config.days) : getBinanceUsdHistory(config.binance, limit)),
-        getFxRate('USD', vs),
+        config.days > 1
+          ? getCoindeskUsdHistory(config.days)
+          : getBinanceUsdHistory(config.binance, limit),
+        getFxRate("USD", vs),
       ]);
       if (usdCandles.length > 0 && fx) {
-        mergedData = usdCandles.map(p => ({ timestamp: p.timestamp, price: p.price * fx, volume: p.volume }));
+        mergedData = usdCandles.map((p) => ({
+          timestamp: p.timestamp,
+          price: p.price * fx,
+          volume: p.volume,
+        }));
       }
     }
   }
@@ -252,7 +283,7 @@ export async function GET(req: NextRequest): Promise<Response> {
     base: "BTC",
     vs,
     interval,
-    data: mergedData.slice(-limit), 
+    data: mergedData.slice(-limit),
     updatedAt: new Date().toISOString(),
   };
 
