@@ -65,6 +65,21 @@ async function getBinanceHistory(vs: string, interval: string, limit: number): P
   }
 }
 
+async function getFxRate(base: string, target: string): Promise<number | null> {
+  try {
+    const res = await fetchWithTimeout(
+      `https://api.exchangerate.host/latest?base=${encodeURIComponent(base)}`,
+      5000
+    );
+    if (!res.ok) return null;
+    const data: any = await res.json();
+    const rate = data?.rates?.[target];
+    return typeof rate === "number" && Number.isFinite(rate) ? rate : null;
+  } catch {
+    return null;
+  }
+}
+
 function mergeHistoryData(sources: HistoryPoint[][]): HistoryPoint[] {
   if (sources.length === 0) return [];
   if (sources.length === 1) return sources[0];
@@ -139,12 +154,33 @@ export async function GET(req: NextRequest): Promise<Response> {
   }
 
   // Fetch from multiple sources
-  const [coingeckoData, binanceData] = await Promise.all([
+  let [coingeckoData, binanceData] = await Promise.all([
     getCoinGeckoHistory(vs, config.days),
     getBinanceHistory(vs, config.binance, limit),
   ]);
 
-  const mergedData = mergeHistoryData([coingeckoData, binanceData]);
+  // Fallback: if both are empty or CoinGecko for target currency is empty,
+  // fetch USD history and convert to target currency via latest FX rate.
+  if (coingeckoData.length === 0 && vs !== "USD") {
+    const [usdHistory, fx] = await Promise.all([
+      getCoinGeckoHistory("USD", config.days),
+      getFxRate("USD", vs),
+    ]);
+    if (usdHistory.length > 0 && fx) {
+      coingeckoData = usdHistory.map((p) => ({
+        timestamp: p.timestamp,
+        price: p.price * fx,
+        volume: p.volume,
+      }));
+    }
+  }
+
+  let mergedData = mergeHistoryData([coingeckoData, binanceData]);
+
+  // Final fallback: if still empty, try building from only one available source
+  if (mergedData.length === 0) {
+    mergedData = coingeckoData.length > 0 ? coingeckoData : binanceData;
+  }
 
   if (mergedData.length === 0) {
     return new Response(

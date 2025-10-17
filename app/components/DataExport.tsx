@@ -151,7 +151,7 @@ const DataExport = memo(function DataExport({ currentPrice, currency, history, c
         <div className="flex items-center space-x-2 sm:space-x-3">
           <button
             onClick={shareCurrentPrice}
-            className="group relative p-2 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-all duration-200"
+            className="group relative p-2 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-all duration-200 flex items-center justify-center"
             title="Поделиться текущей ценой"
             aria-label="Поделиться текущей ценой"
           >
