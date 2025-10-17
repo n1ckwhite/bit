@@ -104,3 +104,35 @@ button.custom-arrow-button {
 button.custom-arrow-button:hover {
   cursor: pointer !important;
 }
+
+/* Global cursor pointer for all interactive elements */
+button, 
+select, 
+[role="button"], 
+[role="menuitem"],
+.cursor-pointer {
+  cursor: pointer !important;
+}
+
+button:hover, 
+select:hover, 
+[role="button"]:hover, 
+[role="menuitem"]:hover {
+  cursor: pointer !important;
+}
+
+/* Specific styles for common interactive elements */
+button:not(:disabled):hover {
+  cursor: pointer !important;
+}
+
+select:not(:disabled):hover {
+  cursor: pointer !important;
+}
+
+/* Ensure all clickable elements have pointer cursor */
+[onclick], 
+[onClick],
+.clickable {
+  cursor: pointer !important;
+}

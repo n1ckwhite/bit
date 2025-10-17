@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { 
   DocumentArrowDownIcon, 
   ShareIcon, 
@@ -17,16 +17,33 @@ interface DataExportProps {
 }
 
 export default function DataExport({ currentPrice, currency, history, className }: DataExportProps) {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const open = Boolean(anchorEl);
+  const [open, setOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
+  const handleClick = () => {
+    setOpen(!open);
   };
 
   const handleClose = () => {
-    setAnchorEl(null);
+    setOpen(false);
   };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+
+    if (open) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [open]);
 
   const exportCurrentPrice = (format: "json" | "csv") => {
     const data = {
@@ -140,7 +157,7 @@ export default function DataExport({ currentPrice, currency, history, className 
             <ShareIcon className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400" />
           </button>
           
-          <div className="relative">
+          <div className="relative" ref={dropdownRef}>
             <button
               onClick={handleClick}
               className="flex items-center space-x-2 px-3 sm:px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg transition-all duration-200 hover:shadow-lg"
