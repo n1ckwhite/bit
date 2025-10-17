@@ -5,6 +5,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { ChartBarSquareIcon, ClockIcon } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import { useTheme } from "../contexts/ThemeContext";
+import { useI18n } from "../contexts/I18nContext";
 
 type CandleData = {
   timestamp: number;
@@ -29,6 +30,7 @@ const AdvancedChart = memo(function AdvancedChart({ vs, className }: AdvancedCha
   const [data, setData] = useState<CandleData[]>([]);
   const [loading, setLoading] = useState(false);
   const { theme } = useTheme();
+  const { t } = useI18n();
   const isDark = theme === "dark";
 
   const fetchCandleData = useCallback(async (currentVs: string, currentTimeframe: "1h", limitHours: 168 | 336) => {
@@ -126,7 +128,7 @@ const AdvancedChart = memo(function AdvancedChart({ vs, className }: AdvancedCha
           <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
             <ChartBarSquareIcon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
           </div>
-          <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">Продвинутый график</h3>
+          <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">{t('priceChart', { sym: 'BTC' })}</h3>
         </div>
         
         <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
@@ -138,7 +140,7 @@ const AdvancedChart = memo(function AdvancedChart({ vs, className }: AdvancedCha
                   ? "bg-emerald-700 text-white shadow-lg"
                   : "bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-600"
               }`}
-              title="Скользящая средняя 7 часов"
+              title="MA7"
             >
               MA7
             </button>
@@ -152,7 +154,7 @@ const AdvancedChart = memo(function AdvancedChart({ vs, className }: AdvancedCha
                   : "bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-600"
               }`}
             >
-              7д
+              7d
             </button>
             <button
               onClick={() => setHours(336)}
@@ -162,15 +164,15 @@ const AdvancedChart = memo(function AdvancedChart({ vs, className }: AdvancedCha
                   : "bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-600"
               }`}
             >
-              14д
+              14d
             </button>
           </div>
         </div>
       </div>
 
       {loading ? (
-        <div className="h-[300px] sm:h-[400px] bg-slate-100 dark:bg-slate-700 rounded-xl sm:rounded-2xl animate-pulse flex items-center justify-center">
-          <div className="text-slate-600 dark:text-slate-300 text-sm">Загрузка продвинутого графика...</div>
+        <div className="h-[300px] sm:h-[400px] bg-slate-100 dark:bg-slate-700 rounded-xl sm:rounded-2xl animate-pulse flex items-center justify-center" role="status" aria-live="polite" aria-busy="true">
+          <div className="text-slate-600 dark:text-slate-300 text-sm">{t('loadingChart')}</div>
         </div>
       ) : (
         <>
@@ -190,16 +192,14 @@ const AdvancedChart = memo(function AdvancedChart({ vs, className }: AdvancedCha
                       <span>{isPositive ? "↗" : "↘"}</span>
                       <span>{Math.abs(priceChange).toFixed(2)}%</span>
                     </div>
-                    <span className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm">
-                      за {hours === 168 ? '1 неделю' : '2 недели'}
-                    </span>
+                    <span className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm">{hours === 168 ? '7d' : '14d'}</span>
                   </div>
                 </div>
                 
                 <div className="text-left sm:text-right">
                   <div className="flex items-center space-x-2 text-slate-600 dark:text-slate-300 text-xs sm:text-sm">
                     <ClockIcon className="w-3 h-3 sm:w-4 sm:h-4" />
-                    <span>Обновлено {new Date().toLocaleTimeString()}</span>
+                    <span>{t('updated')} {new Date().toLocaleTimeString()}</span>
                   </div>
                 </div>
               </div>
@@ -239,7 +239,7 @@ const AdvancedChart = memo(function AdvancedChart({ vs, className }: AdvancedCha
                     labelFormatter={(label, payload) => {
                       const ts = payload && payload[0] && payload[0].payload ? payload[0].payload.timestamp : undefined;
                       if (!ts) return "";
-                      return `Время: ${format(new Date(ts * 1000), hours > 48 ? "dd.MM HH:mm" : "HH:mm")}`;
+                      return `${format(new Date(ts * 1000), hours > 48 ? "dd.MM HH:mm" : "HH:mm")}`;
                     }}
                     contentStyle={{
                       backgroundColor: isDark ? "#1e293b" : "#ffffff",

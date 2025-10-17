@@ -1,6 +1,6 @@
 {
-  "name": "BTC Конвертер",
-  "short_name": "BTC",
+  "name": "Prexo",
+  "short_name": "Prexo",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

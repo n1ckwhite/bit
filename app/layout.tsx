@@ -25,27 +25,27 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL('https://bitcoin-price-converter.com'),
   title: {
-    default: "Курс · Конвертер",
-    template: "%s · Converter",
+    default: "Prexo",
+    template: "%s · Prexo",
   },
-  description: "BTC ↔ fiat converter with multi-language support. Live quotes updated every minute.",
+  description: "Prexo — multi‑language crypto converter and live charts. BTC ↔ fiat with minute updates.",
   keywords: "биткоин, курс, конвертер биткоин, BTC, криптовалюта, обменник, курс валют, сатоши, mBTC, µBTC",
-  authors: [{ name: "Bitcoin Price Converter" }],
-  creator: "Bitcoin Price Converter",
-  publisher: "Bitcoin Price Converter",
+  authors: [{ name: "Prexo" }],
+  creator: "Prexo",
+  publisher: "Prexo",
   robots: "index, follow",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "BTC Converter",
+    title: "Prexo",
   },
   openGraph: {
-    title: "Fast crypto converter",
+    title: "Prexo — fast crypto converter",
     description: "BTC ↔ fiat. Sources: Binance, Kraken, Bitstamp, CoinGecko. Updated every minute.",
     type: "website",
     locale: "en_US",
-    siteName: "Курс",
+    siteName: "Prexo",
     images: [
       {
         url: "/og-image.png",
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Fast crypto converter",
+    title: "Prexo — fast crypto converter",
     description: "BTC ↔ fiat with live quotes.",
     images: ["/og-image.png"],
   },
@@ -143,8 +143,8 @@ export default function RootLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "WebApplication",
-              "name": "Курс - Конвертер",
-              "description": "Онлайн‑конвертер BTC ↔ фиат. Котировки c бирж, обновление каждые 60 секунд.",
+              "name": "Prexo",
+              "description": "Prexo — BTC ↔ fiat converter with live quotes.",
               "url": "https://bitcoin-price-converter.com",
               "applicationCategory": "FinanceApplication",
               "operatingSystem": "Any",
@@ -155,11 +155,11 @@ export default function RootLayout({
               },
               "author": {
                 "@type": "Organization",
-                "name": "Bitcoin Price Converter"
+                "name": "Prexo"
               },
               "publisher": {
                 "@type": "Organization",
-                "name": "Bitcoin Price Converter"
+                "name": "Prexo"
               },
               "datePublished": "2024-01-01",
               "dateModified": new Date().toISOString().split('T')[0],
