@@ -1227,33 +1227,25 @@ type I18nContextValue = {
 const I18nContext = createContext<I18nContextValue | null>(null);
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
-  // Use a deterministic default for initial render to keep server and
-  // client HTML consistent. Detect saved navigator/localStorage locale
-  // only after mount and apply it then.
   const [locale, setLocaleState] = useState<Locale>("en");
 
   useEffect(() => {
-    let chosen: Locale | null = null;
-
     try {
       const saved =
         typeof window !== "undefined"
           ? (localStorage.getItem("locale") as Locale | null)
           : null;
-      if (saved && DICTS[saved]) chosen = saved;
+      if (saved && DICTS[saved]) {
+        setLocaleState(saved);
+        if (typeof document !== "undefined")
+          document.documentElement.lang = saved;
+      } else {
+        if (typeof document !== "undefined")
+          document.documentElement.lang = "en";
+      }
     } catch (e) {
-      // ignore localStorage errors
+      if (typeof document !== "undefined") document.documentElement.lang = "en";
     }
-
-    if (!chosen && typeof navigator !== "undefined") {
-      const nav = (navigator.language?.slice(0, 2) as Locale) || null;
-      if (nav && DICTS[nav]) chosen = nav;
-    }
-
-    if (chosen) setLocaleState(chosen);
-
-    if (typeof document !== "undefined")
-      document.documentElement.lang = chosen || "en";
   }, []);
 
   const setLocale = useCallback((l: Locale) => {
@@ -1295,7 +1287,6 @@ export function useI18n() {
   const ctx = useContext(I18nContext);
   if (!ctx) {
     console.error("I18nContext not found");
-    // Return a fallback context to prevent crashes
     return {
       locale: "en" as Locale,
       setLocale: () => {},

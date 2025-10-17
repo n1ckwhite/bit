@@ -95,7 +95,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang='ru'
+      lang='en'
       suppressHydrationWarning
       className='bg-white dark:bg-slate-900'
     >
