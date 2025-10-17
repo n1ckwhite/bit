@@ -13,11 +13,19 @@ import ThemeToggle from "./components/ThemeToggle";
 import { DEFAULT_FIATS } from "./lib/currencies";
 import { BitcoinUnit, fromBtc, parseUnit, toBtc } from "./lib/units";
 
-// Lazy load heavy components
+// Lazy load heavy components with preload
 const PriceChart = lazy(() => import("./components/PriceChart"));
 const PriceAlerts = lazy(() => import("./components/PriceAlerts"));
 const DataExport = lazy(() => import("./components/DataExport"));
 const AdvancedChart = lazy(() => import("./components/AdvancedChart"));
+
+// Preload components after initial render
+const preloadComponents = () => {
+  import("./components/PriceChart");
+  import("./components/PriceAlerts");
+  import("./components/DataExport");
+  import("./components/AdvancedChart");
+};
 
 type Quote = {
   base: "BTC";
@@ -113,9 +121,20 @@ export default function Home() {
     fetchQuote(vs);
   }, [vs, fetchQuote]);
 
-  // polling every 60s
+  // Preload components after initial render
   useEffect(() => {
-    const id = setInterval(() => fetchQuote(vs), 60000);
+    const timer = setTimeout(preloadComponents, 1000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // polling every 60s with optimized interval
+  useEffect(() => {
+    const id = setInterval(() => {
+      // Only fetch if page is visible
+      if (!document.hidden) {
+        fetchQuote(vs);
+      }
+    }, 60000);
     return () => clearInterval(id);
   }, [vs, fetchQuote]);
 
@@ -126,25 +145,36 @@ export default function Home() {
     setFiatAmount(btc * quote.price);
   }, [quote, btcAmount, unit]);
 
-  // keyboard shortcuts: s,u,m,k
+  // keyboard shortcuts: s,u,m,k with optimized handler
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "s") setUnit("sats");
-      if (e.key === "u") setUnit("µBTC");
-      if (e.key === "m") setUnit("mBTC");
-      if (e.key === "k") setUnit("BTC");
+      // Only handle if no input is focused
+      if (document.activeElement?.tagName === 'INPUT') return;
+      
+      switch (e.key) {
+        case "s": setUnit("sats"); break;
+        case "u": setUnit("µBTC"); break;
+        case "m": setUnit("mBTC"); break;
+        case "k": setUnit("BTC"); break;
+      }
     };
-    window.addEventListener("keydown", onKey);
+    
+    window.addEventListener("keydown", onKey, { passive: true });
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
   const fiatOptions = useMemo(() => DEFAULT_FIATS.map((c) => c.code), []);
 
-  const currentPrice = quote?.price || 0;
-  const priceChange = historyData.length >= 2 
-    ? ((historyData[historyData.length - 1].price - historyData[0].price) / historyData[0].price) * 100
-    : 0;
-  const isPositive = priceChange >= 0;
+  const currentPrice = useMemo(() => quote?.price || 0, [quote?.price]);
+  
+  const priceChange = useMemo(() => {
+    if (historyData.length < 2) return 0;
+    const firstPrice = historyData[0].price;
+    const lastPrice = historyData[historyData.length - 1].price;
+    return ((lastPrice - firstPrice) / firstPrice) * 100;
+  }, [historyData]);
+  
+  const isPositive = useMemo(() => priceChange >= 0, [priceChange]);
 
   const handleAlertTriggered = useCallback((alert: any) => {
     if (navigator.serviceWorker && 'showNotification' in ServiceWorkerRegistration.prototype) {
@@ -288,7 +318,10 @@ export default function Home() {
                       ref={inputBtcRef}
                       type="number"
                       value={btcAmount}
-                      onChange={(e) => setBtcAmount(Number(e.target.value))}
+                      onChange={(e) => {
+                        const value = Number(e.target.value);
+                        if (!isNaN(value)) setBtcAmount(value);
+                      }}
                       onKeyDown={(e) => {
                         if (e.key === 'ArrowUp') {
                           e.preventDefault();
@@ -369,9 +402,10 @@ export default function Home() {
                       value={fiatAmount.toFixed(2)}
                       onChange={(e) => {
                         const v = Number(e.target.value);
-                        if (!quote) return;
-                        const btc = v / quote.price;
-                        setBtcAmount(fromBtc(btc, unit));
+                        if (!isNaN(v) && quote) {
+                          const btc = v / quote.price;
+                          setBtcAmount(fromBtc(btc, unit));
+                        }
                       }}
                       onKeyDown={(e) => {
                         if (e.key === 'ArrowUp') {
@@ -457,33 +491,53 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Charts - Hidden on mobile, shown on tablet+ */}
+            {/* Charts - Hidden on mobile, shown on tablet+ with optimized rendering */}
             <div className="hidden sm:grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
-              <Suspense fallback={<div className="h-64 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse flex items-center justify-center"><div className="text-slate-600 dark:text-slate-300">Загрузка графика...</div></div>}>
+              <Suspense fallback={
+                <div className="h-64 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center">
+                  <div className="text-slate-600 dark:text-slate-300">Загрузка графика...</div>
+                </div>
+              }>
                 <PriceChart vs={vs} />
               </Suspense>
-              <Suspense fallback={<div className="h-64 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse flex items-center justify-center"><div className="text-slate-600 dark:text-slate-300">Загрузка продвинутого графика...</div></div>}>
+              <Suspense fallback={
+                <div className="h-64 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center">
+                  <div className="text-slate-600 dark:text-slate-300">Загрузка продвинутого графика...</div>
+                </div>
+              }>
                 <AdvancedChart vs={vs} />
               </Suspense>
             </div>
 
-            {/* Mobile Chart - Single chart on mobile */}
+            {/* Mobile Chart - Single chart on mobile with optimized rendering */}
             <div className="sm:hidden">
-              <Suspense fallback={<div className="h-64 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse flex items-center justify-center"><div className="text-slate-600 dark:text-slate-300">Загрузка графика...</div></div>}>
+              <Suspense fallback={
+                <div className="h-64 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center">
+                  <div className="text-slate-600 dark:text-slate-300">Загрузка графика...</div>
+                </div>
+              }>
                 <PriceChart vs={vs} />
               </Suspense>
             </div>
 
-            {/* Additional Features */}
+            {/* Additional Features with optimized rendering */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
-              <Suspense fallback={<div className="h-48 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse flex items-center justify-center"><div className="text-slate-600 dark:text-slate-300">Загрузка уведомлений...</div></div>}>
+              <Suspense fallback={
+                <div className="h-48 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center">
+                  <div className="text-slate-600 dark:text-slate-300">Загрузка уведомлений...</div>
+                </div>
+              }>
                 <PriceAlerts 
                   currentPrice={currentPrice}
                   currency={vs}
                   onAlertTriggered={handleAlertTriggered}
                 />
               </Suspense>
-              <Suspense fallback={<div className="h-48 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse flex items-center justify-center"><div className="text-slate-600 dark:text-slate-300">Загрузка экспорта...</div></div>}>
+              <Suspense fallback={
+                <div className="h-48 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center">
+                  <div className="text-slate-600 dark:text-slate-300">Загрузка экспорта...</div>
+                </div>
+              }>
                 <DataExport 
                   currentPrice={currentPrice}
                   currency={vs}

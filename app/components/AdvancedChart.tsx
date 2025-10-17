@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo, useMemo, useCallback } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
 import { ChartBarSquareIcon, ClockIcon } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
@@ -20,7 +20,7 @@ type AdvancedChartProps = {
   className?: string;
 };
 
-export default function AdvancedChart({ vs, className }: AdvancedChartProps) {
+const AdvancedChart = memo(function AdvancedChart({ vs, className }: AdvancedChartProps) {
   const [chartType, setChartType] = useState<"area" | "line">("area");
   const [timeframe, setTimeframe] = useState<"1h" | "4h" | "1d">("1h");
   const [data, setData] = useState<CandleData[]>([]);
@@ -28,7 +28,7 @@ export default function AdvancedChart({ vs, className }: AdvancedChartProps) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
-  const fetchCandleData = async (currentVs: string, currentTimeframe: "1h" | "4h" | "1d") => {
+  const fetchCandleData = useCallback(async (currentVs: string, currentTimeframe: "1h" | "4h" | "1d") => {
     setLoading(true);
     try {
       // Map timeframes to Binance intervals
@@ -64,41 +64,43 @@ export default function AdvancedChart({ vs, className }: AdvancedChartProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchCandleData(vs, timeframe);
-  }, [vs, timeframe]);
+  }, [vs, timeframe, fetchCandleData]);
 
-  // No useEffect needed for chart creation with recharts
-
-  const priceChange = data.length >= 2 
-    ? ((data[data.length - 1].close - data[0].open) / data[0].open) * 100
-    : 0;
+  const priceChange = useMemo(() => {
+    if (data.length < 2) return 0;
+    return ((data[data.length - 1].close - data[0].open) / data[0].open) * 100;
+  }, [data]);
 
   const isPositive = priceChange >= 0;
 
-  const formatXAxis = (timestamp: number) => {
+  const formatXAxis = useCallback((timestamp: number) => {
     const date = new Date(timestamp * 1000);
     if (timeframe === "1h") {
       return format(date, "HH:mm");
     } else {
       return format(date, "dd.MM");
     }
-  };
+  }, [timeframe]);
 
-  const formatTooltip = (value: number, name: string) => {
+  const formatTooltip = useCallback((value: number, name: string) => {
     if (name === "close") {
       return [`${value.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${vs}`, "Цена"];
     }
     return [value, name];
-  };
+  }, [vs]);
 
-  const chartData = data.map(point => ({
-    timestamp: point.timestamp,
-    close: point.close,
-    time: formatXAxis(point.timestamp),
-  }));
+  const chartData = useMemo(() => {
+    // Optimize data processing with reduced precision for better performance
+    return data.map(point => ({
+      timestamp: point.timestamp,
+      close: Math.round(point.close * 100) / 100, // Round to 2 decimal places
+      time: formatXAxis(point.timestamp),
+    }));
+  }, [data, formatXAxis]);
 
   return (
     <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 dark:border-slate-700/50 p-4 sm:p-6 lg:p-8">
@@ -288,4 +290,6 @@ export default function AdvancedChart({ vs, className }: AdvancedChartProps) {
       )}
     </div>
   );
-}
+});
+
+export default AdvancedChart;

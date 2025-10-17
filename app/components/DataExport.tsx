@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, memo, useCallback } from "react";
 import { 
   DocumentArrowDownIcon, 
   ShareIcon, 
@@ -16,17 +16,17 @@ interface DataExportProps {
   className?: string;
 }
 
-export default function DataExport({ currentPrice, currency, history, className }: DataExportProps) {
+const DataExport = memo(function DataExport({ currentPrice, currency, history, className }: DataExportProps) {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const handleClick = () => {
+  const handleClick = useCallback(() => {
     setOpen(!open);
-  };
+  }, [open]);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setOpen(false);
-  };
+  }, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -45,7 +45,7 @@ export default function DataExport({ currentPrice, currency, history, className 
     };
   }, [open]);
 
-  const exportCurrentPrice = (format: "json" | "csv") => {
+  const exportCurrentPrice = useCallback((format: "json" | "csv") => {
     const data = {
       timestamp: new Date().toISOString(),
       price: currentPrice,
@@ -71,9 +71,9 @@ export default function DataExport({ currentPrice, currency, history, className 
       a.click();
       URL.revokeObjectURL(url);
     }
-  };
+  }, [currentPrice, currency]);
 
-  const exportHistory = (format: "json" | "csv") => {
+  const exportHistory = useCallback((format: "json" | "csv") => {
     if (!history || history.length === 0) {
       alert("Нет исторических данных для экспорта");
       return;
@@ -112,9 +112,9 @@ export default function DataExport({ currentPrice, currency, history, className 
       a.click();
       URL.revokeObjectURL(url);
     }
-  };
+  }, [history, currency]);
 
-  const shareCurrentPrice = async () => {
+  const shareCurrentPrice = useCallback(async () => {
     const text = `₿ Bitcoin: ${currentPrice.toLocaleString()} ${currency}\n\nКурс обновлён в реальном времени на Bitcoin Price Converter`;
     
     if (navigator.share) {
@@ -136,7 +136,7 @@ export default function DataExport({ currentPrice, currency, history, className 
         console.error("Failed to copy:", err);
       }
     }
-  };
+  }, [currentPrice, currency]);
 
   return (
     <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-lg sm:rounded-xl lg:rounded-2xl xl:rounded-3xl shadow-xl border border-slate-200/50 dark:border-slate-700/50 p-2.5 sm:p-3 lg:p-4 xl:p-6">
@@ -262,4 +262,6 @@ export default function DataExport({ currentPrice, currency, history, className 
       </div>
     </div>
   );
-}
+});
+
+export default DataExport;

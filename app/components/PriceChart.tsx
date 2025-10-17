@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo, useMemo, useCallback } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { ChartBarIcon, ClockIcon } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
@@ -25,14 +25,14 @@ interface PriceChartProps {
   className?: string;
 }
 
-export default function PriceChart({ vs, className }: PriceChartProps) {
+const PriceChart = memo(function PriceChart({ vs, className }: PriceChartProps) {
   const [history, setHistory] = useState<HistoryData | null>(null);
   const [interval, setInterval] = useState<"1h" | "1d">("1h");
   const [loading, setLoading] = useState(false);
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
-  const fetchHistory = async (currentVs: string, currentInterval: "1h" | "1d") => {
+  const fetchHistory = useCallback(async (currentVs: string, currentInterval: "1h" | "1d") => {
     setLoading(true);
     try {
       const limit = currentInterval === "1h" ? "24" : "30";
@@ -44,37 +44,42 @@ export default function PriceChart({ vs, className }: PriceChartProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchHistory(vs, interval);
-  }, [vs, interval]);
+  }, [vs, interval, fetchHistory]);
 
-  const formatXAxis = (timestamp: number) => {
+  const formatXAxis = useCallback((timestamp: number) => {
     const date = new Date(timestamp * 1000);
     if (interval === "1h") {
       return format(date, "HH:mm");
     } else {
       return format(date, "dd.MM");
     }
-  };
+  }, [interval]);
 
-  const formatTooltip = (value: number, name: string) => {
+  const formatTooltip = useCallback((value: number, name: string) => {
     if (name === "price") {
       return [`${value.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${vs}`, "Цена"];
     }
     return [value, name];
-  };
+  }, [vs]);
 
-  const chartData = history?.data.map(point => ({
-    timestamp: point.timestamp,
-    price: point.price,
-    time: formatXAxis(point.timestamp),
-  })) || [];
+  const chartData = useMemo(() => {
+    if (!history?.data) return [];
+    // Optimize data processing with reduced precision for better performance
+    return history.data.map(point => ({
+      timestamp: point.timestamp,
+      price: Math.round(point.price * 100) / 100, // Round to 2 decimal places
+      time: formatXAxis(point.timestamp),
+    }));
+  }, [history?.data, formatXAxis]);
 
-  const priceChange = chartData.length >= 2 
-    ? ((chartData[chartData.length - 1].price - chartData[0].price) / chartData[0].price) * 100
-    : 0;
+  const priceChange = useMemo(() => {
+    if (chartData.length < 2) return 0;
+    return ((chartData[chartData.length - 1].price - chartData[0].price) / chartData[0].price) * 100;
+  }, [chartData]);
 
   const isPositive = priceChange >= 0;
 
@@ -209,4 +214,6 @@ export default function PriceChart({ vs, className }: PriceChartProps) {
       )}
     </div>
   );
-}
+});
+
+export default PriceChart;
