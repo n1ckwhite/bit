@@ -5,8 +5,7 @@ type MultiPriceQuote = {
   id: string;
   symbol: string;
   name: string;
-  nameRu: string;
-  names?: Record<string, string>;
+  names: Record<string, string>;
   price: number;
   change24h: number;
   volume24h?: number;
@@ -52,7 +51,6 @@ async function getCoinGeckoMultiPrices(vs: string): Promise<MultiPriceQuote[]> {
           id: crypto.id,
           symbol: crypto.symbol,
           name: crypto.name,
-          nameRu: crypto.nameRu,
           names: crypto.names,
           price: Number(cryptoData[vs.toLowerCase()]),
           change24h: Number(cryptoData[`${vs.toLowerCase()}_24h_change`]) || 0,
