@@ -44,6 +44,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<string>("");
   const [historyData, setHistoryData] = useState<Array<{ timestamp: number; price: number }>>([]);
+  const [showScrollButton, setShowScrollButton] = useState(false);
   const inputBtcRef = useRef<HTMLInputElement>(null);
   const mainContainerRef = useRef<HTMLDivElement>(null);
 
@@ -76,24 +77,33 @@ export default function Home() {
   // Scroll to top function - memoized
   const scrollToTop = useCallback(() => {
     try {
-      // Method 1: Scroll main container if it exists
-      if (mainContainerRef.current) {
+      // Method 1: Scroll main container if it exists and has scroll
+      if (mainContainerRef.current && mainContainerRef.current.scrollTop > 0) {
         mainContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
         return;
       }
       
       // Method 2: Try window scroll
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (window.pageYOffset > 0 || document.documentElement.scrollTop > 0) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
       
       // Method 3: Fallback methods
       setTimeout(() => {
         document.documentElement.scrollTop = 0;
         document.body.scrollTop = 0;
+        if (mainContainerRef.current) {
+          mainContainerRef.current.scrollTop = 0;
+        }
       }, 100);
     } catch (error) {
       console.error('Scroll error:', error);
       // Fallback to instant scroll
       window.scrollTo(0, 0);
+      if (mainContainerRef.current) {
+        mainContainerRef.current.scrollTop = 0;
+      }
     }
   }, []);
 
@@ -161,6 +171,42 @@ export default function Home() {
     
     window.addEventListener("keydown", onKey, { passive: true });
     return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  // Track scroll position to show/hide scroll button
+  useEffect(() => {
+    const handleScroll = () => {
+      // Check both window scroll and main container scroll
+      const windowScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const containerScrollTop = mainContainerRef.current?.scrollTop || 0;
+      const scrollTop = Math.max(windowScrollTop, containerScrollTop);
+      
+      const shouldShow = scrollTop > 100;
+      setShowScrollButton(shouldShow);
+      
+      // Debug logging (remove in production)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Scroll position:', { windowScrollTop, containerScrollTop, scrollTop, shouldShow });
+      }
+    };
+
+    // Add scroll listener to both window and main container
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    
+    const mainContainer = mainContainerRef.current;
+    if (mainContainer) {
+      mainContainer.addEventListener("scroll", handleScroll, { passive: true });
+    }
+
+    // Initial check
+    handleScroll();
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (mainContainer) {
+        mainContainer.removeEventListener("scroll", handleScroll);
+      }
+    };
   }, []);
 
   const fiatOptions = useMemo(() => DEFAULT_FIATS.map((c) => c.code), []);
@@ -643,8 +689,11 @@ export default function Home() {
       {/* Scroll to top button */}
       <button
         onClick={scrollToTop}
-        className="fixed bottom-6 right-6 z-50 p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-110 active:scale-95"
+        className={`fixed bottom-6 right-6 z-50 p-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 active:scale-95 border border-blue-500/20 ${
+          showScrollButton ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
+        }`}
         title="Наверх"
+        aria-label="Прокрутить наверх"
       >
         <ChevronUpIcon className="w-5 h-5" />
       </button>
