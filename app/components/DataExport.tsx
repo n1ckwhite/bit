@@ -153,6 +153,7 @@ export default function DataExport({ currentPrice, currency, history, className 
             onClick={shareCurrentPrice}
             className="group relative p-2 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-all duration-200"
             title="Поделиться текущей ценой"
+            aria-label="Поделиться текущей ценой"
           >
             <ShareIcon className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400" />
           </button>
@@ -160,7 +161,7 @@ export default function DataExport({ currentPrice, currency, history, className 
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={handleClick}
-              className="flex items-center space-x-2 px-3 sm:px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg transition-all duration-200 hover:shadow-lg"
+              className="flex items-center space-x-2 px-3 sm:px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-all duration-200 hover:shadow-lg"
             >
               <DocumentArrowDownIcon className="w-4 h-4" />
               <span className="text-sm font-medium">Экспорт</span>
@@ -254,7 +255,7 @@ export default function DataExport({ currentPrice, currency, history, className 
         )}
 
         <div className="pt-3 sm:pt-4 border-t border-slate-200 dark:border-slate-700">
-          <p className="text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-xs text-slate-600 dark:text-slate-300">
             Данные экспортируются в формате UTC. JSON содержит метаданные, CSV — только цены.
           </p>
         </div>

@@ -94,7 +94,7 @@ export default function PriceChart({ vs, className }: PriceChartProps) {
             onClick={() => setInterval("1h")}
             className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
               interval === "1h"
-                ? "bg-blue-500 text-white shadow-lg"
+                ? "bg-blue-600 text-white shadow-lg"
                 : "bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600"
             }`}
           >
@@ -104,7 +104,7 @@ export default function PriceChart({ vs, className }: PriceChartProps) {
             onClick={() => setInterval("1d")}
             className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
               interval === "1d"
-                ? "bg-blue-500 text-white shadow-lg"
+                ? "bg-blue-600 text-white shadow-lg"
                 : "bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600"
             }`}
           >
@@ -115,7 +115,7 @@ export default function PriceChart({ vs, className }: PriceChartProps) {
 
       {loading ? (
         <div className="h-[250px] sm:h-[300px] bg-slate-100 dark:bg-slate-700 rounded-xl sm:rounded-2xl animate-pulse flex items-center justify-center">
-          <div className="text-slate-500 dark:text-slate-400 text-sm">Загрузка графика...</div>
+          <div className="text-slate-600 dark:text-slate-300 text-sm">Загрузка графика...</div>
         </div>
       ) : (
         <>
@@ -135,14 +135,14 @@ export default function PriceChart({ vs, className }: PriceChartProps) {
                       <span>{isPositive ? "↗" : "↘"}</span>
                       <span>{Math.abs(priceChange).toFixed(2)}%</span>
                     </div>
-                    <span className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm">
+                    <span className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm">
                       за {interval === "1h" ? "24 часа" : "30 дней"}
                     </span>
                   </div>
                 </div>
                 
                 <div className="text-left sm:text-right">
-                  <div className="flex items-center space-x-2 text-slate-500 dark:text-slate-400 text-xs sm:text-sm">
+                  <div className="flex items-center space-x-2 text-slate-600 dark:text-slate-300 text-xs sm:text-sm">
                     <ClockIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                     <span>Обновлено {new Date(history.updatedAt).toLocaleTimeString()}</span>
                   </div>

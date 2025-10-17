@@ -200,6 +200,7 @@ export default function Home() {
                   disabled={loading}
                   className="group relative p-1.5 sm:p-2 lg:p-3 rounded-lg sm:rounded-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 hover:bg-white dark:hover:bg-slate-800 transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl"
                   title="Обновить данные"
+                  aria-label="Обновить данные"
                 >
                   <ArrowPathIcon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5 text-slate-600 dark:text-slate-300 ${loading ? 'animate-spin' : 'group-hover:rotate-180'} transition-transform duration-300`} />
                 </button>
@@ -232,7 +233,7 @@ export default function Home() {
                     </div>
                     
                     <div className="flex items-center space-x-2">
-                      <div className={`flex items-center space-x-1 px-2 sm:px-3 py-1 rounded-full ${isPositive ? 'bg-green-500/20 text-green-100' : 'bg-red-500/20 text-red-100'}`}>
+                      <div className={`flex items-center space-x-1 px-2 sm:px-3 py-1 rounded-full ${isPositive ? 'bg-green-600 text-white' : 'bg-red-700 text-white'}`}>
                         {isPositive ? (
                           <ArrowTrendingUpIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                         ) : (
@@ -242,7 +243,7 @@ export default function Home() {
                           {isPositive ? "+" : ""}{priceChange.toFixed(2)}%
                         </span>
                       </div>
-                      <span className="text-white/70 text-xs sm:text-sm">за 24ч</span>
+                      <span className="text-white/90 text-xs sm:text-sm">за 24ч</span>
                     </div>
                   </div>
                   
@@ -304,7 +305,7 @@ export default function Home() {
                       step="0.1"
                       min="0"
                     />
-                    <div className="absolute left-2 sm:left-2.5 lg:left-3 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-500 dark:text-slate-400">
+                    <div className="absolute left-2 sm:left-2.5 lg:left-3 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-600 dark:text-slate-300">
                       {unit}
                     </div>
                     {/* Custom arrow buttons */}
@@ -312,28 +313,30 @@ export default function Home() {
                       <button
                         type="button"
                         onClick={() => setBtcAmount(prev => prev + 0.1)}
-                        className="custom-arrow-button w-5 h-4 flex items-center justify-center rounded-t-sm"
+                        className="custom-arrow-button w-8 h-8 flex items-center justify-center rounded-t-sm"
                         style={{ cursor: 'pointer' }}
                         title="Увеличить на 0.1"
+                        aria-label="Увеличить на 0.1"
                       >
-                        <svg className="w-3 h-3 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                           <polyline points="18,15 12,9 6,15"></polyline>
                         </svg>
                       </button>
                       <button
                         type="button"
                         onClick={() => setBtcAmount(prev => Math.max(0, prev - 0.1))}
-                        className="custom-arrow-button w-5 h-4 flex items-center justify-center rounded-b-sm"
+                        className="custom-arrow-button w-8 h-8 flex items-center justify-center rounded-b-sm"
                         style={{ cursor: 'pointer' }}
                         title="Уменьшить на 0.1"
+                        aria-label="Уменьшить на 0.1"
                       >
-                        <svg className="w-3 h-3 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                           <polyline points="6,9 12,15 18,9"></polyline>
                         </svg>
                       </button>
                     </div>
                   </div>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                  <p className="text-xs text-slate-600 dark:text-slate-300">
                     Клавиши: k — BTC, m — mBTC, u — µBTC, s — сатоши
                   </p>
                 </div>
@@ -347,6 +350,7 @@ export default function Home() {
                     value={unit}
                     onChange={(e) => setUnit(parseUnit(e.target.value))}
                     className="w-full px-2.5 sm:px-3 lg:px-4 py-2 sm:py-2.5 lg:py-3 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm"
+                    aria-label="Выберите единицу измерения биткоина"
                   >
                     {(["BTC", "mBTC", "µBTC", "sats"] as BitcoinUnit[]).map((u) => (
                       <option key={u} value={u}>
@@ -391,7 +395,7 @@ export default function Home() {
                       step="100"
                       min="0"
                     />
-                    <div className="absolute left-2 sm:left-2.5 lg:left-3 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-500 dark:text-slate-400">
+                    <div className="absolute left-2 sm:left-2.5 lg:left-3 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-600 dark:text-slate-300">
                       {vs}
                     </div>
                     {/* Custom arrow buttons */}
@@ -404,11 +408,12 @@ export default function Home() {
                           const btc = newFiat / quote.price;
                           setBtcAmount(fromBtc(btc, unit));
                         }}
-                        className="custom-arrow-button w-5 h-4 flex items-center justify-center rounded-t-sm"
+                        className="custom-arrow-button w-8 h-8 flex items-center justify-center rounded-t-sm"
                         style={{ cursor: 'pointer' }}
                         title="Увеличить на 100"
+                        aria-label="Увеличить на 100"
                       >
-                        <svg className="w-3 h-3 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                           <polyline points="18,15 12,9 6,15"></polyline>
                         </svg>
                       </button>
@@ -420,11 +425,12 @@ export default function Home() {
                           const btc = newFiat / quote.price;
                           setBtcAmount(fromBtc(btc, unit));
                         }}
-                        className="custom-arrow-button w-5 h-4 flex items-center justify-center rounded-b-sm"
+                        className="custom-arrow-button w-8 h-8 flex items-center justify-center rounded-b-sm"
                         style={{ cursor: 'pointer' }}
                         title="Уменьшить на 100"
+                        aria-label="Уменьшить на 100"
                       >
-                        <svg className="w-3 h-3 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                           <polyline points="6,9 12,15 18,9"></polyline>
                         </svg>
                       </button>
@@ -441,6 +447,7 @@ export default function Home() {
                     value={vs}
                     onChange={(e) => setVs(e.target.value)}
                     className="w-full px-2.5 sm:px-3 lg:px-4 py-2 sm:py-2.5 lg:py-3 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm"
+                    aria-label="Выберите валюту для конвертации"
                   >
                     {fiatOptions.map((c) => (
                       <option key={c} value={c}>
@@ -478,12 +485,12 @@ export default function Home() {
             </div>
 
             {/* Information Section */}
-            <div className="mt-8 sm:mt-12 lg:mt-16">
+            <article className="mt-8 sm:mt-12 lg:mt-16">
               <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 dark:border-slate-700/50 p-6 sm:p-8 lg:p-10">
                 <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8">
                   
                   {/* Main Description */}
-                  <div>
+                  <section>
                     <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mb-4">
                       Этот сайт позволяет вам:
                     </h2>
@@ -501,10 +508,10 @@ export default function Home() {
                       Биткоин — это цифровая валюта, которая позволяет отправлять деньги онлайн без посредников. 
                       Подробнее о технологии блокчейн можно узнать <a href="https://bitcoin.org" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 underline">здесь</a>.
                     </p>
-                  </div>
+                  </section>
 
                   {/* Usage Section */}
-                  <div>
+                  <section>
                     <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-4">
                       Использование
                     </h3>
@@ -525,10 +532,10 @@ export default function Home() {
                         <strong>Конвертация в меньшие единицы:</strong> Используйте единицы <button onClick={setConverterToSats} className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 underline">сатоши (s)</button>, <button onClick={setConverterToMBTC} className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 underline">микробиткоины (μ)</button>, <button onClick={setConverterToBTC} className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 underline">миллибиткоины (m)</button> и горячие клавиши (S, u, m, k) для переключения.
                       </p>
                     </div>
-                  </div>
+                  </section>
 
                   {/* Data Sources */}
-                  <div>
+                  <section>
                     <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-4">
                       Данные
                     </h3>
@@ -537,10 +544,10 @@ export default function Home() {
                       По умолчанию отображается средневзвешенная цена по объему торгов, 
                       но вы можете выбрать конкретные источники в настройках.
                     </p>
-                  </div>
+                  </section>
 
                   {/* Contact */}
-                  <div>
+                  <section>
                     <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-4">
                       Контакт
                     </h3>
@@ -548,10 +555,10 @@ export default function Home() {
                       Свяжитесь с нами через <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 underline">Twitter/X</a> для предложений, 
                       сообщений об ошибках или рекламных запросов.
                     </p>
-                  </div>
+                  </section>
 
                   {/* Disclaimer */}
-                  <div>
+                  <section>
                     <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-4">
                       Отказ от ответственности
                     </h3>
@@ -559,12 +566,12 @@ export default function Home() {
                       Курсы валют предоставляются исключительно в информационных целях. 
                       Их точность не гарантируется и может изменяться без предварительного уведомления.
                     </p>
-                  </div>
+                  </section>
 
 
                 </div>
               </div>
-            </div>
+            </article>
           </div>
         </main>
       </div>
@@ -572,7 +579,7 @@ export default function Home() {
       {/* Scroll to top button */}
       <button
         onClick={scrollToTop}
-        className="fixed bottom-6 right-6 z-50 p-3 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-110 active:scale-95"
+        className="fixed bottom-6 right-6 z-50 p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-110 active:scale-95"
         title="Наверх"
       >
         <ChevronUpIcon className="w-5 h-5" />

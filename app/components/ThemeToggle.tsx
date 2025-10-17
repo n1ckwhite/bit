@@ -30,11 +30,11 @@ export default function ThemeToggle() {
     <div className="relative">
       <button
         onClick={toggleTheme}
-        className="w-10 h-10 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors duration-200 flex items-center justify-center group"
+        className="w-10 h-10 rounded-lg bg-slate-300 dark:bg-slate-600 hover:bg-slate-400 dark:hover:bg-slate-500 transition-colors duration-200 flex items-center justify-center group"
         title={getTooltip()}
         aria-label={`Переключить тему. Текущая: ${getCurrentThemeInfo()}`}
       >
-        <div className="text-slate-600 dark:text-slate-300 group-hover:text-slate-800 dark:group-hover:text-slate-100 transition-colors duration-200">
+        <div className="text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-slate-100 transition-colors duration-200">
           {getIcon()}
         </div>
       </button>

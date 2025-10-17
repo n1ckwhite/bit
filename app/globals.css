@@ -79,8 +79,8 @@ input[type="number"]:focus, input[type="text"]:focus, select:focus {
   transition: all 0.15s ease-in-out;
   background-color: transparent !important;
   border: none !important;
-  min-width: 20px !important;
-  min-height: 16px !important;
+  min-width: 32px !important;
+  min-height: 32px !important;
 }
 
 .custom-arrow-button:hover {
@@ -141,4 +141,223 @@ select:not(:disabled):hover {
 [onClick],
 .clickable {
   cursor: pointer !important;
+}
+
+/* Accessibility: Ensure minimum contrast ratio of 4.5:1 for interactive elements */
+button, 
+a, 
+[role="button"], 
+[role="menuitem"],
+input[type="button"],
+input[type="submit"],
+input[type="reset"] {
+  /* Ensure sufficient contrast for text on colored backgrounds */
+  color: inherit;
+}
+
+/* Specific contrast improvements for common button patterns */
+.btn-primary {
+  background-color: #2563eb; /* blue-600 */
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  background-color: #1d4ed8; /* blue-700 */
+}
+
+.btn-secondary {
+  background-color: #64748b; /* slate-500 */
+  color: #ffffff;
+}
+
+.btn-secondary:hover {
+  background-color: #475569; /* slate-600 */
+}
+
+.btn-success {
+  background-color: #059669; /* emerald-600 */
+  color: #ffffff;
+}
+
+.btn-success:hover {
+  background-color: #047857; /* emerald-700 */
+}
+
+.btn-warning {
+  background-color: #d97706; /* amber-600 */
+  color: #ffffff;
+}
+
+.btn-warning:hover {
+  background-color: #b45309; /* amber-700 */
+}
+
+.btn-danger {
+  background-color: #dc2626; /* red-600 */
+  color: #ffffff;
+}
+
+.btn-danger:hover {
+  background-color: #b91c1c; /* red-700 */
+}
+
+/* Dark mode contrast improvements */
+.dark .btn-primary {
+  background-color: #3b82f6; /* blue-500 */
+  color: #ffffff;
+}
+
+.dark .btn-primary:hover {
+  background-color: #2563eb; /* blue-600 */
+}
+
+.dark .btn-secondary {
+  background-color: #64748b; /* slate-500 */
+  color: #ffffff;
+}
+
+.dark .btn-secondary:hover {
+  background-color: #475569; /* slate-600 */
+}
+
+.dark .btn-success {
+  background-color: #10b981; /* emerald-500 */
+  color: #ffffff;
+}
+
+.dark .btn-success:hover {
+  background-color: #059669; /* emerald-600 */
+}
+
+.dark .btn-warning {
+  background-color: #f59e0b; /* amber-500 */
+  color: #ffffff;
+}
+
+.dark .btn-warning:hover {
+  background-color: #d97706; /* amber-600 */
+}
+
+.dark .btn-danger {
+  background-color: #ef4444; /* red-500 */
+  color: #ffffff;
+}
+
+.dark .btn-danger:hover {
+  background-color: #dc2626; /* red-600 */
+}
+
+/* Additional contrast improvements for specific color combinations */
+.bg-purple-500 {
+  background-color: #8b5cf6 !important; /* purple-500 */
+}
+
+.bg-purple-600 {
+  background-color: #7c3aed !important; /* purple-600 */
+}
+
+.bg-blue-500 {
+  background-color: #3b82f6 !important; /* blue-500 */
+}
+
+.bg-blue-600 {
+  background-color: #2563eb !important; /* blue-600 */
+}
+
+.bg-amber-500 {
+  background-color: #f59e0b !important; /* amber-500 */
+}
+
+.bg-amber-600 {
+  background-color: #d97706 !important; /* amber-600 */
+}
+
+.bg-amber-700 {
+  background-color: #b45309 !important; /* amber-700 */
+}
+
+.bg-indigo-500 {
+  background-color: #6366f1 !important; /* indigo-500 */
+}
+
+.bg-indigo-600 {
+  background-color: #4f46e5 !important; /* indigo-600 */
+}
+
+.bg-red-700 {
+  background-color: #b91c1c !important; /* red-700 */
+}
+
+/* Ensure white text on colored backgrounds has sufficient contrast */
+.bg-purple-500, .bg-purple-600,
+.bg-blue-500, .bg-blue-600,
+.bg-amber-500, .bg-amber-600, .bg-amber-700,
+.bg-indigo-500, .bg-indigo-600,
+.bg-green-500, .bg-green-600,
+.bg-red-500, .bg-red-600, .bg-red-700 {
+  color: #ffffff !important;
+}
+
+/* Accessibility: Ensure all interactive elements have proper focus indicators */
+button:focus,
+a:focus,
+input:focus,
+select:focus,
+[role="button"]:focus,
+[role="menuitem"]:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Improve focus visibility for better accessibility */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Ensure buttons without text have accessible names */
+button:not([aria-label]):not([title]):not([aria-labelledby]) {
+  /* This will help identify buttons that need accessibility improvements */
+}
+
+/* Screen reader only text for better accessibility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Accessibility improvements for form elements */
+select:not([aria-label]):not([aria-labelledby]) {
+  /* This will help identify select elements that need accessibility improvements */
+}
+
+input:not([aria-label]):not([aria-labelledby]):not([placeholder]) {
+  /* This will help identify input elements that need accessibility improvements */
+}
+
+/* Ensure all form elements have proper focus indicators */
+select:focus,
+input:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Improve form element accessibility */
+label {
+  font-weight: 500;
+  color: #374151;
+}
+
+.dark label {
+  color: #d1d5db;
 }

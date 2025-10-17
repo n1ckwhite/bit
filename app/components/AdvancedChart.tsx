@@ -117,7 +117,7 @@ export default function AdvancedChart({ vs, className }: AdvancedChartProps) {
               onClick={() => setChartType("area")}
               className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
                 chartType === "area"
-                  ? "bg-purple-500 text-white shadow-lg"
+                  ? "bg-purple-600 text-white shadow-lg"
                   : "bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600"
               }`}
             >
@@ -127,7 +127,7 @@ export default function AdvancedChart({ vs, className }: AdvancedChartProps) {
               onClick={() => setChartType("line")}
               className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
                 chartType === "line"
-                  ? "bg-purple-500 text-white shadow-lg"
+                  ? "bg-purple-600 text-white shadow-lg"
                   : "bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600"
               }`}
             >
@@ -139,6 +139,7 @@ export default function AdvancedChart({ vs, className }: AdvancedChartProps) {
             value={timeframe}
             onChange={(e) => setTimeframe(e.target.value as "1h" | "4h" | "1d")}
             className="px-2 sm:px-3 py-1.5 sm:py-2 bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-xs sm:text-sm"
+            aria-label="Выберите временной интервал для графика"
           >
             <option value="1h">1ч</option>
             <option value="4h">4ч</option>
@@ -149,7 +150,7 @@ export default function AdvancedChart({ vs, className }: AdvancedChartProps) {
 
       {loading ? (
         <div className="h-[300px] sm:h-[400px] bg-slate-100 dark:bg-slate-700 rounded-xl sm:rounded-2xl animate-pulse flex items-center justify-center">
-          <div className="text-slate-500 dark:text-slate-400 text-sm">Загрузка продвинутого графика...</div>
+          <div className="text-slate-600 dark:text-slate-300 text-sm">Загрузка продвинутого графика...</div>
         </div>
       ) : (
         <>
@@ -169,14 +170,14 @@ export default function AdvancedChart({ vs, className }: AdvancedChartProps) {
                       <span>{isPositive ? "↗" : "↘"}</span>
                       <span>{Math.abs(priceChange).toFixed(2)}%</span>
                     </div>
-                    <span className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm">
+                    <span className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm">
                       за {timeframe === "1h" ? "100 часов" : timeframe === "4h" ? "400 часов" : "30 дней"}
                     </span>
                   </div>
                 </div>
                 
                 <div className="text-left sm:text-right">
-                  <div className="flex items-center space-x-2 text-slate-500 dark:text-slate-400 text-xs sm:text-sm">
+                  <div className="flex items-center space-x-2 text-slate-600 dark:text-slate-300 text-xs sm:text-sm">
                     <ClockIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                     <span>Обновлено {new Date().toLocaleTimeString()}</span>
                   </div>

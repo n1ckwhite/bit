@@ -121,7 +121,7 @@ export default function PriceAlerts({ currentPrice, currency, onAlertTriggered }
           
           <button
             onClick={() => setOpen(true)}
-            className="flex items-center space-x-2 px-3 sm:px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg transition-all duration-200 hover:shadow-lg"
+            className="flex items-center space-x-2 px-3 sm:px-4 py-2 bg-amber-700 hover:bg-amber-800 text-white rounded-lg transition-all duration-200 hover:shadow-lg"
           >
             <PlusIcon className="w-4 h-4" />
             <span className="text-sm font-medium">Добавить</span>
@@ -131,7 +131,7 @@ export default function PriceAlerts({ currentPrice, currency, onAlertTriggered }
         {activeAlerts.length === 0 && triggeredAlerts.length === 0 ? (
           <div className="text-center py-6 sm:py-8">
             <BellIcon className="w-10 h-10 sm:w-12 sm:h-12 text-slate-400 mx-auto mb-3 sm:mb-4" />
-            <p className="text-slate-500 dark:text-slate-400 text-sm">
+            <p className="text-slate-600 dark:text-slate-300 text-sm">
               Нет уведомлений. Добавьте первое уведомление о достижении цены.
             </p>
           </div>
@@ -152,7 +152,7 @@ export default function PriceAlerts({ currentPrice, currency, onAlertTriggered }
                         <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
                           {alert.isAbove ? "Выше" : "Ниже"} {alert.targetPrice.toLocaleString()} {alert.currency}
                         </p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                        <p className="text-xs text-slate-600 dark:text-slate-300">
                           {new Date(alert.createdAt).toLocaleDateString()}
                         </p>
                       </div>
@@ -163,6 +163,7 @@ export default function PriceAlerts({ currentPrice, currency, onAlertTriggered }
                         <button
                           onClick={() => handleDeleteAlert(alert.id)}
                           className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors duration-200"
+                          aria-label="Удалить уведомление"
                         >
                           <TrashIcon className="w-4 h-4" />
                         </button>
@@ -188,7 +189,7 @@ export default function PriceAlerts({ currentPrice, currency, onAlertTriggered }
                         <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
                           {alert.isAbove ? "Выше" : "Ниже"} {alert.targetPrice.toLocaleString()} {alert.currency}
                         </p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                        <p className="text-xs text-slate-600 dark:text-slate-300">
                           {new Date(alert.createdAt).toLocaleDateString()}
                         </p>
                       </div>
@@ -199,6 +200,7 @@ export default function PriceAlerts({ currentPrice, currency, onAlertTriggered }
                         <button
                           onClick={() => handleDeleteAlert(alert.id)}
                           className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors duration-200"
+                          aria-label="Удалить уведомление"
                         >
                           <TrashIcon className="w-4 h-4" />
                         </button>
@@ -221,6 +223,7 @@ export default function PriceAlerts({ currentPrice, currency, onAlertTriggered }
               <button
                 onClick={() => setOpen(false)}
                 className="p-1 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors duration-200"
+                aria-label="Закрыть модальное окно"
               >
                 <XMarkIcon className="w-5 h-5" />
               </button>
@@ -239,11 +242,11 @@ export default function PriceAlerts({ currentPrice, currency, onAlertTriggered }
                     className="w-full px-3 sm:px-4 py-2.5 sm:py-3 pr-12 sm:pr-16 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm sm:text-base"
                     placeholder="0.00"
                   />
-                  <div className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">
+                  <div className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-300">
                     {currency}
                   </div>
                 </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
                   Текущая цена: {currentPrice.toLocaleString()} {currency}
                 </p>
               </div>
@@ -257,7 +260,7 @@ export default function PriceAlerts({ currentPrice, currency, onAlertTriggered }
                     onClick={() => setNewAlert(prev => ({ ...prev, isAbove: true }))}
                     className={`flex-1 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
                       newAlert.isAbove
-                        ? "bg-amber-500 text-white shadow-lg"
+                        ? "bg-amber-700 text-white shadow-lg"
                         : "bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600"
                     }`}
                   >
@@ -267,7 +270,7 @@ export default function PriceAlerts({ currentPrice, currency, onAlertTriggered }
                     onClick={() => setNewAlert(prev => ({ ...prev, isAbove: false }))}
                     className={`flex-1 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
                       !newAlert.isAbove
-                        ? "bg-amber-500 text-white shadow-lg"
+                        ? "bg-amber-700 text-white shadow-lg"
                         : "bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600"
                     }`}
                   >
@@ -286,7 +289,7 @@ export default function PriceAlerts({ currentPrice, currency, onAlertTriggered }
               </button>
               <button
                 onClick={handleAddAlert}
-                className="flex-1 px-3 sm:px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg transition-all duration-200 hover:shadow-lg"
+                className="flex-1 px-3 sm:px-4 py-2 bg-amber-700 hover:bg-amber-800 text-white rounded-lg transition-all duration-200 hover:shadow-lg"
               >
                 Добавить
               </button>
@@ -300,8 +303,8 @@ export default function PriceAlerts({ currentPrice, currency, onAlertTriggered }
         <div className="fixed top-4 right-4 z-50">
           <div className={`flex items-center space-x-3 px-4 py-3 rounded-xl shadow-lg backdrop-blur-sm ${
             notification.severity === "success" 
-              ? "bg-green-500/90 text-white" 
-              : "bg-red-500/90 text-white"
+              ? "bg-green-600 text-white" 
+              : "bg-red-700 text-white"
           }`}>
             {notification.severity === "success" ? (
               <CheckCircleIcon className="w-5 h-5" />
@@ -312,6 +315,7 @@ export default function PriceAlerts({ currentPrice, currency, onAlertTriggered }
             <button
               onClick={() => setNotification(null)}
               className="p-1 hover:bg-white/20 rounded-lg transition-colors duration-200"
+              aria-label="Закрыть уведомление"
             >
               <XMarkIcon className="w-4 h-4" />
             </button>
