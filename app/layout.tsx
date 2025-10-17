@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { I18nProvider } from "./contexts/I18nContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,8 +24,11 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://bitcoin-price-converter.com'),
-  title: "Курс · Конвертер",
-  description: "Онлайн‑конвертер BTC ↔ фиат. Котировки c бирж, обновление каждые 60 секунд.",
+  title: {
+    default: "Курс · Конвертер",
+    template: "%s · Converter",
+  },
+  description: "BTC ↔ fiat converter with multi-language support. Live quotes updated every minute.",
   keywords: "биткоин, курс, конвертер биткоин, BTC, криптовалюта, обменник, курс валют, сатоши, mBTC, µBTC",
   authors: [{ name: "Bitcoin Price Converter" }],
   creator: "Bitcoin Price Converter",
@@ -34,13 +38,13 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "BTC Конвертер",
+    title: "BTC Converter",
   },
   openGraph: {
-    title: "Курс — быстрый конвертер",
-    description: "BTC ↔ фиат. Источники: Binance, Kraken, Bitstamp, CoinGecko. Обновление раз в минуту.",
+    title: "Fast crypto converter",
+    description: "BTC ↔ fiat. Sources: Binance, Kraken, Bitstamp, CoinGecko. Updated every minute.",
     type: "website",
-    locale: "ru_RU",
+    locale: "en_US",
     siteName: "Курс",
     images: [
       {
@@ -53,12 +57,27 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Курс — быстрый конвертер",
-    description: "BTC ↔ фиат. Источники: Binance, Kraken, Bitstamp, CoinGecko. Обновление раз в минуту.",
+    title: "Fast crypto converter",
+    description: "BTC ↔ fiat with live quotes.",
     images: ["/og-image.png"],
   },
   alternates: {
     canonical: "https://bitcoin-price-converter.com",
+    languages: {
+      "en": "/?lang=en",
+      "ru": "/?lang=ru",
+      "de": "/?lang=de",
+      "fr": "/?lang=fr",
+      "es": "/?lang=es",
+      "tr": "/?lang=tr",
+      "zh": "/?lang=zh",
+      "it": "/?lang=it",
+      "pl": "/?lang=pl",
+      "cs": "/?lang=cs",
+      "nl": "/?lang=nl",
+      "pt": "/?lang=pt",
+      "ja": "/?lang=ja",
+    },
   },
 };
 
@@ -153,7 +172,9 @@ export default function RootLayout({
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white dark:bg-slate-900 text-slate-900 dark:text-white`}>
         <ThemeProvider>
-          {children}
+          <I18nProvider>
+            {children}
+          </I18nProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -10,6 +10,8 @@ import {
   ChevronUpIcon
 } from "@heroicons/react/24/outline";
 import ThemeToggle from "./components/ThemeToggle";
+import LanguageSelector from "./components/LanguageSelector";
+import { useI18n } from "./contexts/I18nContext";
 import { DEFAULT_FIATS } from "./lib/currencies";
 import { SUPPORTED_CRYPTOS } from "./lib/crypto";
 import type { FiatCurrency } from "./lib/currencies";
@@ -38,6 +40,7 @@ type Quote = {
 };
 
 export default function Home() {
+  const { t } = useI18n();
   const [vs, setVs] = useState("USD");
   const [unit, setUnit] = useState<BitcoinUnit>("BTC");
   const [baseCoin, setBaseCoin] = useState<string>("bitcoin");
@@ -368,6 +371,7 @@ export default function Home() {
                 >
                   <ArrowPathIcon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5 text-slate-600 dark:text-slate-300 ${loading ? 'animate-spin' : 'group-hover:rotate-180'} transition-transform duration-300`} />
                 </button>
+                <LanguageSelector />
                 <ThemeToggle />
               </div>
             </div>
@@ -429,7 +433,7 @@ export default function Home() {
                       )}
                     </div>
                     
-                    <div className="sources-container min-h-[24px] sm:min-h-[28px]">
+                <div className="sources-container min-h-[24px] sm:min-h-[28px]" aria-live="polite">
                       {quote && (
                         <div className="flex flex-wrap gap-1 sm:gap-2 justify-start sm:justify-end">
                           {quote.sources.slice(0, 3).map((source) => (
@@ -454,7 +458,7 @@ export default function Home() {
                 <div className="w-7 h-7 sm:w-8 sm:h-8 lg:w-10 lg:h-10 xl:w-12 xl:h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-md sm:rounded-lg lg:rounded-xl flex items-center justify-center">
                   <CurrencyDollarIcon className="w-4 h-4 sm:w-4 sm:h-4 lg:w-5 lg:h-5 xl:w-6 xl:h-6 text-white" />
                 </div>
-                <h3 className="text-base sm:text-lg lg:text-xl xl:text-2xl font-bold text-slate-900 dark:text-white">Конвертер</h3>
+                <h3 className="text-base sm:text-lg lg:text-xl xl:text-2xl font-bold text-slate-900 dark:text-white">{t('converter')}</h3>
               </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 lg:gap-4 xl:gap-6">
@@ -476,9 +480,7 @@ export default function Home() {
                 </div>
                 {/* BTC Input */}
                 <div className="space-y-2">
-                  <label htmlFor="btcAmount" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-                    Биткоин
-                  </label>
+                  <label htmlFor="btcAmount" className="block text-sm font-medium text-slate-700 dark:text-slate-300">{t('bitcoin')}</label>
                   <div className="relative">
                     <input
                       ref={inputBtcRef}
@@ -516,9 +518,7 @@ export default function Home() {
 
                 {/* Unit Select */}
                 <div className="space-y-2">
-                  <label htmlFor="unitSelect" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-                    Единица
-                  </label>
+                  <label htmlFor="unitSelect" className="block text-sm font-medium text-slate-700 dark:text-slate-300">{t('unit')}</label>
                   <select
                     id="unitSelect"
                     name="unit"
@@ -537,9 +537,7 @@ export default function Home() {
 
                 {/* Fiat Amount with inline currency picker */}
                 <div className="space-y-2">
-                  <label htmlFor="fiatAmount" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-                    Сумма, фиат
-                  </label>
+                  <label htmlFor="fiatAmount" className="block text-sm font-medium text-slate-700 dark:text-slate-300">{t('fiatAmount')}</label>
                   <div className="relative" ref={currencyRef}>
                     <input
                       type="number"

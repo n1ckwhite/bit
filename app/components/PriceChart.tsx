@@ -5,6 +5,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { ChartBarIcon, ClockIcon } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import { useTheme } from "../contexts/ThemeContext";
+import { useI18n } from "../contexts/I18nContext";
 
 type HistoryPoint = {
   timestamp: number;
@@ -32,6 +33,7 @@ const PriceChart = memo(function PriceChart({ vs, baseSymbol, className }: Price
   const [loading, setLoading] = useState(false);
   const { theme } = useTheme();
   const isDark = theme === "dark";
+  const { t } = useI18n();
 
   const fetchHistory = useCallback(async (currentVs: string, currentInterval: "1h" | "1d") => {
     setLoading(true);
@@ -96,7 +98,7 @@ const PriceChart = memo(function PriceChart({ vs, baseSymbol, className }: Price
           <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
             <ChartBarIcon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
           </div>
-          <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">График цены {baseSymbol}</h3>
+          <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">{t('priceChart', { sym: baseSymbol })}</h3>
         </div>
         
         <div className="flex items-center space-x-2">
@@ -108,7 +110,7 @@ const PriceChart = memo(function PriceChart({ vs, baseSymbol, className }: Price
                 : "bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600"
             }`}
           >
-            24ч
+            {t('hours24')}
           </button>
           <button
             onClick={() => setInterval("1d")}
@@ -118,14 +120,14 @@ const PriceChart = memo(function PriceChart({ vs, baseSymbol, className }: Price
                 : "bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600"
             }`}
           >
-            30д
+            {t('days30')}
           </button>
         </div>
       </div>
 
       {loading ? (
-        <div className="h-[250px] sm:h-[300px] bg-slate-100 dark:bg-slate-700 rounded-xl sm:rounded-2xl animate-pulse flex items-center justify-center">
-          <div className="text-slate-600 dark:text-slate-300 text-sm">Загрузка графика...</div>
+        <div className="h-[250px] sm:h-[300px] bg-slate-100 dark:bg-slate-700 rounded-xl sm:rounded-2xl animate-pulse flex items-center justify-center" role="status" aria-live="polite" aria-busy="true">
+          <div className="text-slate-600 dark:text-slate-300 text-sm">{t('loadingChart')}</div>
         </div>
       ) : (
         <>
@@ -154,7 +156,7 @@ const PriceChart = memo(function PriceChart({ vs, baseSymbol, className }: Price
                 <div className="text-left sm:text-right">
                   <div className="flex items-center space-x-2 text-slate-600 dark:text-slate-300 text-xs sm:text-sm">
                     <ClockIcon className="w-3 h-3 sm:w-4 sm:h-4" />
-                    <span>Обновлено {new Date(history.updatedAt).toLocaleTimeString()}</span>
+                    <span>{t('updated')} {new Date(history.updatedAt).toLocaleTimeString()}</span>
                   </div>
                 </div>
               </div>

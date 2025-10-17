@@ -8,6 +8,7 @@ import {
   DocumentTextIcon,
   TableCellsIcon
 } from "@heroicons/react/24/outline";
+import { useI18n } from "../contexts/I18nContext";
 
 interface DataExportProps {
   currentPrice: number;
@@ -18,6 +19,7 @@ interface DataExportProps {
 
 const DataExport = memo(function DataExport({ currentPrice, currency, history, className }: DataExportProps) {
   const [open, setOpen] = useState(false);
+  const { t } = useI18n();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const handleClick = useCallback(() => {
@@ -75,7 +77,7 @@ const DataExport = memo(function DataExport({ currentPrice, currency, history, c
 
   const exportHistory = useCallback((format: "json" | "csv") => {
     if (!history || history.length === 0) {
-      alert("Нет исторических данных для экспорта");
+      alert(t('noHistory'));
       return;
     }
 
@@ -115,12 +117,12 @@ const DataExport = memo(function DataExport({ currentPrice, currency, history, c
   }, [history, currency]);
 
   const shareCurrentPrice = useCallback(async () => {
-    const text = `₿ Bitcoin: ${currentPrice.toLocaleString()} ${currency}\n\nКурс обновлён в реальном времени на Bitcoin Price Converter`;
+    const text = `₿ Bitcoin: ${currentPrice.toLocaleString()} ${currency}\n\n${t('updated')} in realtime — Bitcoin Price Converter`;
     
     if (navigator.share) {
       try {
         await navigator.share({
-          title: "Курс",
+          title: t('title', { sym: 'BTC' }),
           text,
           url: window.location.href,
         });
@@ -131,9 +133,10 @@ const DataExport = memo(function DataExport({ currentPrice, currency, history, c
       // Fallback: copy to clipboard
       try {
         await navigator.clipboard.writeText(text);
-        alert("Цена скопирована в буфер обмена");
+        alert(t('copied'));
       } catch (err) {
         console.error("Failed to copy:", err);
+        alert(t('copyFailed'));
       }
     }
   }, [currentPrice, currency]);
@@ -145,15 +148,15 @@ const DataExport = memo(function DataExport({ currentPrice, currency, history, c
           <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl flex items-center justify-center">
             <DocumentArrowDownIcon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
           </div>
-          <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">Экспорт данных</h3>
+          <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">{t('exportData')}</h3>
         </div>
         
         <div className="flex items-center space-x-2 sm:space-x-3">
           <button
             onClick={shareCurrentPrice}
             className="group relative p-2 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-all duration-200 flex items-center justify-center"
-            title="Поделиться текущей ценой"
-            aria-label="Поделиться текущей ценой"
+            title={t('sharePrice')}
+            aria-label={t('sharePrice')}
           >
             <ShareIcon className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400" />
           </button>
@@ -164,7 +167,7 @@ const DataExport = memo(function DataExport({ currentPrice, currency, history, c
               className="flex items-center space-x-2 px-3 sm:px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-all duration-200 hover:shadow-lg"
             >
               <DocumentArrowDownIcon className="w-4 h-4" />
-              <span className="text-sm font-medium">Экспорт</span>
+              <span className="text-sm font-medium">{t('export')}</span>
               <ChevronDownIcon className="w-4 h-4" />
             </button>
             
@@ -175,14 +178,14 @@ const DataExport = memo(function DataExport({ currentPrice, currency, history, c
                   className="w-full px-4 py-2 text-left hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-200 flex items-center space-x-2"
                 >
                   <DocumentTextIcon className="w-4 h-4 text-slate-500" />
-                  <span className="text-sm text-slate-700 dark:text-slate-300">Текущая цена (JSON)</span>
+                  <span className="text-sm text-slate-700 dark:text-slate-300">{t('currentPrice')} ({t('json')})</span>
                 </button>
                 <button
                   onClick={() => { exportCurrentPrice("csv"); handleClose(); }}
                   className="w-full px-4 py-2 text-left hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-200 flex items-center space-x-2"
                 >
                   <TableCellsIcon className="w-4 h-4 text-slate-500" />
-                  <span className="text-sm text-slate-700 dark:text-slate-300">Текущая цена (CSV)</span>
+                  <span className="text-sm text-slate-700 dark:text-slate-300">{t('currentPrice')} ({t('csv')})</span>
                 </button>
                 {history && history.length > 0 && (
                   <>
@@ -192,14 +195,14 @@ const DataExport = memo(function DataExport({ currentPrice, currency, history, c
                       className="w-full px-4 py-2 text-left hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-200 flex items-center space-x-2"
                     >
                       <DocumentTextIcon className="w-4 h-4 text-slate-500" />
-                      <span className="text-sm text-slate-700 dark:text-slate-300">История (JSON)</span>
+                      <span className="text-sm text-slate-700 dark:text-slate-300">{t('history')} ({t('json')})</span>
                     </button>
                     <button
                       onClick={() => { exportHistory("csv"); handleClose(); }}
                       className="w-full px-4 py-2 text-left hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-200 flex items-center space-x-2"
                     >
                       <TableCellsIcon className="w-4 h-4 text-slate-500" />
-                      <span className="text-sm text-slate-700 dark:text-slate-300">История (CSV)</span>
+                      <span className="text-sm text-slate-700 dark:text-slate-300">{t('history')} ({t('csv')})</span>
                     </button>
                   </>
                 )}
@@ -211,44 +214,42 @@ const DataExport = memo(function DataExport({ currentPrice, currency, history, c
 
       <div className="space-y-4 sm:space-y-6">
         <div>
-          <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">Текущая цена</h4>
+          <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">{t('currentPrice')}</h4>
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
             <button
               onClick={() => exportCurrentPrice("json")}
               className="flex items-center justify-center space-x-2 px-3 sm:px-4 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg transition-all duration-200"
             >
               <DocumentTextIcon className="w-4 h-4 text-slate-600 dark:text-slate-300" />
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">JSON</span>
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{t('json')}</span>
             </button>
             <button
               onClick={() => exportCurrentPrice("csv")}
               className="flex items-center justify-center space-x-2 px-3 sm:px-4 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg transition-all duration-200"
             >
               <TableCellsIcon className="w-4 h-4 text-slate-600 dark:text-slate-300" />
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">CSV</span>
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{t('csv')}</span>
             </button>
           </div>
         </div>
 
         {history && history.length > 0 && (
           <div>
-            <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
-              Исторические данные ({history.length} точек)
-            </h4>
+            <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">{t('historyPoints', { n: String(history.length) })}</h4>
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
               <button
                 onClick={() => exportHistory("json")}
                 className="flex items-center justify-center space-x-2 px-3 sm:px-4 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg transition-all duration-200"
               >
                 <DocumentTextIcon className="w-4 h-4 text-slate-600 dark:text-slate-300" />
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">JSON</span>
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{t('json')}</span>
               </button>
               <button
                 onClick={() => exportHistory("csv")}
                 className="flex items-center justify-center space-x-2 px-3 sm:px-4 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg transition-all duration-200"
               >
                 <TableCellsIcon className="w-4 h-4 text-slate-600 dark:text-slate-300" />
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">CSV</span>
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{t('csv')}</span>
               </button>
             </div>
           </div>
@@ -256,7 +257,7 @@ const DataExport = memo(function DataExport({ currentPrice, currency, history, c
 
         <div className="pt-3 sm:pt-4 border-t border-slate-200 dark:border-slate-700">
           <p className="text-xs text-slate-600 dark:text-slate-300">
-            Данные экспортируются в формате UTC. JSON содержит метаданные, CSV — только цены.
+            UTC. JSON includes metadata, CSV contains prices only.
           </p>
         </div>
       </div>
