@@ -272,7 +272,7 @@ export default function Home() {
                 <button
                   onClick={() => fetchQuote(vs)}
                   disabled={loading}
-                  className="group relative p-1.5 sm:p-2 lg:p-3 rounded-lg sm:rounded-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 hover:bg-white dark:hover:bg-slate-800 transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl"
+                  className="group relative p-1.5 sm:p-2 lg:p-3 rounded-lg sm:rounded-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 hover:bg-white dark:hover:bg-slate-800 transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl flex items-center justify-center"
                   title="Обновить данные"
                   aria-label="Обновить данные"
                 >
@@ -349,10 +349,10 @@ export default function Home() {
             {/* Converter Card */}
             <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-lg sm:rounded-xl lg:rounded-2xl xl:rounded-3xl shadow-xl border border-slate-200/50 dark:border-slate-700/50 p-2.5 sm:p-3 lg:p-4 xl:p-6" data-converter>
               <div className="flex items-center space-x-2 sm:space-x-3 mb-2.5 sm:mb-3 lg:mb-4">
-                <div className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 xl:w-10 xl:h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-md sm:rounded-lg lg:rounded-xl flex items-center justify-center">
-                  <CurrencyDollarIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4 xl:w-5 xl:h-5 text-white" />
+                <div className="w-7 h-7 sm:w-8 sm:h-8 lg:w-10 lg:h-10 xl:w-12 xl:h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-md sm:rounded-lg lg:rounded-xl flex items-center justify-center">
+                  <CurrencyDollarIcon className="w-4 h-4 sm:w-4 sm:h-4 lg:w-5 lg:h-5 xl:w-6 xl:h-6 text-white" />
                 </div>
-                <h3 className="text-sm sm:text-base lg:text-lg xl:text-xl font-bold text-slate-900 dark:text-white">Конвертер</h3>
+                <h3 className="text-base sm:text-lg lg:text-xl xl:text-2xl font-bold text-slate-900 dark:text-white">Конвертер</h3>
               </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 lg:gap-4 xl:gap-6">

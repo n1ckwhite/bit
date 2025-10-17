@@ -146,6 +146,18 @@ button, a, input, select, [role="button"] {
   transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
+/* Pointer cursor for all buttons site-wide */
+button,
+[role="button"] {
+  cursor: pointer;
+}
+
+/* Ensure pointer also when hovering inner elements like SVGs inside buttons */
+button *,
+[role="button"] * {
+  cursor: pointer;
+}
+
 /* Optimized select styling */
 select {
   appearance: none;
