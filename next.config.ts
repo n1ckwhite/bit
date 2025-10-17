@@ -6,16 +6,9 @@ const nextConfig: NextConfig = {
     optimizePackageImports: [
       '@heroicons/react',
       'recharts', 
-      'date-fns',
-      '@mui/material',
-      '@mui/icons-material',
-      '@emotion/react',
-      '@emotion/styled'
+      'date-fns'
     ],
   },
-  
-  /* Modern browser support */
-  swcMinify: true,
   
   /* Output configuration for modern browsers */
   output: 'standalone',
@@ -48,14 +41,14 @@ const nextConfig: NextConfig = {
           },
           // Chart libraries
           charts: {
-            test: /[\\/]node_modules[\\/](recharts|lightweight-charts)[\\/]/,
+            test: /[\\/]node_modules[\\/]recharts[\\/]/,
             name: 'charts',
             chunks: 'all',
             priority: 30,
           },
           // UI libraries
           ui: {
-            test: /[\\/]node_modules[\\/](@heroicons|@mui)[\\/]/,
+            test: /[\\/]node_modules[\\/]@heroicons[\\/]/,
             name: 'ui',
             chunks: 'all',
             priority: 25,
