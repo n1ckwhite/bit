@@ -299,10 +299,27 @@ export default function Home() {
     const q = currencyQuery.trim().toLowerCase();
     if (!q) return combinedFiats;
     return combinedFiats.filter(c => {
+      // Search by currency code
+      if (c.code.toLowerCase().includes(q)) return true;
+      
+      // Search by symbol
+      if (c.symbol.toLowerCase().includes(q)) return true;
+      
+      // Search by localized name in current locale
       const localizedName = c.names?.[locale as keyof NonNullable<typeof c.names>] || c.nameRu;
-      return c.code.toLowerCase().includes(q) ||
-        c.nameRu.toLowerCase().includes(q) ||
-        localizedName.toLowerCase().includes(q);
+      if (localizedName.toLowerCase().includes(q)) return true;
+      
+      // Search by all available localized names
+      if (c.names) {
+        for (const name of Object.values(c.names)) {
+          if (name.toLowerCase().includes(q)) return true;
+        }
+      }
+      
+      // Search by Russian name (fallback)
+      if (c.nameRu.toLowerCase().includes(q)) return true;
+      
+      return false;
     });
   }, [currencyQuery, combinedFiats, locale]);
 
@@ -611,14 +628,21 @@ export default function Home() {
                               <button
                                 type="button"
                                 onClick={() => { setVs(c.code); setCurrencyOpen(false); setCurrencyQuery(""); }}
-                                className="w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center justify-between text-sm"
+                                className={`w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center justify-between text-sm ${vs === c.code ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}
                                 role="option"
                                 aria-selected={vs === c.code}
                               >
-                                <span className="text-slate-900 dark:text-white font-medium">
-                                  {c.names?.[locale as keyof NonNullable<typeof c.names>] || c.nameRu}
-                                </span>
-                                <span className="text-slate-600 dark:text-slate-300 font-mono">{c.code}</span>
+                                <div className="flex flex-col items-start">
+                                  <span className="text-slate-900 dark:text-white font-medium">
+                                    {c.names?.[locale as keyof NonNullable<typeof c.names>] || c.nameRu}
+                                  </span>
+                                  <span className="text-xs text-slate-500 dark:text-slate-400">
+                                    {c.symbol} {c.code}
+                                  </span>
+                                </div>
+                                {vs === c.code && (
+                                  <span className="text-blue-600 dark:text-blue-400 text-xs font-medium">✓</span>
+                                )}
                               </button>
                             </li>
                           ))}
@@ -718,9 +742,6 @@ export default function Home() {
                       <p>{t('usage_p2')}</p>
                       <p>{t('usage_p3')}</p>
                       <p>{t('usage_p4')}</p>
-                      <p>
-                        <strong>{t('conversionUnits')}:</strong> {t('conversionUnitsDesc')} <button onClick={setConverterToSats} className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 underline">{t('sats')} (s)</button>, <button onClick={setConverterToMBTC} className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 underline">{t('microbtc')} (μ)</button>, <button onClick={setConverterToBTC} className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 underline">{t('millibtc')} (m)</button> {t('andHotkeys')} (S, u, m, k) {t('forSwitching')}.
-                      </p>
                     </div>
                   </section>
 
