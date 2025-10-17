@@ -86,6 +86,18 @@ export default function RootLayout({
             .container{margin:0 auto;padding:0 1rem}
             @media (min-width:640px){.container{padding:0 1.5rem}}
             @media (min-width:1024px){.container{padding:0 2rem}}
+            /* CLS prevention */
+            .min-h-80{min-height:20rem}
+            .grid{display:grid}
+            .grid-cols-1{grid-template-columns:repeat(1,minmax(0,1fr))}
+            .grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+            .gap-4{gap:1rem}
+            .gap-6{gap:1.5rem}
+            .gap-8{gap:2rem}
+            @media (min-width:640px){.sm\\:gap-6{gap:1.5rem}}
+            @media (min-width:1024px){.lg\\:grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}}
+            @media (min-width:1024px){.lg\\:gap-8{gap:2rem}}
+            @media (min-width:1280px){.xl\\:grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}}
           `
         }} />
         

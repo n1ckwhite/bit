@@ -459,31 +459,31 @@ export default function Home() {
 
             {/* Charts - Hidden on mobile, shown on tablet+ */}
             <div className="hidden sm:grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
-              <Suspense fallback={<div className="h-64 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse flex items-center justify-center"><div className="text-slate-600 dark:text-slate-300">Загрузка графика...</div></div>}>
+              <Suspense fallback={<div className="h-80 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse flex items-center justify-center"><div className="text-slate-600 dark:text-slate-300">Загрузка графика...</div></div>}>
                 <PriceChart vs={vs} />
               </Suspense>
-              <Suspense fallback={<div className="h-64 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse flex items-center justify-center"><div className="text-slate-600 dark:text-slate-300">Загрузка продвинутого графика...</div></div>}>
+              <Suspense fallback={<div className="h-80 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse flex items-center justify-center"><div className="text-slate-600 dark:text-slate-300">Загрузка продвинутого графика...</div></div>}>
                 <AdvancedChart vs={vs} />
               </Suspense>
             </div>
 
             {/* Mobile Chart - Single chart on mobile */}
             <div className="sm:hidden">
-              <Suspense fallback={<div className="h-64 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse flex items-center justify-center"><div className="text-slate-600 dark:text-slate-300">Загрузка графика...</div></div>}>
+              <Suspense fallback={<div className="h-80 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse flex items-center justify-center"><div className="text-slate-600 dark:text-slate-300">Загрузка графика...</div></div>}>
                 <PriceChart vs={vs} />
               </Suspense>
             </div>
 
             {/* Additional Features */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
-              <Suspense fallback={<div className="h-48 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse flex items-center justify-center"><div className="text-slate-600 dark:text-slate-300">Загрузка уведомлений...</div></div>}>
+              <Suspense fallback={<div className="h-80 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse flex items-center justify-center"><div className="text-slate-600 dark:text-slate-300">Загрузка уведомлений...</div></div>}>
                 <PriceAlerts 
                   currentPrice={currentPrice}
                   currency={vs}
                   onAlertTriggered={handleAlertTriggered}
                 />
               </Suspense>
-              <Suspense fallback={<div className="h-48 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse flex items-center justify-center"><div className="text-slate-600 dark:text-slate-300">Загрузка экспорта...</div></div>}>
+              <Suspense fallback={<div className="h-80 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse flex items-center justify-center"><div className="text-slate-600 dark:text-slate-300">Загрузка экспорта...</div></div>}>
                 <DataExport 
                   currentPrice={currentPrice}
                   currency={vs}
