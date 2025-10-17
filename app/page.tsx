@@ -299,24 +299,32 @@ export default function Home() {
                         <CurrencyDollarIcon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                       </div>
                       <div>
-                        <h2 className="price-display text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-white">
-                          {currentPrice.toLocaleString(undefined, { maximumFractionDigits: 2 })}
-                        </h2>
+                        {loading ? (
+                          <div className="price-skeleton h-7 sm:h-9 lg:h-10 xl:h-12 w-32 sm:w-40 lg:w-48 xl:w-56 bg-white/30 rounded animate-pulse" aria-label="Загрузка цены" />
+                        ) : (
+                          <h2 className="price-display text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-white">
+                            {currentPrice.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                          </h2>
+                        )}
                         <p className="text-lg sm:text-xl text-white/90 font-medium">{vs}</p>
                       </div>
                     </div>
                     
                     <div className="flex items-center space-x-2">
-                      <div className={`flex items-center space-x-1 px-2 sm:px-3 py-1 rounded-full ${isPositive ? 'bg-green-600 text-white' : 'bg-red-700 text-white'}`}>
-                        {isPositive ? (
-                          <ArrowTrendingUpIcon className="w-3 h-3 sm:w-4 sm:h-4" />
-                        ) : (
-                          <ArrowTrendingDownIcon className="w-3 h-3 sm:w-4 sm:h-4" />
-                        )}
-                        <span className="text-xs sm:text-sm font-medium">
-                          {isPositive ? "+" : ""}{priceChange.toFixed(2)}%
-                        </span>
-                      </div>
+                      {loading ? (
+                        <div className="h-5 sm:h-6 w-16 sm:w-20 bg-white/30 rounded-full animate-pulse" aria-hidden="true" />
+                      ) : (
+                        <div className={`flex items-center space-x-1 px-2 sm:px-3 py-1 rounded-full ${isPositive ? 'bg-green-600 text-white' : 'bg-red-700 text-white'}`}>
+                          {isPositive ? (
+                            <ArrowTrendingUpIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+                          ) : (
+                            <ArrowTrendingDownIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+                          )}
+                          <span className="text-xs sm:text-sm font-medium">
+                            {isPositive ? "+" : ""}{priceChange.toFixed(2)}%
+                          </span>
+                        </div>
+                      )}
                       <span className="text-white/90 text-xs sm:text-sm">за 24ч</span>
                     </div>
                   </div>
@@ -324,7 +332,11 @@ export default function Home() {
                   <div className="update-info-container mt-4 sm:mt-0 text-left sm:text-right space-y-2 sm:space-y-3 min-h-[60px] sm:min-h-[80px]">
                     <div className="flex items-center space-x-2 text-white/80 min-h-[20px]">
                       <ClockIcon className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
-                      <span className="update-time text-xs sm:text-sm font-medium font-mono">Обновлено {lastUpdated}</span>
+                      {loading ? (
+                        <div className="h-3 sm:h-4 w-28 sm:w-32 bg-white/30 rounded animate-pulse" aria-hidden="true" />
+                      ) : (
+                        <span className="update-time text-xs sm:text-sm font-medium font-mono">Обновлено {lastUpdated}</span>
+                      )}
                     </div>
                     
                     <div className="sources-container min-h-[24px] sm:min-h-[28px]">
@@ -428,6 +440,8 @@ export default function Home() {
                       id="fiatAmount"
                       name="fiatAmount"
                       value={fiatAmount.toFixed(2)}
+                      disabled={loading}
+                      aria-busy={loading}
                       onChange={(e) => {
                         const v = Number(e.target.value);
                         if (!isNaN(v) && quote) {
@@ -450,11 +464,14 @@ export default function Home() {
                           setBtcAmount(fromBtc(btc, unit));
                         }
                       }}
-                      className="w-full px-2.5 sm:px-3 lg:px-4 py-2.5 sm:py-3 lg:py-3.5 pl-10 sm:pl-12 lg:pl-16 pr-14 sm:pr-16 lg:pr-20 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm"
+                      className={`w-full px-2.5 sm:px-3 lg:px-4 py-2.5 sm:py-3 lg:py-3.5 pl-10 sm:pl-12 lg:pl-16 pr-14 sm:pr-16 lg:pr-20 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm ${loading ? 'text-transparent caret-transparent' : ''}`}
                       placeholder="0.00"
                       step="100"
                       min="0"
                     />
+                    {loading && (
+                      <div className="absolute left-10 sm:left-12 lg:left-16 right-14 sm:right-16 lg:right-20 top-1/2 -translate-y-1/2 h-3.5 sm:h-4 bg-slate-300/60 dark:bg-slate-500/50 rounded animate-pulse" aria-hidden="true" />
+                    )}
                     <div className="absolute left-2 sm:left-2.5 lg:left-3 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-600 dark:text-slate-300">
                       {vs}
                     </div>

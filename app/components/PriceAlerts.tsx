@@ -229,7 +229,7 @@ const PriceAlerts = memo(function PriceAlerts({ currentPrice, currency, onAlertT
               <h3 className="text-lg font-bold text-slate-900 dark:text-white">Добавить уведомление</h3>
               <button
                 onClick={() => setOpen(false)}
-                className="p-1 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors duration-200"
+                className="p-1 flex items-center justify-center text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors duration-200"
                 aria-label="Закрыть модальное окно"
               >
                 <XMarkIcon className="w-5 h-5" />
@@ -321,7 +321,7 @@ const PriceAlerts = memo(function PriceAlerts({ currentPrice, currency, onAlertT
             <span className="text-sm font-medium">{notification.message}</span>
             <button
               onClick={() => setNotification(null)}
-              className="p-1 hover:bg-white/20 rounded-lg transition-colors duration-200"
+              className="p-1 flex items-center justify-center hover:bg-white/20 rounded-lg transition-colors duration-200"
               aria-label="Закрыть уведомление"
             >
               <XMarkIcon className="w-4 h-4" />

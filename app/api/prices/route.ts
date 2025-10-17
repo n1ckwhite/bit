@@ -57,6 +57,63 @@ async function getKrakenUSD(): Promise<SourceQuote | null> {
   }
 }
 
+// Direct BTC/<vs> from Kraken with volume
+async function getKrakenDirect(vs: VsCurrency): Promise<SourceQuote | null> {
+  try {
+    const supported = new Set(["GBP", "EUR", "CAD", "AUD"]);
+    if (!supported.has(vs)) return null;
+    const pair = `XBT${vs}`; // Kraken accepts XBT as base symbol
+    const res = await fetchWithTimeout(`https://api.kraken.com/0/public/Ticker?pair=${pair}`, 4000);
+    if (!res.ok) return null;
+    const data: any = await res.json();
+    const result = data?.result;
+    const key = result ? Object.keys(result)[0] : undefined;
+    const obj = key ? result[key] : undefined;
+    const price = Number(obj?.c?.[0]);
+    const volume = Number(obj?.v?.[1]); // 24h volume
+    if (!Number.isFinite(price)) return null;
+    return { source: `kraken:${vs}`, price, volume: Number.isFinite(volume) ? volume : undefined };
+  } catch {
+    return null;
+  }
+}
+
+// Direct BTC/<vs> from Bitstamp with volume
+async function getBitstampDirect(vs: VsCurrency): Promise<SourceQuote | null> {
+  try {
+    const supported = new Set(["GBP", "EUR", "CAD", "AUD"]);
+    if (!supported.has(vs)) return null;
+    const symbol = `btc${vs.toLowerCase()}`;
+    const res = await fetchWithTimeout(`https://www.bitstamp.net/api/v2/ticker/${symbol}`, 4000);
+    if (!res.ok) return null;
+    const data: any = await res.json();
+    const price = Number(data?.last);
+    const volume = Number(data?.volume); // 24h base volume (BTC)
+    if (!Number.isFinite(price)) return null;
+    return { source: `bitstamp:${vs}`, price, volume: Number.isFinite(volume) ? volume : undefined };
+  } catch {
+    return null;
+  }
+}
+
+// Direct BTC/<vs> from Coinbase Exchange with volume
+async function getCoinbaseDirect(vs: VsCurrency): Promise<SourceQuote | null> {
+  try {
+    const supported = new Set(["GBP", "EUR", "CAD", "AUD"]);
+    if (!supported.has(vs)) return null;
+    const product = `BTC-${vs}`;
+    const res = await fetchWithTimeout(`https://api.exchange.coinbase.com/products/${product}/ticker`, 4000);
+    if (!res.ok) return null;
+    const data: any = await res.json();
+    const price = Number(data?.price);
+    const volume = Number(data?.volume);
+    if (!Number.isFinite(price)) return null;
+    return { source: `coinbase:${vs}`, price, volume: Number.isFinite(volume) ? volume : undefined };
+  } catch {
+    return null;
+  }
+}
+
 async function getBitstampUSD(): Promise<SourceQuote | null> {
   try {
     const res = await fetchWithTimeout("https://www.bitstamp.net/api/v2/ticker/btcusd", 4000);
@@ -139,6 +196,66 @@ async function getFxRates(base: string): Promise<Record<string, number> | null> 
   }
 }
 
+// Our own FX aggregation: take median across providers with static last-resort values
+async function getFxRateAggregated(base: string, target: string): Promise<number | null> {
+  if (base === target) return 1;
+  target = target.toUpperCase();
+  base = base.toUpperCase();
+
+  const providers = await Promise.allSettled([
+    (async () => {
+      const res = await fetchWithTimeout(
+        `https://api.exchangerate.host/latest?base=${encodeURIComponent(base)}&symbols=${encodeURIComponent(target)}`,
+        4000
+      );
+      if (!res.ok) return null;
+      const data: any = await res.json();
+      return Number(data?.rates?.[target]) || null;
+    })(),
+    (async () => {
+      const res = await fetchWithTimeout(
+        `https://api.frankfurter.app/latest?from=${encodeURIComponent(base)}&to=${encodeURIComponent(target)}`,
+        4000
+      );
+      if (!res.ok) return null;
+      const data: any = await res.json();
+      return Number(data?.rates?.[target]) || null;
+    })(),
+    (async () => {
+      const res = await fetchWithTimeout(
+        `https://open.er-api.com/v6/latest/${encodeURIComponent(base)}`,
+        4000
+      );
+      if (!res.ok) return null;
+      const data: any = await res.json();
+      return Number(data?.rates?.[target]) || null;
+    })(),
+  ]);
+
+  const values: number[] = providers
+    .map(p => (p.status === 'fulfilled' ? p.value : null))
+    .filter((v): v is number => typeof v === 'number' && Number.isFinite(v));
+
+  if (values.length > 0) {
+    const sorted = values.sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+  }
+
+  // Static last-resort USD-based rates; if base != USD, bail out
+  const STATIC_USD_RATES: Record<string, number> = {
+    EUR: 0.92,
+    GBP: 0.78,
+    CAD: 1.36,
+    AUD: 1.54,
+    SEK: 10.9,
+  };
+  if (base === 'USD' && STATIC_USD_RATES[target]) {
+    return STATIC_USD_RATES[target];
+  }
+  return null;
+}
+
 function weightedAverage(quotes: SourceQuote[]): number {
   if (quotes.length === 0) return NaN;
   
@@ -180,15 +297,21 @@ export async function GET(req: NextRequest): Promise<Response> {
   ]);
   const usdSources = [binance, kraken, bitstamp, coindesk].filter(Boolean) as SourceQuote[];
 
-  // If vs is not USD, we can try a direct quote via CoinGecko and also convert USD via FX
-  const directVs = await getCoinGecko(vs);
-  const fxRates = await getFxRates("USD");
-  let fxRateToVs: number | null = null;
-  if (vs !== "USD" && fxRates && fxRates[vs]) {
-    fxRateToVs = fxRates[vs];
-  }
+  // If vs is not USD, try direct quotes from major exchanges for higher quality
+  const [krakenDirect, bitstampDirect, coinbaseDirect, directVsCoingecko, coingeckoUsd] = await Promise.all([
+    getKrakenDirect(vs),
+    getBitstampDirect(vs),
+    getCoinbaseDirect(vs),
+    getCoinGecko(vs),
+    getCoinGecko("USD"),
+  ]);
+  const fxRateToVs = vs === 'USD' ? 1 : await getFxRateAggregated('USD', vs);
 
   const consolidated: SourceQuote[] = [];
+  // Direct vs quotes preferred when available
+  for (const q of [krakenDirect, bitstampDirect, coinbaseDirect, directVsCoingecko]) {
+    if (q) consolidated.push(q);
+  }
   // USD quotes converted to target vs via FX
   if (usdSources.length > 0) {
     for (const s of usdSources) {
@@ -199,13 +322,15 @@ export async function GET(req: NextRequest): Promise<Response> {
       }
     }
   }
-  // Direct vs quote
-  if (directVs) consolidated.push(directVs);
+  // CoinGecko USD converted via FX as an additional resilient source
+  if (coingeckoUsd && fxRateToVs && vs !== "USD") {
+    consolidated.push({ source: `coingecko:USD->${vs}`, price: coingeckoUsd.price * (fxRateToVs as number) });
+  }
 
   if (consolidated.length === 0) {
     // Fallback: try compute via USD and FX
-    if (vs !== 'USD' && fxRates && fxRates[vs]) {
-      const fx = fxRates[vs];
+    if (vs !== 'USD' && fxRateToVs) {
+      const fx = fxRateToVs;
       if (usdSources.length > 0) {
         for (const s of usdSources) {
           consolidated.push({ source: `${s.source}->${vs}`, price: s.price * fx });
@@ -217,8 +342,10 @@ export async function GET(req: NextRequest): Promise<Response> {
   let price = weightedAverage(consolidated);
   if (!Number.isFinite(price)) {
     // Robust fallback to ensure numeric result
-    const altDirect = directVs?.price;
-    const altFx = fxRateToVs && usdSources[0] ? usdSources[0].price * (fxRateToVs as number) : undefined;
+    const altDirect = directVsCoingecko?.price || krakenDirect?.price || bitstampDirect?.price || coinbaseDirect?.price;
+    const altFx = fxRateToVs
+      ? (usdSources[0]?.price ?? coingeckoUsd?.price ?? undefined) * (fxRateToVs as number)
+      : undefined;
     price = Number.isFinite(altDirect as number)
       ? (altDirect as number)
       : Number.isFinite(altFx as number)
