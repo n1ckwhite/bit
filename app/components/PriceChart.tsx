@@ -232,12 +232,13 @@ const PriceChart = memo(function PriceChart({
             </div>
           )}
 
-          <div className='chart-container h-[150px] sm:h-[200px] lg:h-[250px] xl:h-[300px]'>
-            <ResponsiveContainer width='100%' height='100%'>
-              <LineChart
-                data={chartData}
-                margin={{ top: 8, right: 20, left: 6, bottom: 0 }}
-              >
+          <div className='chart-container h-[150px] sm:h-[200px] lg:h-[250px] xl:h-[300px] min-h-[150px] w-full'>
+            {chartData && chartData.length > 0 ? (
+              <ResponsiveContainer width='100%' height='100%' minWidth={150} minHeight={150}>
+                <LineChart
+                  data={chartData}
+                  margin={{ top: 8, right: 20, left: 6, bottom: 0 }}
+                >
                 <CartesianGrid
                   strokeDasharray='3 3'
                   stroke={isDark ? "#475569" : "#94a3b8"}
@@ -302,6 +303,11 @@ const PriceChart = memo(function PriceChart({
                 />
               </LineChart>
             </ResponsiveContainer>
+            ) : (
+              <div className='flex items-center justify-center h-full text-slate-500 dark:text-slate-400'>
+                {t("loadingChart")}
+              </div>
+            )}
           </div>
         </>
       )}

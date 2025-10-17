@@ -68,6 +68,15 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     setTheme,
   };
 
+  // Prevent hydration mismatch by not rendering until mounted
+  if (!mounted) {
+    return (
+      <ThemeContext.Provider value={contextValue}>
+        {children}
+      </ThemeContext.Provider>
+    );
+  }
+
   return (
     <ThemeContext.Provider value={contextValue}>
       {children}

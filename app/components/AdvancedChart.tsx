@@ -266,9 +266,10 @@ const AdvancedChart = memo(function AdvancedChart({
             </div>
           )}
 
-          <div className='chart-container h-[300px] sm:h-[400px]'>
-            <ResponsiveContainer width='100%' height='100%'>
-              {true ? (
+          <div className='chart-container h-[300px] sm:h-[400px] min-h-[300px] w-full'>
+            {chartData && chartData.length > 0 ? (
+              <ResponsiveContainer width='100%' height='100%' minWidth={300} minHeight={300}>
+                {true ? (
                 <AreaChart
                   data={chartData}
                   margin={{ top: 10, right: 24, left: 8, bottom: 0 }}
@@ -375,6 +376,11 @@ const AdvancedChart = memo(function AdvancedChart({
                 </AreaChart>
               ) : null}
             </ResponsiveContainer>
+            ) : (
+              <div className='flex items-center justify-center h-full text-slate-500 dark:text-slate-400'>
+                {t("loadingChart")}
+              </div>
+            )}
           </div>
         </>
       )}

@@ -64,6 +64,7 @@ export default function Home() {
   const [currencyQuery, setCurrencyQuery] = useState("");
   const [fiatsRemote, setFiatsRemote] = useState<FiatCurrency[] | null>(null);
   const [fiatsLoading, setFiatsLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const inputBtcRef = useRef<HTMLInputElement>(null);
   const mainContainerRef = useRef<HTMLDivElement>(null);
   const currencyRef = useRef<HTMLDivElement>(null);
@@ -98,24 +99,6 @@ export default function Home() {
       converterElement.scrollIntoView({ behavior: "smooth" });
     }
   }, []);
-
-  const setConverterToBTC = useCallback(() => {
-    setUnit("BTC");
-    setBtcAmount(1);
-    scrollToConverter();
-  }, [scrollToConverter]);
-
-  const setConverterToSats = useCallback(() => {
-    setUnit("sats");
-    setBtcAmount(100000);
-    scrollToConverter();
-  }, [scrollToConverter]);
-
-  const setConverterToMBTC = useCallback(() => {
-    setUnit("mBTC");
-    setBtcAmount(1000);
-    scrollToConverter();
-  }, [scrollToConverter]);
 
   const scrollToTop = useCallback(() => {
     try {
@@ -199,6 +182,10 @@ export default function Home() {
   }, [vs, baseCoin, fetchQuote]);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
     const timer = setTimeout(preloadComponents, 1000);
     return () => clearTimeout(timer);
   }, []);
@@ -252,14 +239,6 @@ export default function Home() {
       const shouldShow = scrollTop > 100;
       setShowScrollButton(shouldShow);
 
-      if (process.env.NODE_ENV === "development") {
-        console.log("Scroll position:", {
-          windowScrollTop,
-          containerScrollTop,
-          scrollTop,
-          shouldShow,
-        });
-      }
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -403,7 +382,7 @@ export default function Home() {
                   </div>
                   <div>
                     <h1 className='text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-slate-900 dark:text-white'>
-                      {t("title", { sym: currentSymbol })}
+                      {mounted ? t("title", { sym: currentSymbol }) : t("title", { sym: "BTC" })}
                     </h1>
                     <p className='text-xs sm:text-sm text-slate-600 dark:text-slate-400 hidden sm:block'>
                       {t("heroSubtitle")}
