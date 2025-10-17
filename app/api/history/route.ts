@@ -31,7 +31,7 @@ async function fetchWithTimeout(url: string, timeoutMs: number): Promise<Respons
 async function getCoinGeckoHistory(vs: string, days: number): Promise<HistoryPoint[]> {
   try {
     const res = await fetchWithTimeout(
-      `https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=${encodeURIComponent(vs)}&days=${days}&interval=${days <= 1 ? "hourly" : "daily"}`,
+      `https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=${encodeURIComponent(vs.toLowerCase())}&days=${days}&interval=${days <= 1 ? "hourly" : "daily"}`,
       8000
     );
     if (!res.ok) return [];

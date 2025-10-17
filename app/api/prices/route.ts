@@ -86,7 +86,7 @@ async function getCoindeskUSD(): Promise<SourceQuote | null> {
 async function getCoinGecko(vs: VsCurrency): Promise<SourceQuote | null> {
   try {
     const res = await fetchWithTimeout(
-      `https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=${encodeURIComponent(vs)}`,
+      `https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=${encodeURIComponent(vs.toLowerCase())}`,
       4000
     );
     if (!res.ok) return null;
