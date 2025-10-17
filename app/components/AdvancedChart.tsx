@@ -22,25 +22,25 @@ type AdvancedChartProps = {
 
 const AdvancedChart = memo(function AdvancedChart({ vs, className }: AdvancedChartProps) {
   const [chartType, setChartType] = useState<"area" | "line">("area");
-  const [timeframe, setTimeframe] = useState<"1h" | "4h" | "1d">("1h");
+  // Фиксируем интервал свечей на 1 день и переключаем только диапазон дней (10/20/30)
+  const [timeframe] = useState<"1d">("1d");
+  const [days, setDays] = useState<10 | 20 | 30>(30);
   const [data, setData] = useState<CandleData[]>([]);
   const [loading, setLoading] = useState(false);
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
-  const fetchCandleData = useCallback(async (currentVs: string, currentTimeframe: "1h" | "4h" | "1d") => {
+  const fetchCandleData = useCallback(async (currentVs: string, currentTimeframe: "1d", limitDays: 10 | 20 | 30) => {
     setLoading(true);
     try {
       // Map timeframes to Binance intervals
       const intervalMap = {
-        "1h": "1h",
-        "4h": "4h", 
         "1d": "1d",
-      };
+      } as const;
 
       const interval = intervalMap[currentTimeframe];
       const symbol = currentVs === "USD" ? "BTCUSDT" : `BTC${currentVs}`;
-      const limit = currentTimeframe === "1d" ? "30" : "100";
+      const limit = String(limitDays);
 
       const res = await fetch(
         `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`
@@ -67,8 +67,8 @@ const AdvancedChart = memo(function AdvancedChart({ vs, className }: AdvancedCha
   }, []);
 
   useEffect(() => {
-    fetchCandleData(vs, timeframe);
-  }, [vs, timeframe, fetchCandleData]);
+    fetchCandleData(vs, timeframe, days);
+  }, [vs, timeframe, days, fetchCandleData]);
 
   const priceChange = useMemo(() => {
     if (data.length < 2) return 0;
@@ -79,12 +79,8 @@ const AdvancedChart = memo(function AdvancedChart({ vs, className }: AdvancedCha
 
   const formatXAxis = useCallback((timestamp: number) => {
     const date = new Date(timestamp * 1000);
-    if (timeframe === "1h") {
-      return format(date, "HH:mm");
-    } else {
-      return format(date, "dd.MM");
-    }
-  }, [timeframe]);
+    return format(date, "dd.MM");
+  }, []);
 
   const formatTooltip = useCallback((value: number, name: string) => {
     if (name === "close") {
@@ -135,17 +131,38 @@ const AdvancedChart = memo(function AdvancedChart({ vs, className }: AdvancedCha
               Линия
             </button>
           </div>
-          
-          <select
-            value={timeframe}
-            onChange={(e) => setTimeframe(e.target.value as "1h" | "4h" | "1d")}
-            className="px-2 sm:px-3 py-1.5 sm:py-2 bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-xs sm:text-sm"
-            aria-label="Выберите временной интервал для графика"
-          >
-            <option value="1h">1ч</option>
-            <option value="4h">4ч</option>
-            <option value="1d">1д</option>
-          </select>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setDays(10)}
+              className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
+                days === 10
+                  ? "bg-purple-600 text-white shadow-lg"
+                  : "bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600"
+              }`}
+            >
+              10д
+            </button>
+            <button
+              onClick={() => setDays(20)}
+              className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
+                days === 20
+                  ? "bg-purple-600 text-white shadow-lg"
+                  : "bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600"
+              }`}
+            >
+              20д
+            </button>
+            <button
+              onClick={() => setDays(30)}
+              className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
+                days === 30
+                  ? "bg-purple-600 text-white shadow-lg"
+                  : "bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600"
+              }`}
+            >
+              30д
+            </button>
+          </div>
         </div>
       </div>
 
@@ -172,7 +189,7 @@ const AdvancedChart = memo(function AdvancedChart({ vs, className }: AdvancedCha
                       <span>{Math.abs(priceChange).toFixed(2)}%</span>
                     </div>
                     <span className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm">
-                      за {timeframe === "1h" ? "100 часов" : timeframe === "4h" ? "400 часов" : "30 дней"}
+                      за {days} дней
                     </span>
                   </div>
                 </div>
@@ -190,7 +207,7 @@ const AdvancedChart = memo(function AdvancedChart({ vs, className }: AdvancedCha
           <div className="chart-container h-[300px] sm:h-[400px]">
             <ResponsiveContainer width="100%" height="100%">
               {chartType === "area" ? (
-                <AreaChart data={chartData}>
+                <AreaChart data={chartData} margin={{ top: 10, right: 24, left: 8, bottom: 0 }}>
                   <CartesianGrid 
                     strokeDasharray="3 3" 
                     stroke={isDark ? "#475569" : "#94a3b8"} 
@@ -201,6 +218,7 @@ const AdvancedChart = memo(function AdvancedChart({ vs, className }: AdvancedCha
                     tick={{ fontSize: 10, fill: isDark ? "#e2e8f0" : "#1e293b" }}
                     stroke={isDark ? "#64748b" : "#94a3b8"}
                     tickLine={{ stroke: isDark ? "#64748b" : "#94a3b8" }}
+                    padding={{ right: 16 }}
                   />
                   <YAxis 
                     tick={{ fontSize: 10, fill: isDark ? "#e2e8f0" : "#1e293b" }}
@@ -229,6 +247,7 @@ const AdvancedChart = memo(function AdvancedChart({ vs, className }: AdvancedCha
                       fontSize: "12px",
                       fontWeight: "500",
                     }}
+                    cursor={{ stroke: isDark ? "#64748b" : "#94a3b8", strokeWidth: 1 }}
                   />
                   <Area 
                     type="monotone" 
@@ -237,10 +256,18 @@ const AdvancedChart = memo(function AdvancedChart({ vs, className }: AdvancedCha
                     fill={isPositive ? "#10b981" : "#ef4444"}
                     fillOpacity={0.1}
                     strokeWidth={2}
+                    isAnimationActive={false}
+                    activeDot={{ 
+                      r: 4, 
+                      stroke: "currentColor", 
+                      strokeWidth: 2,
+                      fill: "white",
+                      filter: "drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))"
+                    }}
                   />
                 </AreaChart>
               ) : (
-                <LineChart data={chartData}>
+                <LineChart data={chartData} margin={{ top: 10, right: 24, left: 8, bottom: 0 }}>
                   <CartesianGrid 
                     strokeDasharray="3 3" 
                     stroke={isDark ? "#475569" : "#94a3b8"} 
@@ -251,6 +278,7 @@ const AdvancedChart = memo(function AdvancedChart({ vs, className }: AdvancedCha
                     tick={{ fontSize: 10, fill: isDark ? "#e2e8f0" : "#1e293b" }}
                     stroke={isDark ? "#64748b" : "#94a3b8"}
                     tickLine={{ stroke: isDark ? "#64748b" : "#94a3b8" }}
+                    padding={{ right: 16 }}
                   />
                   <YAxis 
                     tick={{ fontSize: 10, fill: isDark ? "#e2e8f0" : "#1e293b" }}
@@ -279,6 +307,7 @@ const AdvancedChart = memo(function AdvancedChart({ vs, className }: AdvancedCha
                       fontSize: "12px",
                       fontWeight: "500",
                     }}
+                    cursor={{ stroke: isDark ? "#64748b" : "#94a3b8", strokeWidth: 1 }}
                   />
                   <Line 
                     type="monotone" 
@@ -293,6 +322,7 @@ const AdvancedChart = memo(function AdvancedChart({ vs, className }: AdvancedCha
                       fill: "white",
                       filter: "drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))"
                     }}
+                    isAnimationActive={false}
                   />
                 </LineChart>
               )}

@@ -76,6 +76,7 @@ img {
 .chart-container {
   min-height: 300px;
   contain: layout;
+  cursor: crosshair; /* удобнее позиционировать курсор на графике */
 }
 
 .price-card {

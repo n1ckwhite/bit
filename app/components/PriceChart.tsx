@@ -157,7 +157,7 @@ const PriceChart = memo(function PriceChart({ vs, className }: PriceChartProps) 
 
           <div className="chart-container h-[150px] sm:h-[200px] lg:h-[250px] xl:h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData}>
+              <LineChart data={chartData} margin={{ top: 8, right: 20, left: 6, bottom: 0 }}>
                 <CartesianGrid 
                   strokeDasharray="3 3" 
                   stroke={isDark ? "#475569" : "#94a3b8"} 
@@ -169,6 +169,7 @@ const PriceChart = memo(function PriceChart({ vs, className }: PriceChartProps) 
                   stroke={isDark ? "#64748b" : "#94a3b8"}
                   opacity={0.7}
                   tickLine={{ stroke: isDark ? "#64748b" : "#94a3b8" }}
+                  padding={{ right: 14 }}
                 />
                 <YAxis 
                   tick={{ fontSize: 9, fill: isDark ? "#e2e8f0" : "#1e293b" }}
@@ -198,6 +199,7 @@ const PriceChart = memo(function PriceChart({ vs, className }: PriceChartProps) 
                     fontSize: "11px",
                     fontWeight: "500",
                   }}
+                  cursor={{ stroke: isDark ? "#64748b" : "#94a3b8", strokeWidth: 1 }}
                 />
                 <Line 
                   type="monotone" 
@@ -212,6 +214,7 @@ const PriceChart = memo(function PriceChart({ vs, className }: PriceChartProps) 
                     fill: "white",
                     filter: "drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))"
                   }}
+                  isAnimationActive={false}
                 />
               </LineChart>
             </ResponsiveContainer>
