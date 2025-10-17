@@ -243,7 +243,7 @@ export default function Home() {
           <div className="max-w-7xl mx-auto space-y-3 sm:space-y-4 lg:space-y-6">
             
             {/* Price Display Card */}
-            <div className="relative overflow-hidden rounded-lg sm:rounded-xl lg:rounded-2xl xl:rounded-3xl bg-gradient-to-r from-orange-500 via-yellow-500 to-orange-600 shadow-2xl">
+            <div className="price-card relative overflow-hidden rounded-lg sm:rounded-xl lg:rounded-2xl xl:rounded-3xl bg-gradient-to-r from-orange-500 via-yellow-500 to-orange-600 shadow-2xl">
               <div className="absolute inset-0 bg-black/10" />
               <div className="relative p-2.5 sm:p-3 lg:p-4 xl:p-6">
                 <div className="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between">
@@ -253,7 +253,7 @@ export default function Home() {
                         <CurrencyDollarIcon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                       </div>
                       <div>
-                        <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-white">
+                        <h2 className="price-display text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-white">
                           {currentPrice.toLocaleString(undefined, { maximumFractionDigits: 2 })}
                         </h2>
                         <p className="text-lg sm:text-xl text-white/90 font-medium">{vs}</p>
@@ -275,24 +275,26 @@ export default function Home() {
                     </div>
                   </div>
                   
-                  <div className="mt-4 sm:mt-0 text-left sm:text-right space-y-2 sm:space-y-3">
-                    <div className="flex items-center space-x-2 text-white/80">
-                      <ClockIcon className="w-3 h-3 sm:w-4 sm:h-4" />
-                      <span className="text-xs sm:text-sm">Обновлено {lastUpdated}</span>
+                  <div className="update-info-container mt-4 sm:mt-0 text-left sm:text-right space-y-2 sm:space-y-3 min-h-[60px] sm:min-h-[80px]">
+                    <div className="flex items-center space-x-2 text-white/80 min-h-[20px]">
+                      <ClockIcon className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                      <span className="update-time text-xs sm:text-sm font-medium font-mono">Обновлено {lastUpdated}</span>
                     </div>
                     
-                    {quote && (
-                      <div className="flex flex-wrap gap-1 sm:gap-2 justify-start sm:justify-end">
-                        {quote.sources.slice(0, 3).map((source) => (
-                          <span
-                            key={source.source}
-                            className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-white/20 backdrop-blur-sm rounded text-xs text-white font-medium"
-                          >
-                            {source.source.split(":")[0]}
-                          </span>
-                        ))}
-                      </div>
-                    )}
+                    <div className="sources-container min-h-[24px] sm:min-h-[28px]">
+                      {quote && (
+                        <div className="flex flex-wrap gap-1 sm:gap-2 justify-start sm:justify-end">
+                          {quote.sources.slice(0, 3).map((source) => (
+                            <span
+                              key={source.source}
+                              className="source-tag px-1.5 sm:px-2 py-0.5 sm:py-1 bg-white/20 backdrop-blur-sm rounded text-xs text-white font-medium inline-block"
+                            >
+                              {source.source.split(":")[0]}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -494,7 +496,7 @@ export default function Home() {
             {/* Charts - Hidden on mobile, shown on tablet+ with optimized rendering */}
             <div className="hidden sm:grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
               <Suspense fallback={
-                <div className="h-64 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center">
+                <div className="loading-placeholder h-64 rounded-lg flex items-center justify-center">
                   <div className="text-slate-600 dark:text-slate-300">Загрузка графика...</div>
                 </div>
               }>
@@ -512,7 +514,7 @@ export default function Home() {
             {/* Mobile Chart - Single chart on mobile with optimized rendering */}
             <div className="sm:hidden">
               <Suspense fallback={
-                <div className="h-64 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center">
+                <div className="loading-placeholder h-64 rounded-lg flex items-center justify-center">
                   <div className="text-slate-600 dark:text-slate-300">Загрузка графика...</div>
                 </div>
               }>
@@ -523,7 +525,7 @@ export default function Home() {
             {/* Additional Features with optimized rendering */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
               <Suspense fallback={
-                <div className="h-48 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center">
+                <div className="loading-placeholder h-48 rounded-lg flex items-center justify-center">
                   <div className="text-slate-600 dark:text-slate-300">Загрузка уведомлений...</div>
                 </div>
               }>

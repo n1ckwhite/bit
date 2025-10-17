@@ -155,7 +155,7 @@ const PriceChart = memo(function PriceChart({ vs, className }: PriceChartProps) 
             </div>
           )}
 
-          <div className="h-[150px] sm:h-[200px] lg:h-[250px] xl:h-[300px]">
+          <div className="chart-container h-[150px] sm:h-[200px] lg:h-[250px] xl:h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData}>
                 <CartesianGrid 
@@ -186,11 +186,17 @@ const PriceChart = memo(function PriceChart({ vs, className }: PriceChartProps) 
                     borderRadius: "12px",
                     boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
                     fontSize: "11px",
-                    color: isDark ? "#e2e8f0" : "#1e293b",
+                    color: isDark ? "#e2e8f0" : "#0f172a",
                   }}
                   labelStyle={{
-                    color: isDark ? "#e2e8f0" : "#1e293b",
+                    color: isDark ? "#e2e8f0" : "#0f172a",
                     fontSize: "11px",
+                    fontWeight: "500",
+                  }}
+                  itemStyle={{
+                    color: isDark ? "#e2e8f0" : "#0f172a",
+                    fontSize: "11px",
+                    fontWeight: "500",
                   }}
                 />
                 <Line 
