@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, memo, useMemo, useCallback } from "react";
+import { useRef } from "react";
 import {
   LineChart,
   Line,
@@ -46,6 +47,25 @@ const PriceChart = memo(function PriceChart({
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const { t } = useI18n();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  const chartRef = useRef<HTMLDivElement | null>(null);
+  const [dims, setDims] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    if (!mounted) return;
+    const update = () => {
+      const r = chartRef.current?.getBoundingClientRect();
+      if (r)
+        setDims({ width: Math.floor(r.width), height: Math.floor(r.height) });
+    };
+    update();
+    window.addEventListener("resize", update, { passive: true });
+    return () => window.removeEventListener("resize", update as any);
+  }, [mounted]);
 
   const fetchHistory = useCallback(
     async (currentVs: string, currentInterval: "1h" | "1d") => {
@@ -234,75 +254,92 @@ const PriceChart = memo(function PriceChart({
 
           <div className='chart-container h-[150px] sm:h-[200px] lg:h-[250px] xl:h-[300px] min-h-[150px] w-full'>
             {chartData && chartData.length > 0 ? (
-              <ResponsiveContainer width='100%' height='100%' minWidth={150} minHeight={150}>
-                <LineChart
-                  data={chartData}
-                  margin={{ top: 8, right: 20, left: 6, bottom: 0 }}
+              mounted && dims.width > 0 && dims.height > 0 ? (
+                <ResponsiveContainer
+                  width='100%'
+                  height='100%'
+                  minWidth={150}
+                  minHeight={150}
                 >
-                <CartesianGrid
-                  strokeDasharray='3 3'
-                  stroke={isDark ? "#475569" : "#94a3b8"}
-                  opacity={isDark ? 0.5 : 0.4}
-                />
-                <XAxis
-                  dataKey='time'
-                  tick={{ fontSize: 9, fill: isDark ? "#e2e8f0" : "#1e293b" }}
-                  stroke={isDark ? "#64748b" : "#94a3b8"}
-                  opacity={0.7}
-                  tickLine={{ stroke: isDark ? "#64748b" : "#94a3b8" }}
-                  padding={{ right: 14 }}
-                />
-                <YAxis
-                  tick={{ fontSize: 9, fill: isDark ? "#e2e8f0" : "#1e293b" }}
-                  stroke={isDark ? "#64748b" : "#94a3b8"}
-                  opacity={0.7}
-                  tickLine={{ stroke: isDark ? "#64748b" : "#94a3b8" }}
-                  tickFormatter={(value) => value.toLocaleString()}
-                />
-                <Tooltip
-                  formatter={formatTooltip}
-                  labelFormatter={(label) => `${t("time")}: ${label}`}
-                  contentStyle={{
-                    backgroundColor: isDark ? "#1e293b" : "#ffffff",
-                    border: `1px solid ${isDark ? "#334155" : "#e2e8f0"}`,
-                    borderRadius: "12px",
-                    boxShadow:
-                      "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
-                    fontSize: "11px",
-                    color: isDark ? "#e2e8f0" : "#0f172a",
-                  }}
-                  labelStyle={{
-                    color: isDark ? "#e2e8f0" : "#0f172a",
-                    fontSize: "11px",
-                    fontWeight: "500",
-                  }}
-                  itemStyle={{
-                    color: isDark ? "#e2e8f0" : "#0f172a",
-                    fontSize: "11px",
-                    fontWeight: "500",
-                  }}
-                  cursor={{
-                    stroke: isDark ? "#64748b" : "#94a3b8",
-                    strokeWidth: 1,
-                  }}
-                />
-                <Line
-                  type='monotone'
-                  dataKey='price'
-                  stroke={isPositive ? "#10b981" : "#ef4444"}
-                  strokeWidth={2}
-                  dot={false}
-                  activeDot={{
-                    r: 3,
-                    stroke: "currentColor",
-                    strokeWidth: 2,
-                    fill: "white",
-                    filter: "drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))",
-                  }}
-                  isAnimationActive={false}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+                  <LineChart
+                    data={chartData}
+                    margin={{ top: 8, right: 20, left: 6, bottom: 0 }}
+                  >
+                    <CartesianGrid
+                      strokeDasharray='3 3'
+                      stroke={isDark ? "#475569" : "#94a3b8"}
+                      opacity={isDark ? 0.5 : 0.4}
+                    />
+                    <XAxis
+                      dataKey='time'
+                      tick={{
+                        fontSize: 9,
+                        fill: isDark ? "#e2e8f0" : "#1e293b",
+                      }}
+                      stroke={isDark ? "#64748b" : "#94a3b8"}
+                      opacity={0.7}
+                      tickLine={{ stroke: isDark ? "#64748b" : "#94a3b8" }}
+                      padding={{ right: 14 }}
+                    />
+                    <YAxis
+                      tick={{
+                        fontSize: 9,
+                        fill: isDark ? "#e2e8f0" : "#1e293b",
+                      }}
+                      stroke={isDark ? "#64748b" : "#94a3b8"}
+                      opacity={0.7}
+                      tickLine={{ stroke: isDark ? "#64748b" : "#94a3b8" }}
+                      tickFormatter={(value) => value.toLocaleString()}
+                    />
+                    <Tooltip
+                      formatter={formatTooltip}
+                      labelFormatter={(label) => `${t("time")}: ${label}`}
+                      contentStyle={{
+                        backgroundColor: isDark ? "#1e293b" : "#ffffff",
+                        border: `1px solid ${isDark ? "#334155" : "#e2e8f0"}`,
+                        borderRadius: "12px",
+                        boxShadow:
+                          "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+                        fontSize: "11px",
+                        color: isDark ? "#e2e8f0" : "#0f172a",
+                      }}
+                      labelStyle={{
+                        color: isDark ? "#e2e8f0" : "#0f172a",
+                        fontSize: "11px",
+                        fontWeight: "500",
+                      }}
+                      itemStyle={{
+                        color: isDark ? "#e2e8f0" : "#0f172a",
+                        fontSize: "11px",
+                        fontWeight: "500",
+                      }}
+                      cursor={{
+                        stroke: isDark ? "#64748b" : "#94a3b8",
+                        strokeWidth: 1,
+                      }}
+                    />
+                    <Line
+                      type='monotone'
+                      dataKey='price'
+                      stroke={isPositive ? "#10b981" : "#ef4444"}
+                      strokeWidth={2}
+                      dot={false}
+                      activeDot={{
+                        r: 3,
+                        stroke: "currentColor",
+                        strokeWidth: 2,
+                        fill: "white",
+                        filter: "drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))",
+                      }}
+                      isAnimationActive={false}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className='flex items-center justify-center h-full text-slate-500 dark:text-slate-400'>
+                  {t("loadingChart")}
+                </div>
+              )
             ) : (
               <div className='flex items-center justify-center h-full text-slate-500 dark:text-slate-400'>
                 {t("loadingChart")}

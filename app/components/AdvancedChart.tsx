@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState, memo, useMemo, useCallback } from "react";
+import { useEffect, useState, memo, useMemo, useCallback, useRef } from "react";
 import {
-  LineChart,
   Line,
   XAxis,
   YAxis,
@@ -43,6 +42,25 @@ const AdvancedChart = memo(function AdvancedChart({
   const { theme } = useTheme();
   const { t } = useI18n();
   const isDark = theme === "dark";
+  const [mounted, setMounted] = useState(false);
+  const chartRef = useRef<HTMLDivElement | null>(null);
+  const [dims, setDims] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+    const update = () => {
+      const r = chartRef.current?.getBoundingClientRect();
+      if (r)
+        setDims({ width: Math.floor(r.width), height: Math.floor(r.height) });
+    };
+    update();
+    window.addEventListener("resize", update, { passive: true });
+    return () => window.removeEventListener("resize", update as any);
+  }, [mounted]);
 
   const fetchCandleData = useCallback(
     async (
@@ -120,12 +138,12 @@ const AdvancedChart = memo(function AdvancedChart({
           `${value.toLocaleString(undefined, {
             maximumFractionDigits: 2,
           })} ${vs}`,
-          t("price"),
+          t("price") || "Price",
         ];
       }
       return [value, name];
     },
-    [vs]
+    [vs, t]
   );
 
   const chartData = useMemo(() => {
@@ -163,7 +181,7 @@ const AdvancedChart = memo(function AdvancedChart({
             <ChartBarSquareIcon className='w-4 h-4 sm:w-5 sm:h-5 text-white' />
           </div>
           <h3 className='text-lg sm:text-xl font-bold text-slate-900 dark:text-white'>
-            {t("priceChart", { sym: "BTC" })}
+            {t("priceChart", { sym: "BTC" }) || "Price Chart"}
           </h3>
         </div>
 
@@ -176,9 +194,9 @@ const AdvancedChart = memo(function AdvancedChart({
                   ? "bg-emerald-700 text-white shadow-lg"
                   : "bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-600"
               }`}
-              title={t("movingAverage7")}
+              title={t("movingAverage7") || "Moving Average 7"}
             >
-              {t("ma7")}
+              {t("ma7") || "MA7"}
             </button>
           </div>
           <div className='flex items-center space-x-2'>
@@ -189,9 +207,9 @@ const AdvancedChart = memo(function AdvancedChart({
                   ? "bg-purple-700 text-white shadow-lg"
                   : "bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-600"
               }`}
-              title={t("for7days")}
+              title={t("for7days") || "For 7 days"}
             >
-              {t("days7")}
+              {t("days7") || "7d"}
             </button>
             <button
               onClick={() => setHours(336)}
@@ -200,9 +218,9 @@ const AdvancedChart = memo(function AdvancedChart({
                   ? "bg-purple-700 text-white shadow-lg"
                   : "bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-600"
               }`}
-              title={t("for14days")}
+              title={t("for14days") || "For 14 days"}
             >
-              {t("days14")}
+              {t("days14") || "14d"}
             </button>
           </div>
         </div>
@@ -216,7 +234,7 @@ const AdvancedChart = memo(function AdvancedChart({
           aria-busy='true'
         >
           <div className='text-slate-600 dark:text-slate-300 text-sm'>
-            {t("loadingChart")}
+            {t("loadingChart") || "Loading chart..."}
           </div>
         </div>
       ) : (
@@ -249,7 +267,9 @@ const AdvancedChart = memo(function AdvancedChart({
                       <span>{Math.abs(priceChange).toFixed(2)}%</span>
                     </div>
                     <span className='text-slate-600 dark:text-slate-300 text-xs sm:text-sm'>
-                      {hours === 168 ? t("days7") : t("days14")}
+                      {hours === 168
+                        ? t("days7") || "7d"
+                        : t("days14") || "14d"}
                     </span>
                   </div>
                 </div>
@@ -258,7 +278,8 @@ const AdvancedChart = memo(function AdvancedChart({
                   <div className='flex items-center space-x-2 text-slate-600 dark:text-slate-300 text-xs sm:text-sm'>
                     <ClockIcon className='w-3 h-3 sm:w-4 sm:h-4' />
                     <span>
-                      {t("updated")} {new Date().toLocaleTimeString()}
+                      {t("updated") || "Updated"}{" "}
+                      {new Date().toLocaleTimeString()}
                     </span>
                   </div>
                 </div>
@@ -266,119 +287,131 @@ const AdvancedChart = memo(function AdvancedChart({
             </div>
           )}
 
-          <div className='chart-container h-[300px] sm:h-[400px] min-h-[300px] w-full'>
+          <div
+            ref={chartRef}
+            className='chart-container h-[300px] sm:h-[400px] min-h-[300px] w-full'
+          >
             {chartData && chartData.length > 0 ? (
-              <ResponsiveContainer width='100%' height='100%' minWidth={300} minHeight={300}>
-                {true ? (
-                <AreaChart
-                  data={chartData}
-                  margin={{ top: 10, right: 24, left: 8, bottom: 0 }}
+              mounted && dims.width > 0 && dims.height > 0 ? (
+                <ResponsiveContainer
+                  width={dims.width}
+                  height={dims.height}
+                  minWidth={300}
+                  minHeight={300}
                 >
-                  <CartesianGrid
-                    strokeDasharray='3 3'
-                    stroke={isDark ? "#475569" : "#94a3b8"}
-                    opacity={isDark ? 0.5 : 0.4}
-                  />
-                  <XAxis
-                    dataKey='timestamp'
-                    type='number'
-                    scale='time'
-                    domain={["dataMin", "dataMax"]}
-                    tick={{
-                      fontSize: 10,
-                      fill: isDark ? "#e2e8f0" : "#1e293b",
-                    }}
-                    stroke={isDark ? "#64748b" : "#94a3b8"}
-                    tickLine={{ stroke: isDark ? "#64748b" : "#94a3b8" }}
-                    minTickGap={18}
-                    tickCount={hours > 48 ? 8 : 10}
-                    tickFormatter={(ts) =>
-                      format(
-                        new Date(ts * 1000),
-                        hours > 48 ? "dd.MM" : "HH:mm"
-                      )
-                    }
-                    padding={{ right: 16 }}
-                  />
-                  <YAxis
-                    tick={{
-                      fontSize: 10,
-                      fill: isDark ? "#e2e8f0" : "#1e293b",
-                    }}
-                    stroke={isDark ? "#64748b" : "#94a3b8"}
-                    tickLine={{ stroke: isDark ? "#64748b" : "#94a3b8" }}
-                    tickFormatter={(value) => value.toLocaleString()}
-                  />
-                  <Tooltip
-                    formatter={formatTooltip}
-                    labelFormatter={(label, payload) => {
-                      const ts =
-                        payload && payload[0] && payload[0].payload
-                          ? payload[0].payload.timestamp
-                          : undefined;
-                      if (!ts) return "";
-                      return `${format(
-                        new Date(ts * 1000),
-                        hours > 48 ? "dd.MM HH:mm" : "HH:mm"
-                      )}`;
-                    }}
-                    contentStyle={{
-                      backgroundColor: isDark ? "#1e293b" : "#ffffff",
-                      border: `1px solid ${isDark ? "#334155" : "#e2e8f0"}`,
-                      borderRadius: "12px",
-                      boxShadow:
-                        "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
-                      fontSize: "12px",
-                      color: isDark ? "#e2e8f0" : "#0f172a",
-                    }}
-                    labelStyle={{
-                      color: isDark ? "#e2e8f0" : "#0f172a",
-                      fontSize: "12px",
-                      fontWeight: "500",
-                    }}
-                    itemStyle={{
-                      color: isDark ? "#e2e8f0" : "#0f172a",
-                      fontSize: "12px",
-                      fontWeight: "500",
-                    }}
-                    cursor={{
-                      stroke: isDark ? "#64748b" : "#94a3b8",
-                      strokeWidth: 1,
-                    }}
-                  />
-                  <Area
-                    type='monotone'
-                    dataKey='close'
-                    stroke={isPositive ? "#10b981" : "#ef4444"}
-                    fill={isPositive ? "#10b981" : "#ef4444"}
-                    fillOpacity={0.1}
-                    strokeWidth={2}
-                    isAnimationActive={false}
-                    activeDot={{
-                      r: 4,
-                      stroke: "currentColor",
-                      strokeWidth: 2,
-                      fill: "white",
-                      filter: "drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))",
-                    }}
-                  />
-                  {showMA7 && (
-                    <Line
-                      type='monotone'
-                      dataKey='ma7'
-                      stroke='#10b981'
-                      strokeDasharray='5 4'
-                      strokeWidth={2}
-                      dot={false}
-                      isAnimationActive={false}
+                  <AreaChart
+                    data={chartData}
+                    margin={{ top: 10, right: 24, left: 8, bottom: 0 }}
+                  >
+                    <CartesianGrid
+                      strokeDasharray='3 3'
+                      stroke={isDark ? "#475569" : "#94a3b8"}
+                      opacity={isDark ? 0.5 : 0.4}
                     />
-                  )}
-                </AreaChart>
-              ) : null}
-            </ResponsiveContainer>
+                    <XAxis
+                      dataKey='timestamp'
+                      type='number'
+                      scale='time'
+                      domain={["dataMin", "dataMax"]}
+                      tick={{
+                        fontSize: 10,
+                        fill: isDark ? "#e2e8f0" : "#1e293b",
+                      }}
+                      stroke={isDark ? "#64748b" : "#94a3b8"}
+                      tickLine={{ stroke: isDark ? "#64748b" : "#94a3b8" }}
+                      minTickGap={18}
+                      tickCount={hours > 48 ? 8 : 10}
+                      tickFormatter={(ts) =>
+                        format(
+                          new Date(ts * 1000),
+                          hours > 48 ? "dd.MM" : "HH:mm"
+                        )
+                      }
+                      padding={{ right: 16 }}
+                    />
+                    <YAxis
+                      tick={{
+                        fontSize: 10,
+                        fill: isDark ? "#e2e8f0" : "#1e293b",
+                      }}
+                      stroke={isDark ? "#64748b" : "#94a3b8"}
+                      tickLine={{ stroke: isDark ? "#64748b" : "#94a3b8" }}
+                      tickFormatter={(value) => value.toLocaleString()}
+                    />
+                    <Tooltip
+                      formatter={formatTooltip}
+                      labelFormatter={(label, payload) => {
+                        const ts =
+                          payload && payload[0] && payload[0].payload
+                            ? payload[0].payload.timestamp
+                            : undefined;
+                        if (!ts) return "";
+                        return `${format(
+                          new Date(ts * 1000),
+                          hours > 48 ? "dd.MM HH:mm" : "HH:mm"
+                        )}`;
+                      }}
+                      contentStyle={{
+                        backgroundColor: isDark ? "#1e293b" : "#ffffff",
+                        border: `1px solid ${isDark ? "#334155" : "#e2e8f0"}`,
+                        borderRadius: "12px",
+                        boxShadow:
+                          "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+                        fontSize: "12px",
+                        color: isDark ? "#e2e8f0" : "#0f172a",
+                      }}
+                      labelStyle={{
+                        color: isDark ? "#e2e8f0" : "#0f172a",
+                        fontSize: "12px",
+                        fontWeight: "500",
+                      }}
+                      itemStyle={{
+                        color: isDark ? "#e2e8f0" : "#0f172a",
+                        fontSize: "12px",
+                        fontWeight: "500",
+                      }}
+                      cursor={{
+                        stroke: isDark ? "#64748b" : "#94a3b8",
+                        strokeWidth: 1,
+                      }}
+                    />
+                    <Area
+                      type='monotone'
+                      dataKey='close'
+                      stroke={isPositive ? "#10b981" : "#ef4444"}
+                      fill={isPositive ? "#10b981" : "#ef4444"}
+                      fillOpacity={0.1}
+                      strokeWidth={2}
+                      isAnimationActive={false}
+                      activeDot={{
+                        r: 4,
+                        stroke: "currentColor",
+                        strokeWidth: 2,
+                        fill: "white",
+                        filter: "drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))",
+                      }}
+                    />
+                    {showMA7 && (
+                      <Line
+                        type='monotone'
+                        dataKey='ma7'
+                        stroke='#10b981'
+                        strokeDasharray='5 4'
+                        strokeWidth={2}
+                        dot={false}
+                        isAnimationActive={false}
+                      />
+                    )}
+                  </AreaChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className='flex items-center justify-center h-full text-slate-500 dark:text-slate-400'>
+                  {t("loadingChart") || "Loading chart..."}
+                </div>
+              )
             ) : (
               <div className='flex items-center justify-center h-full text-slate-500 dark:text-slate-400'>
-                {t("loadingChart")}
+                {t("loadingChart") || "Loading chart..."}
               </div>
             )}
           </div>

@@ -1227,20 +1227,33 @@ type I18nContextValue = {
 const I18nContext = createContext<I18nContextValue | null>(null);
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>(
-    (typeof navigator !== "undefined" &&
-      (navigator.language?.slice(0, 2) as Locale)) ||
-      "en"
-  );
+  // Use a deterministic default for initial render to keep server and
+  // client HTML consistent. Detect saved navigator/localStorage locale
+  // only after mount and apply it then.
+  const [locale, setLocaleState] = useState<Locale>("en");
 
   useEffect(() => {
-    const saved =
-      typeof window !== "undefined"
-        ? (localStorage.getItem("locale") as Locale | null)
-        : null;
-    if (saved && DICTS[saved]) setLocaleState(saved);
+    let chosen: Locale | null = null;
+
+    try {
+      const saved =
+        typeof window !== "undefined"
+          ? (localStorage.getItem("locale") as Locale | null)
+          : null;
+      if (saved && DICTS[saved]) chosen = saved;
+    } catch (e) {
+      // ignore localStorage errors
+    }
+
+    if (!chosen && typeof navigator !== "undefined") {
+      const nav = (navigator.language?.slice(0, 2) as Locale) || null;
+      if (nav && DICTS[nav]) chosen = nav;
+    }
+
+    if (chosen) setLocaleState(chosen);
+
     if (typeof document !== "undefined")
-      document.documentElement.lang = saved || locale;
+      document.documentElement.lang = chosen || "en";
   }, []);
 
   const setLocale = useCallback((l: Locale) => {
@@ -1254,13 +1267,18 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
 
   const t = useCallback(
     (key: keyof (typeof DICTS)["en"], vars?: Record<string, string>) => {
-      const dict = DICTS[locale] || DICTS.en;
-      let str = dict[key] || DICTS.en[key] || String(key);
-      if (vars) {
-        for (const [k, v] of Object.entries(vars))
-          str = str.replace(`{${k}}`, v);
+      try {
+        const dict = DICTS[locale] || DICTS.en;
+        let str = dict[key] || DICTS.en[key] || String(key);
+        if (vars) {
+          for (const [k, v] of Object.entries(vars))
+            str = str.replace(`{${k}}`, v);
+        }
+        return str;
+      } catch (error) {
+        console.error("Error in t function:", error);
+        return String(key);
       }
-      return str;
     },
     [locale]
   );
@@ -1275,6 +1293,15 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
 
 export function useI18n() {
   const ctx = useContext(I18nContext);
-  if (!ctx) throw new Error("I18nContext not found");
+  if (!ctx) {
+    console.error("I18nContext not found");
+    // Return a fallback context to prevent crashes
+    return {
+      locale: "en" as Locale,
+      setLocale: () => {},
+      t: (key: keyof (typeof DICTS)["en"]) => String(key),
+      supported: ["en"] as Locale[],
+    };
+  }
   return ctx;
 }
