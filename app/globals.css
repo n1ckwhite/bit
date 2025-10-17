@@ -75,13 +75,13 @@ img {
 /* Reserve space for dynamic content */
 .chart-container {
   min-height: 300px;
-  contain: layout;
+  contain: layout paint;
   cursor: crosshair; /* удобнее позиционировать курсор на графике */
 }
 
 .price-card {
   min-height: 200px;
-  contain: layout;
+  contain: layout paint;
 }
 
 /* Prevent text reflow */
@@ -126,6 +126,7 @@ button {
   background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
   background-size: 200% 100%;
   animation: loading 1.5s infinite;
+  contain: layout paint;
 }
 
 .dark .loading-placeholder {

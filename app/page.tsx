@@ -286,7 +286,7 @@ export default function Home() {
 
         {/* Main Content */}
         <main ref={mainContainerRef} className="flex-1 overflow-y-auto px-3 sm:px-4 lg:px-6 xl:px-8 pb-3 sm:pb-4 lg:pb-6">
-          <div className="max-w-7xl mx-auto space-y-3 sm:space-y-4 lg:space-y-6">
+          <div className="max-w-7xl mx-auto space-y-3 sm:space-y-4 lg:space-y-6 will-change-[height]">
             
             {/* Price Display Card */}
             <div className="price-card relative overflow-hidden rounded-lg sm:rounded-xl lg:rounded-2xl xl:rounded-3xl bg-gradient-to-r from-orange-500 via-yellow-500 to-orange-600 shadow-2xl">
