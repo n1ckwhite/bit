@@ -204,6 +204,9 @@ input[type="number"]:focus, input[type="text"]:focus, select:focus {
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
+  /* Override global minimum touch target for these tiny in-input controls */
+  min-height: 0;
+  min-width: 0;
 }
 
 .custom-arrow-button:hover {

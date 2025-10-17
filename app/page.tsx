@@ -379,7 +379,7 @@ export default function Home() {
                           setBtcAmount(prev => Math.max(0, prev - 0.1));
                         }
                       }}
-                      className="w-full px-2.5 sm:px-3 lg:px-4 py-2 sm:py-2.5 lg:py-3 pl-10 sm:pl-12 lg:pl-16 pr-2.5 sm:pr-3 lg:pr-4 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm"
+                      className="w-full px-2.5 sm:px-3 lg:px-4 py-2 sm:py-2.5 lg:py-3 pl-10 sm:pl-12 lg:pl-16 pr-10 sm:pr-12 lg:pr-14 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm"
                       placeholder="1.0"
                       step="0.1"
                       min="0"
@@ -388,28 +388,28 @@ export default function Home() {
                       {unit}
                     </div>
                     {/* Custom arrow buttons */}
-                    <div className="absolute right-1 top-1/2 -translate-y-1/2 flex flex-col space-y-0.5">
+                    <div className="absolute right-1 inset-y-1 flex flex-col justify-between">
                       <button
                         type="button"
                         onClick={() => setBtcAmount(prev => prev + 0.1)}
-                        className="custom-arrow-button w-8 h-8 flex items-center justify-center rounded-t-sm"
+                        className="custom-arrow-button w-6 h-5 flex items-center justify-center rounded-t-sm"
                         style={{ cursor: 'pointer' }}
                         title="Увеличить на 0.1"
                         aria-label="Увеличить на 0.1"
                       >
-                        <svg className="w-4 h-4 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <svg className="w-3.5 h-3.5 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                           <polyline points="18,15 12,9 6,15"></polyline>
                         </svg>
                       </button>
                       <button
                         type="button"
                         onClick={() => setBtcAmount(prev => Math.max(0, prev - 0.1))}
-                        className="custom-arrow-button w-8 h-8 flex items-center justify-center rounded-b-sm"
+                        className="custom-arrow-button w-6 h-5 flex items-center justify-center rounded-b-sm"
                         style={{ cursor: 'pointer' }}
                         title="Уменьшить на 0.1"
                         aria-label="Уменьшить на 0.1"
                       >
-                        <svg className="w-4 h-4 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <svg className="w-3.5 h-3.5 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                           <polyline points="6,9 12,15 18,9"></polyline>
                         </svg>
                       </button>
@@ -470,7 +470,7 @@ export default function Home() {
                           setBtcAmount(fromBtc(btc, unit));
                         }
                       }}
-                      className="w-full px-2.5 sm:px-3 lg:px-4 py-2 sm:py-2.5 lg:py-3 pl-10 sm:pl-12 lg:pl-16 pr-2.5 sm:pr-3 lg:pr-4 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm"
+                      className="w-full px-2.5 sm:px-3 lg:px-4 py-2 sm:py-2.5 lg:py-3 pl-10 sm:pl-12 lg:pl-16 pr-10 sm:pr-12 lg:pr-14 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm"
                       placeholder="0.00"
                       step="100"
                       min="0"
@@ -479,7 +479,7 @@ export default function Home() {
                       {vs}
                     </div>
                     {/* Custom arrow buttons */}
-                    <div className="absolute right-1 top-1/2 -translate-y-1/2 flex flex-col space-y-0.5">
+                    <div className="absolute right-1 inset-y-1 flex flex-col justify-between">
                       <button
                         type="button"
                         onClick={() => {
@@ -488,12 +488,12 @@ export default function Home() {
                           const btc = newFiat / quote.price;
                           setBtcAmount(fromBtc(btc, unit));
                         }}
-                        className="custom-arrow-button w-8 h-8 flex items-center justify-center rounded-t-sm"
+                        className="custom-arrow-button w-6 h-5 flex items-center justify-center rounded-t-sm"
                         style={{ cursor: 'pointer' }}
                         title="Увеличить на 100"
                         aria-label="Увеличить на 100"
                       >
-                        <svg className="w-4 h-4 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <svg className="w-3.5 h-3.5 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                           <polyline points="18,15 12,9 6,15"></polyline>
                         </svg>
                       </button>
@@ -505,12 +505,12 @@ export default function Home() {
                           const btc = newFiat / quote.price;
                           setBtcAmount(fromBtc(btc, unit));
                         }}
-                        className="custom-arrow-button w-8 h-8 flex items-center justify-center rounded-b-sm"
+                        className="custom-arrow-button w-6 h-5 flex items-center justify-center rounded-b-sm"
                         style={{ cursor: 'pointer' }}
                         title="Уменьшить на 100"
                         aria-label="Уменьшить на 100"
                       >
-                        <svg className="w-4 h-4 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <svg className="w-3.5 h-3.5 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                           <polyline points="6,9 12,15 18,9"></polyline>
                         </svg>
                       </button>
