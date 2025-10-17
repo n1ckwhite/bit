@@ -78,14 +78,9 @@ export default function RootLayout({
         {/* Critical CSS inlined for faster rendering */}
         <style dangerouslySetInnerHTML={{
           __html: `
-            /* Critical CSS for above-the-fold content - dark theme default */
-            body{margin:0;font-family:var(--font-geist-sans),system-ui,-apple-system,sans-serif;background:#0f172a;color:#fff}
-            .light body{background:#fff;color:#0f172a}
+            /* Critical CSS for above-the-fold content */
+            body{margin:0;font-family:var(--font-geist-sans),system-ui,-apple-system,sans-serif}
             .antialiased{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
-            .bg-white{background-color:#fff}
-            .dark .bg-slate-900{background-color:#0f172a}
-            .text-slate-900{color:#0f172a}
-            .dark .text-white{color:#fff}
             /* Prevent layout shift */
             .min-h-screen{min-height:100vh}
             .container{margin:0 auto;padding:0 1rem}

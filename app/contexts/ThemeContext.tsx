@@ -25,16 +25,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       const savedTheme = localStorage.getItem("theme") as Theme | null;
       const currentTheme = savedTheme || "dark";
       
-      // Check if theme is already applied to avoid duplicate application
-      const htmlElement = document.documentElement;
-      const hasThemeClass = htmlElement.classList.contains("light") || htmlElement.classList.contains("dark");
-      
       setThemeState(currentTheme);
-      
-      // Only apply theme if it's not already applied
-      if (!hasThemeClass) {
-        applyTheme(currentTheme);
-      }
+      applyTheme(currentTheme);
     }
   }, []);
 
