@@ -13,7 +13,6 @@ const nextConfig: NextConfig = {
   },
   
   /* Modern browser support - ES2020+ */
-  output: 'standalone',
   
   /* Bundle optimization */
   webpack: (config, { dev, isServer }) => {
@@ -21,35 +20,8 @@ const nextConfig: NextConfig = {
       // Enhanced tree shaking optimization
       config.optimization.usedExports = true;
       config.optimization.sideEffects = false;
-      
-<<<<<<< HEAD
-      // Modern browser support - reduce polyfills
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        // Remove polyfills for modern features
-        crypto: false,
-        stream: false,
-        util: false,
-        buffer: false,
-        process: false,
-        fs: false,
-        path: false,
-        os: false,
-      };
-      
-      // Exclude polyfills from bundle
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        'date-fns': 'date-fns',
-        // Exclude polyfills
-        'core-js': false,
-        'regenerator-runtime': false,
-      };
-      
-      // Bundle splitting for better caching
-=======
+
       // More aggressive bundle splitting
->>>>>>> refs/remotes/origin/main
       config.optimization.splitChunks = {
         chunks: 'all',
         maxInitialRequests: 25,
