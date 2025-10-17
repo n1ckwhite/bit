@@ -2,13 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* Performance optimizations */
-  experimental: {
-    optimizePackageImports: [
-      '@heroicons/react',
-      'recharts', 
-      'date-fns'
-    ],
-  },
+  experimental: {},
   
   /* Output configuration */
   

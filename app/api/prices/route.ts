@@ -70,6 +70,19 @@ async function getBitstampUSD(): Promise<SourceQuote | null> {
   }
 }
 
+async function getCoindeskUSD(): Promise<SourceQuote | null> {
+  try {
+    const res = await fetchWithTimeout("https://api.coindesk.com/v1/bpi/currentprice/USD.json", 4000);
+    if (!res.ok) return null;
+    const data: any = await res.json();
+    const price = Number(data?.bpi?.USD?.rate_float);
+    if (!Number.isFinite(price)) return null;
+    return { source: "coindesk:USD", price };
+  } catch {
+    return null;
+  }
+}
+
 async function getCoinGecko(vs: VsCurrency): Promise<SourceQuote | null> {
   try {
     const res = await fetchWithTimeout(
@@ -98,7 +111,31 @@ async function getFxRates(base: string): Promise<Record<string, number> | null> 
     const rates = data?.rates;
     return rates && typeof rates === "object" ? (rates as Record<string, number>) : null;
   } catch {
-    return null;
+    // Try Frankfurter as a backup FX provider
+    try {
+      const res2 = await fetchWithTimeout(
+        `https://api.frankfurter.app/latest?from=${encodeURIComponent(base)}`,
+        5000
+      );
+      if (!res2.ok) return null;
+      const data2: any = await res2.json();
+      const rates2 = data2?.rates;
+      return rates2 && typeof rates2 === 'object' ? (rates2 as Record<string, number>) : null;
+    } catch {
+      // Third fallback: open.er-api.com
+      try {
+        const res3 = await fetchWithTimeout(
+          `https://open.er-api.com/v6/latest/${encodeURIComponent(base)}`,
+          5000
+        );
+        if (!res3.ok) return null;
+        const data3: any = await res3.json();
+        const rates3 = data3?.rates;
+        return rates3 && typeof rates3 === 'object' ? (rates3 as Record<string, number>) : null;
+      } catch {
+        return null;
+      }
+    }
   }
 }
 
@@ -135,12 +172,13 @@ export async function GET(req: NextRequest): Promise<Response> {
   const vs = vsParam.toUpperCase();
 
   // First, gather USD quotes from multiple exchanges (robust primary path)
-  const [binance, kraken, bitstamp] = await Promise.all([
+  const [binance, kraken, bitstamp, coindesk] = await Promise.all([
     getBinanceUSD(),
     getKrakenUSD(),
     getBitstampUSD(),
+    getCoindeskUSD(),
   ]);
-  const usdSources = [binance, kraken, bitstamp].filter(Boolean) as SourceQuote[];
+  const usdSources = [binance, kraken, bitstamp, coindesk].filter(Boolean) as SourceQuote[];
 
   // If vs is not USD, we can try a direct quote via CoinGecko and also convert USD via FX
   const directVs = await getCoinGecko(vs);
@@ -176,21 +214,17 @@ export async function GET(req: NextRequest): Promise<Response> {
     }
   }
 
-  if (consolidated.length === 0) {
-    const body: PricesResponse = {
-      base: 'BTC',
-      vs,
-      price: NaN,
-      sources: [],
-      updatedAt: new Date().toISOString(),
-    };
-    return new Response(JSON.stringify(body), {
-      headers: { "content-type": "application/json; charset=utf-8" },
-      status: 200,
-    });
+  let price = weightedAverage(consolidated);
+  if (!Number.isFinite(price)) {
+    // Robust fallback to ensure numeric result
+    const altDirect = directVs?.price;
+    const altFx = fxRateToVs && usdSources[0] ? usdSources[0].price * (fxRateToVs as number) : undefined;
+    price = Number.isFinite(altDirect as number)
+      ? (altDirect as number)
+      : Number.isFinite(altFx as number)
+      ? (altFx as number)
+      : 0;
   }
-
-  const price = weightedAverage(consolidated);
   const body: PricesResponse = {
     base: "BTC",
     vs,
