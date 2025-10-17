@@ -29,6 +29,18 @@ export default function PriceChart({ vs, className }: PriceChartProps) {
   const [history, setHistory] = useState<HistoryData | null>(null);
   const [interval, setInterval] = useState<"1h" | "1d">("1h");
   const [loading, setLoading] = useState(false);
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const checkTheme = () => {
+      setIsDark(document.documentElement.classList.contains('dark'));
+    };
+    
+    checkTheme();
+    window.addEventListener('themeChange', checkTheme);
+    
+    return () => window.removeEventListener('themeChange', checkTheme);
+  }, []);
 
   const fetchHistory = async (currentVs: string, currentInterval: "1h" | "1d") => {
     setLoading(true);
@@ -151,27 +163,38 @@ export default function PriceChart({ vs, className }: PriceChartProps) {
           <div className="h-[150px] sm:h-[200px] lg:h-[250px] xl:h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="currentColor" opacity={0.1} />
+                <CartesianGrid 
+                  strokeDasharray="3 3" 
+                  stroke={isDark ? "#475569" : "#94a3b8"} 
+                  opacity={isDark ? 0.5 : 0.4} 
+                />
                 <XAxis 
                   dataKey="time" 
-                  tick={{ fontSize: 9, fill: "currentColor" }}
-                  stroke="currentColor"
+                  tick={{ fontSize: 9, fill: isDark ? "#e2e8f0" : "#1e293b" }}
+                  stroke={isDark ? "#64748b" : "#94a3b8"}
                   opacity={0.7}
+                  tickLine={{ stroke: isDark ? "#64748b" : "#94a3b8" }}
                 />
                 <YAxis 
-                  tick={{ fontSize: 9, fill: "currentColor" }}
-                  stroke="currentColor"
+                  tick={{ fontSize: 9, fill: isDark ? "#e2e8f0" : "#1e293b" }}
+                  stroke={isDark ? "#64748b" : "#94a3b8"}
                   opacity={0.7}
+                  tickLine={{ stroke: isDark ? "#64748b" : "#94a3b8" }}
                   tickFormatter={(value) => value.toLocaleString()}
                 />
                 <Tooltip 
                   formatter={formatTooltip}
                   labelFormatter={(label) => `Время: ${label}`}
                   contentStyle={{
-                    backgroundColor: "var(--tw-bg-opacity)",
-                    border: "1px solid var(--tw-border-opacity)",
+                    backgroundColor: isDark ? "#1e293b" : "#ffffff",
+                    border: `1px solid ${isDark ? "#334155" : "#e2e8f0"}`,
                     borderRadius: "12px",
                     boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+                    fontSize: "11px",
+                    color: isDark ? "#e2e8f0" : "#1e293b",
+                  }}
+                  labelStyle={{
+                    color: isDark ? "#e2e8f0" : "#1e293b",
                     fontSize: "11px",
                   }}
                 />

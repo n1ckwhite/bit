@@ -10,7 +10,8 @@ import {
   DocumentArrowDownIcon,
   ShareIcon,
   CurrencyDollarIcon,
-  ClockIcon
+  ClockIcon,
+  ChevronUpIcon
 } from "@heroicons/react/24/outline";
 import ThemeToggle from "./components/ThemeToggle";
 import PriceChart from "./components/PriceChart";
@@ -38,6 +39,57 @@ export default function Home() {
   const [lastUpdated, setLastUpdated] = useState<string>("");
   const [historyData, setHistoryData] = useState<Array<{ timestamp: number; price: number }>>([]);
   const inputBtcRef = useRef<HTMLInputElement>(null);
+  const mainContainerRef = useRef<HTMLDivElement>(null);
+
+  // Functions for converter links
+  const scrollToConverter = () => {
+    const converterElement = document.querySelector('[data-converter]');
+    if (converterElement) {
+      converterElement.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const setConverterToBTC = () => {
+    setUnit("BTC");
+    setBtcAmount(1);
+    scrollToConverter();
+  };
+
+  const setConverterToSats = () => {
+    setUnit("sats");
+    setBtcAmount(100000);
+    scrollToConverter();
+  };
+
+  const setConverterToMBTC = () => {
+    setUnit("mBTC");
+    setBtcAmount(1000);
+    scrollToConverter();
+  };
+
+  // Scroll to top function
+  const scrollToTop = () => {
+    try {
+      // Method 1: Scroll main container if it exists
+      if (mainContainerRef.current) {
+        mainContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      
+      // Method 2: Try window scroll
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      
+      // Method 3: Fallback methods
+      setTimeout(() => {
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+      }, 100);
+    } catch (error) {
+      console.error('Scroll error:', error);
+      // Fallback to instant scroll
+      window.scrollTo(0, 0);
+    }
+  };
 
   const fetchQuote = async (currentVs: string) => {
     setLoading(true);
@@ -132,7 +184,7 @@ export default function Home() {
                     <span className="text-white font-bold text-xs sm:text-sm lg:text-lg">₿</span>
                   </div>
                   <div>
-                    <h1 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
+                    <h1 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-slate-900 dark:text-white">
                       Курс Биткоина
                     </h1>
                     <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 hidden sm:block">
@@ -158,7 +210,7 @@ export default function Home() {
         </header>
 
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto px-3 sm:px-4 lg:px-6 xl:px-8 pb-3 sm:pb-4 lg:pb-6">
+        <main ref={mainContainerRef} className="flex-1 overflow-y-auto px-3 sm:px-4 lg:px-6 xl:px-8 pb-3 sm:pb-4 lg:pb-6">
           <div className="max-w-7xl mx-auto space-y-3 sm:space-y-4 lg:space-y-6">
             
             {/* Price Display Card */}
@@ -218,7 +270,7 @@ export default function Home() {
             </div>
 
             {/* Converter Card */}
-            <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-lg sm:rounded-xl lg:rounded-2xl xl:rounded-3xl shadow-xl border border-slate-200/50 dark:border-slate-700/50 p-2.5 sm:p-3 lg:p-4 xl:p-6">
+            <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-lg sm:rounded-xl lg:rounded-2xl xl:rounded-3xl shadow-xl border border-slate-200/50 dark:border-slate-700/50 p-2.5 sm:p-3 lg:p-4 xl:p-6" data-converter>
               <div className="flex items-center space-x-2 sm:space-x-3 mb-2.5 sm:mb-3 lg:mb-4">
                 <div className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 xl:w-10 xl:h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-md sm:rounded-lg lg:rounded-xl flex items-center justify-center">
                   <CurrencyDollarIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4 xl:w-5 xl:h-5 text-white" />
@@ -256,24 +308,26 @@ export default function Home() {
                       {unit}
                     </div>
                     {/* Custom arrow buttons */}
-                    <div className="absolute right-1 top-1/2 -translate-y-1/2 flex flex-col">
+                    <div className="absolute right-1 top-1/2 -translate-y-1/2 flex flex-col space-y-0.5">
                       <button
                         type="button"
                         onClick={() => setBtcAmount(prev => prev + 0.1)}
-                        className="custom-arrow-button w-4 h-3 flex items-center justify-center rounded-t-sm"
+                        className="custom-arrow-button w-5 h-4 flex items-center justify-center rounded-t-sm"
                         style={{ cursor: 'pointer' }}
+                        title="Увеличить на 0.1"
                       >
-                        <svg className="w-2 h-2 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-3 h-3 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                           <polyline points="18,15 12,9 6,15"></polyline>
                         </svg>
                       </button>
                       <button
                         type="button"
                         onClick={() => setBtcAmount(prev => Math.max(0, prev - 0.1))}
-                        className="custom-arrow-button w-4 h-3 flex items-center justify-center rounded-b-sm"
+                        className="custom-arrow-button w-5 h-4 flex items-center justify-center rounded-b-sm"
                         style={{ cursor: 'pointer' }}
+                        title="Уменьшить на 0.1"
                       >
-                        <svg className="w-2 h-2 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-3 h-3 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                           <polyline points="6,9 12,15 18,9"></polyline>
                         </svg>
                       </button>
@@ -341,7 +395,7 @@ export default function Home() {
                       {vs}
                     </div>
                     {/* Custom arrow buttons */}
-                    <div className="absolute right-1 top-1/2 -translate-y-1/2 flex flex-col">
+                    <div className="absolute right-1 top-1/2 -translate-y-1/2 flex flex-col space-y-0.5">
                       <button
                         type="button"
                         onClick={() => {
@@ -350,10 +404,11 @@ export default function Home() {
                           const btc = newFiat / quote.price;
                           setBtcAmount(fromBtc(btc, unit));
                         }}
-                        className="custom-arrow-button w-4 h-3 flex items-center justify-center rounded-t-sm"
+                        className="custom-arrow-button w-5 h-4 flex items-center justify-center rounded-t-sm"
                         style={{ cursor: 'pointer' }}
+                        title="Увеличить на 100"
                       >
-                        <svg className="w-2 h-2 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-3 h-3 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                           <polyline points="18,15 12,9 6,15"></polyline>
                         </svg>
                       </button>
@@ -365,10 +420,11 @@ export default function Home() {
                           const btc = newFiat / quote.price;
                           setBtcAmount(fromBtc(btc, unit));
                         }}
-                        className="custom-arrow-button w-4 h-3 flex items-center justify-center rounded-b-sm"
+                        className="custom-arrow-button w-5 h-4 flex items-center justify-center rounded-b-sm"
                         style={{ cursor: 'pointer' }}
+                        title="Уменьшить на 100"
                       >
-                        <svg className="w-2 h-2 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-3 h-3 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                           <polyline points="6,9 12,15 18,9"></polyline>
                         </svg>
                       </button>
@@ -421,18 +477,106 @@ export default function Home() {
               />
             </div>
 
-            {/* Footer */}
-            <div className="text-center py-6 sm:py-8">
-              <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm">
-                Данные обновляются каждую минуту из множественных источников
-              </p>
-              <p className="text-slate-500 dark:text-slate-500 text-xs mt-2">
-                PWA готово к установке • Уведомления • Экспорт данных • Продвинутые графики
-              </p>
+            {/* Information Section */}
+            <div className="mt-8 sm:mt-12 lg:mt-16">
+              <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 dark:border-slate-700/50 p-6 sm:p-8 lg:p-10">
+                <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8">
+                  
+                  {/* Main Description */}
+                  <div>
+                    <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mb-4">
+                      Этот сайт позволяет вам:
+                    </h2>
+                    <ul className="space-y-2 text-slate-700 dark:text-slate-300 text-sm sm:text-base">
+                      <li className="flex items-start">
+                        <span className="text-blue-500 mr-2">•</span>
+                        Просматривать текущий курс биткоина в реальном времени
+                      </li>
+                      <li className="flex items-start">
+                        <span className="text-blue-500 mr-2">•</span>
+                        Конвертировать любую сумму в предпочитаемую валюту и обратно
+                      </li>
+                    </ul>
+                    <p className="mt-4 text-slate-600 dark:text-slate-400 text-sm sm:text-base">
+                      Биткоин — это цифровая валюта, которая позволяет отправлять деньги онлайн без посредников. 
+                      Подробнее о технологии блокчейн можно узнать <a href="https://bitcoin.org" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 underline">здесь</a>.
+                    </p>
+                  </div>
+
+                  {/* Usage Section */}
+                  <div>
+                    <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-4">
+                      Использование
+                    </h3>
+                    <div className="space-y-3 text-slate-700 dark:text-slate-300 text-sm sm:text-base">
+                      <p>
+                        <strong>Отслеживание цены биткоина:</strong> Оставьте сайт открытым во вкладке браузера для мониторинга цены.
+                      </p>
+                      <p>
+                        <strong>Покупка биткоина:</strong> Используйте поля ввода для просмотра эквивалентных сумм в биткоинах.
+                      </p>
+                      <p>
+                        <strong>Проверка стоимости биткоина:</strong> Введите количество имеющихся биткоинов для наблюдения за изменением стоимости.
+                      </p>
+                      <p>
+                        <strong>Мобильные устройства:</strong> Сайт оптимизирован для мобильных устройств. Добавьте его на главный экран для быстрого доступа.
+                      </p>
+                      <p>
+                        <strong>Конвертация в меньшие единицы:</strong> Используйте единицы <button onClick={setConverterToSats} className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 underline">сатоши (s)</button>, <button onClick={setConverterToMBTC} className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 underline">микробиткоины (μ)</button>, <button onClick={setConverterToBTC} className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 underline">миллибиткоины (m)</button> и горячие клавиши (S, u, m, k) для переключения.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Data Sources */}
+                  <div>
+                    <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-4">
+                      Данные
+                    </h3>
+                    <p className="text-slate-700 dark:text-slate-300 text-sm sm:text-base">
+                      Данные о ценах собираются с множественных рынков и обновляются каждую минуту. 
+                      По умолчанию отображается средневзвешенная цена по объему торгов, 
+                      но вы можете выбрать конкретные источники в настройках.
+                    </p>
+                  </div>
+
+                  {/* Contact */}
+                  <div>
+                    <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-4">
+                      Контакт
+                    </h3>
+                    <p className="text-slate-700 dark:text-slate-300 text-sm sm:text-base">
+                      Свяжитесь с нами через <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 underline">Twitter/X</a> для предложений, 
+                      сообщений об ошибках или рекламных запросов.
+                    </p>
+                  </div>
+
+                  {/* Disclaimer */}
+                  <div>
+                    <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-4">
+                      Отказ от ответственности
+                    </h3>
+                    <p className="text-slate-700 dark:text-slate-300 text-sm sm:text-base">
+                      Курсы валют предоставляются исключительно в информационных целях. 
+                      Их точность не гарантируется и может изменяться без предварительного уведомления.
+                    </p>
+                  </div>
+
+
+                </div>
+              </div>
             </div>
           </div>
         </main>
       </div>
+
+      {/* Scroll to top button */}
+      <button
+        onClick={scrollToTop}
+        className="fixed bottom-6 right-6 z-50 p-3 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-110 active:scale-95"
+        title="Наверх"
+      >
+        <ChevronUpIcon className="w-5 h-5" />
+      </button>
     </div>
   );
 }

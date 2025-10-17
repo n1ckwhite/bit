@@ -75,25 +75,29 @@ input[type="number"]:focus, input[type="text"]:focus, select:focus {
 .custom-arrow-button {
   cursor: pointer !important;
   transition: all 0.15s ease-in-out;
+  background-color: transparent !important;
+  border: none !important;
+  min-width: 20px !important;
+  min-height: 16px !important;
 }
 
 .custom-arrow-button:hover {
-  background-color: rgba(59, 130, 246, 0.1) !important;
-  transform: scale(1.1);
+  background-color: rgba(59, 130, 246, 0.08) !important;
+  transform: scale(1.02);
 }
 
 .custom-arrow-button:active {
-  transform: scale(0.95);
-  background-color: rgba(59, 130, 246, 0.2) !important;
+  transform: scale(0.98);
+  background-color: rgba(59, 130, 246, 0.12) !important;
 }
 
 /* Dark mode arrow buttons */
 .dark .custom-arrow-button:hover {
-  background-color: rgba(96, 165, 250, 0.1) !important;
+  background-color: rgba(96, 165, 250, 0.08) !important;
 }
 
 .dark .custom-arrow-button:active {
-  background-color: rgba(96, 165, 250, 0.2) !important;
+  background-color: rgba(96, 165, 250, 0.12) !important;
 }
 
 /* Additional button cursor fix */
