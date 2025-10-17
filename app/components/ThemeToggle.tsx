@@ -1,56 +1,34 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { SunIcon, MoonIcon, ComputerDesktopIcon } from "@heroicons/react/24/outline";
+import { SunIcon, MoonIcon } from "@heroicons/react/24/outline";
 
 export default function ThemeToggle() {
   const [mounted, setMounted] = useState(false);
-  const [theme, setTheme] = useState<"light" | "dark" | "system">("system");
+  const [theme, setTheme] = useState<"light" | "dark">("light");
 
   useEffect(() => {
     setMounted(true);
     
-    // Get saved theme or default to system
-    const saved = localStorage.getItem("theme") as "light" | "dark" | "system" | null;
-    const initialTheme = saved || "system";
+    // Get saved theme or default to light
+    const saved = localStorage.getItem("theme") as "light" | "dark" | null;
+    const initialTheme = saved || "light";
     setTheme(initialTheme);
     
     // Apply initial theme
     applyTheme(initialTheme);
-    
-    // Listen for system theme changes
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    const handleSystemThemeChange = () => {
-      if (theme === "system") {
-        applyTheme("system");
-      }
-    };
-    
-    mediaQuery.addEventListener("change", handleSystemThemeChange);
-    
-    return () => {
-      mediaQuery.removeEventListener("change", handleSystemThemeChange);
-    };
-  }, [theme]);
+  }, []);
 
-  const applyTheme = (newTheme: "light" | "dark" | "system") => {
+  const applyTheme = (newTheme: "light" | "dark") => {
     const root = document.documentElement;
     
     // Remove existing theme classes
     root.classList.remove("light", "dark");
     
-    let effectiveTheme: "light" | "dark";
-    
-    if (newTheme === "system") {
-      effectiveTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-    } else {
-      effectiveTheme = newTheme;
-    }
-    
-    console.log("Applying theme:", newTheme, "effective:", effectiveTheme);
+    console.log("Applying theme:", newTheme);
     
     // Apply theme class to html element only (Tailwind requirement)
-    root.classList.add(effectiveTheme);
+    root.classList.add(newTheme);
     
     console.log("HTML classes after applying theme:", root.className);
     
@@ -59,14 +37,14 @@ export default function ThemeToggle() {
     
     // Trigger custom event for other components
     window.dispatchEvent(new CustomEvent('themeChange', { 
-      detail: { theme: newTheme, effectiveTheme } 
+      detail: { theme: newTheme, effectiveTheme: newTheme } 
     }));
     
     localStorage.setItem("theme", newTheme);
   };
 
   const cycleTheme = () => {
-    const nextTheme = theme === "light" ? "dark" : theme === "dark" ? "system" : "light";
+    const nextTheme = theme === "light" ? "dark" : "light";
     console.log("Switching theme from", theme, "to", nextTheme);
     setTheme(nextTheme);
     applyTheme(nextTheme);
@@ -79,38 +57,22 @@ export default function ThemeToggle() {
   }
 
   const getIcon = () => {
-    if (theme === "system") {
-      return <ComputerDesktopIcon className="w-5 h-5" />;
-    }
-    
-    switch (theme) {
-      case "dark":
-        return <MoonIcon className="w-5 h-5" />;
-      case "light":
-        return <SunIcon className="w-5 h-5" />;
-      default:
-        return <ComputerDesktopIcon className="w-5 h-5" />;
-    }
+    return theme === "dark" ? <MoonIcon className="w-5 h-5" /> : <SunIcon className="w-5 h-5" />;
   };
 
   const getTooltip = () => {
     const themeNames = {
       light: "Светлая",
-      dark: "Тёмная", 
-      system: "Авто (системная)"
+      dark: "Тёмная"
     };
     
     const currentThemeName = themeNames[theme];
-    const nextThemeName = theme === "light" ? "Тёмную" : theme === "dark" ? "Авто" : "Светлую";
+    const nextThemeName = theme === "light" ? "Тёмную" : "Светлую";
     
     return `${currentThemeName} тема. Клик — переключить на ${nextThemeName}`;
   };
 
   const getCurrentThemeInfo = () => {
-    if (theme === "system") {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-      return systemTheme === "dark" ? "🌙 Тёмная (система)" : "☀️ Светлая (система)";
-    }
     return theme === "dark" ? "🌙 Тёмная" : "☀️ Светлая";
   };
 
