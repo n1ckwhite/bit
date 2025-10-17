@@ -35,11 +35,9 @@ export default function ThemeToggle() {
 
   const applyTheme = (newTheme: "light" | "dark" | "system") => {
     const root = document.documentElement;
-    const body = document.body;
     
     // Remove existing theme classes
     root.classList.remove("light", "dark");
-    body.classList.remove("light", "dark");
     
     let effectiveTheme: "light" | "dark";
     
@@ -51,16 +49,13 @@ export default function ThemeToggle() {
     
     console.log("Applying theme:", newTheme, "effective:", effectiveTheme);
     
-    // Apply theme class to both html and body elements
+    // Apply theme class to html element only (Tailwind requirement)
     root.classList.add(effectiveTheme);
-    body.classList.add(effectiveTheme);
     
     console.log("HTML classes after applying theme:", root.className);
-    console.log("Body classes after applying theme:", body.className);
     
     // Force reflow to ensure styles are applied
     root.offsetHeight;
-    body.offsetHeight;
     
     // Trigger custom event for other components
     window.dispatchEvent(new CustomEvent('themeChange', { 
