@@ -5,6 +5,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { ChartBarIcon, ClockIcon } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
+import { useTheme } from "../contexts/ThemeContext";
 
 type HistoryPoint = {
   timestamp: number;
@@ -29,18 +30,8 @@ export default function PriceChart({ vs, className }: PriceChartProps) {
   const [history, setHistory] = useState<HistoryData | null>(null);
   const [interval, setInterval] = useState<"1h" | "1d">("1h");
   const [loading, setLoading] = useState(false);
-  const [isDark, setIsDark] = useState(false);
-
-  useEffect(() => {
-    const checkTheme = () => {
-      setIsDark(document.documentElement.classList.contains('dark'));
-    };
-    
-    checkTheme();
-    window.addEventListener('themeChange', checkTheme);
-    
-    return () => window.removeEventListener('themeChange', checkTheme);
-  }, []);
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   const fetchHistory = async (currentVs: string, currentInterval: "1h" | "1d") => {
     setLoading(true);

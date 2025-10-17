@@ -5,6 +5,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { ChartBarSquareIcon, ClockIcon } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
+import { useTheme } from "../contexts/ThemeContext";
 
 type CandleData = {
   timestamp: number;
@@ -25,18 +26,8 @@ export default function AdvancedChart({ vs, className }: AdvancedChartProps) {
   const [timeframe, setTimeframe] = useState<"1h" | "4h" | "1d">("1h");
   const [data, setData] = useState<CandleData[]>([]);
   const [loading, setLoading] = useState(false);
-  const [isDark, setIsDark] = useState(false);
-
-  useEffect(() => {
-    const checkTheme = () => {
-      setIsDark(document.documentElement.classList.contains('dark'));
-    };
-    
-    checkTheme();
-    window.addEventListener('themeChange', checkTheme);
-    
-    return () => window.removeEventListener('themeChange', checkTheme);
-  }, []);
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   const fetchCandleData = async (currentVs: string, currentTimeframe: "1h" | "4h" | "1d") => {
     setLoading(true);
