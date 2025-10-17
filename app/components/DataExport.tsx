@@ -21,7 +21,6 @@ const DataExport = memo(function DataExport({
   currentPrice,
   currency,
   history,
-  className,
 }: DataExportProps) {
   const [open, setOpen] = useState(false);
   const { t } = useI18n();

@@ -238,7 +238,6 @@ export default function Home() {
 
       const shouldShow = scrollTop > 100;
       setShowScrollButton(shouldShow);
-
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -382,7 +381,9 @@ export default function Home() {
                   </div>
                   <div>
                     <h1 className='text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-slate-900 dark:text-white'>
-                      {mounted ? t("title", { sym: currentSymbol }) : t("title", { sym: "BTC" })}
+                      {mounted
+                        ? t("title", { sym: currentSymbol })
+                        : t("title", { sym: "BTC" })}
                     </h1>
                     <p className='text-xs sm:text-sm text-slate-600 dark:text-slate-400 hidden sm:block'>
                       {t("heroSubtitle")}
@@ -536,10 +537,15 @@ export default function Home() {
               <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 lg:gap-4 xl:gap-6'>
                 {/* Crypto Select */}
                 <div className='space-y-2'>
-                  <label className='block text-sm font-medium text-slate-700 dark:text-slate-300'>
+                  <label
+                    htmlFor='cryptoSelect'
+                    className='block text-sm font-medium text-slate-700 dark:text-slate-300'
+                  >
                     {t("crypto")}
                   </label>
                   <select
+                    id='cryptoSelect'
+                    name='crypto'
                     value={baseCoin}
                     onChange={(e) => setBaseCoin(e.target.value)}
                     className='w-full px-2.5 sm:px-3 lg:px-4 py-2.5 sm:py-3 lg:py-3.5 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm'
@@ -684,7 +690,11 @@ export default function Home() {
                     {currencyOpen && (
                       <div className='absolute z-50 mt-2 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md sm:rounded-lg shadow-lg overflow-hidden'>
                         <div className='p-2 border-b border-slate-200 dark:border-slate-700'>
+                          <label htmlFor='currencySearch' className='sr-only'>
+                            {t("searchCurrency")}
+                          </label>
                           <input
+                            id='currencySearch'
                             autoFocus
                             type='text'
                             value={currencyQuery}

@@ -30,10 +30,7 @@ type AdvancedChartProps = {
   className?: string;
 };
 
-const AdvancedChart = memo(function AdvancedChart({
-  vs,
-  className,
-}: AdvancedChartProps) {
+const AdvancedChart = memo(function AdvancedChart({ vs }: AdvancedChartProps) {
   const [timeframe] = useState<"1h">("1h");
   const [hours, setHours] = useState<168 | 336>(168);
   const [showMA7, setShowMA7] = useState<boolean>(true);

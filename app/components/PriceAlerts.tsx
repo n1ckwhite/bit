@@ -254,11 +254,16 @@ const PriceAlerts = memo(function PriceAlerts({
 
             <div className='space-y-4'>
               <div>
-                <label className='block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2'>
+                <label
+                  htmlFor='targetPriceInput'
+                  className='block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2'
+                >
                   {t("targetPrice")}
                 </label>
                 <div className='relative'>
                   <input
+                    id='targetPriceInput'
+                    name='targetPrice'
                     type='number'
                     value={newAlert.targetPrice}
                     onChange={(e) =>
