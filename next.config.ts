@@ -1,68 +1,50 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* Performance optimizations */
   experimental: {},
-  
-  /* Output configuration */
-  
-  /* Compiler optimizations */
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
     styledComponents: true,
   },
-  
-  /* Modern browser support - ES2020+ */
-  
-  /* Bundle optimization */
   webpack: (config, { dev, isServer }) => {
     if (!dev && !isServer) {
-      // Enhanced tree shaking optimization
       config.optimization.usedExports = true;
       config.optimization.sideEffects = false;
-
-      // More aggressive bundle splitting
       config.optimization.splitChunks = {
         chunks: 'all',
         maxInitialRequests: 25,
         maxAsyncRequests: 25,
         cacheGroups: {
-          // Core React libraries
           react: {
             test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
             name: 'react',
             chunks: 'all',
             priority: 40,
           },
-          // Chart libraries
           charts: {
             test: /[\\/]node_modules[\\/]recharts[\\/]/,
             name: 'charts',
             chunks: 'all',
             priority: 30,
           },
-          // UI libraries
           ui: {
             test: /[\\/]node_modules[\\/]@heroicons[\\/]/,
             name: 'ui',
             chunks: 'all',
             priority: 25,
           },
-          // Date utilities
           date: {
             test: /[\\/]node_modules[\\/]date-fns[\\/]/,
             name: 'date',
             chunks: 'all',
             priority: 20,
           },
-          // Other vendors
           vendor: {
             test: /[\\/]node_modules[\\/]/,
             name: 'vendors',
             chunks: 'all',
             priority: 10,
           },
-          // Common chunks
           common: {
             name: 'common',
             minChunks: 2,
@@ -82,7 +64,6 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 60,
   },
   
-  /* Headers for performance */
   async headers() {
     return [
       {

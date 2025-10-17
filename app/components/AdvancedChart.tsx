@@ -22,11 +22,9 @@ type AdvancedChartProps = {
 };
 
 const AdvancedChart = memo(function AdvancedChart({ vs, className }: AdvancedChartProps) {
-  // Тип графика фиксирован как область; используем почасовые данные и переключаем диапазон часов
   const [timeframe] = useState<"1h">("1h");
   const [hours, setHours] = useState<168 | 336>(168);
   const [showMA7, setShowMA7] = useState<boolean>(true);
-  // Оставляем один индикатор для наглядности
   const [data, setData] = useState<CandleData[]>([]);
   const [loading, setLoading] = useState(false);
   const { theme } = useTheme();
@@ -36,7 +34,6 @@ const AdvancedChart = memo(function AdvancedChart({ vs, className }: AdvancedCha
   const fetchCandleData = useCallback(async (currentVs: string, currentTimeframe: "1h", limitHours: 168 | 336) => {
     setLoading(true);
     try {
-      // Map timeframes to Binance intervals
       const intervalMap = {
         "1h": "1h",
       } as const;
@@ -49,7 +46,6 @@ const AdvancedChart = memo(function AdvancedChart({ vs, className }: AdvancedCha
         { cache: "no-store" }
       );
       if (!res.ok) {
-        // Graceful fallback: don't throw, just keep previous data
         console.warn("History request failed:", res.status);
         setData([]);
         return;
@@ -96,14 +92,12 @@ const AdvancedChart = memo(function AdvancedChart({ vs, className }: AdvancedCha
   }, [vs]);
 
   const chartData = useMemo(() => {
-    // Prepare base points
     const points = data.map(point => ({
       timestamp: point.timestamp,
       close: Math.round(point.close * 100) / 100,
       time: formatXAxis(point.timestamp),
     }));
 
-    // Helper to compute simple moving average
     const computeMA = (windowSize: number) => {
       const result: Array<number | undefined> = new Array(points.length).fill(undefined);
       let sum = 0;

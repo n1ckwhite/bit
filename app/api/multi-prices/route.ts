@@ -24,7 +24,7 @@ async function fetchWithTimeout(url: string, timeoutMs: number): Promise<Respons
   try {
     const res = await fetch(url, { 
       signal: controller.signal, 
-      next: { revalidate: 120 } // ISR: revalidate every 2 minutes for multi-prices
+      next: { revalidate: 120 } 
     });
     return res;
   } finally {
@@ -84,7 +84,7 @@ export async function GET(req: NextRequest): Promise<Response> {
   }
 
   const body: MultiPricesResponse = {
-    data: quotes.sort((a, b) => (b.marketCap || 0) - (a.marketCap || 0)), // Sort by market cap
+    data: quotes.sort((a, b) => (b.marketCap || 0) - (a.marketCap || 0)), 
     updatedAt: new Date().toISOString(),
   };
 

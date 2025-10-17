@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 
 type HistoryPoint = {
-  timestamp: number; // Unix timestamp in seconds
+  timestamp: number; 
   price: number;
   volume?: number;
 };
@@ -20,7 +20,7 @@ async function fetchWithTimeout(url: string, timeoutMs: number): Promise<Respons
   try {
     const res = await fetch(url, { 
       signal: controller.signal, 
-      next: { revalidate: 300 } // ISR: revalidate every 5 minutes for history
+      next: { revalidate: 300 } 
     });
     return res;
   } finally {
@@ -48,7 +48,6 @@ async function getCoinGeckoHistory(vs: string, days: number): Promise<HistoryPoi
 
 async function getCoindeskUsdHistory(days: number): Promise<HistoryPoint[]> {
   try {
-    // Coindesk historical close in USD per day
     const end = new Date();
     const start = new Date(end.getTime() - days * 24 * 60 * 60 * 1000);
     const fmt = (d: Date) => d.toISOString().slice(0, 10);
@@ -122,7 +121,6 @@ function mergeHistoryData(sources: HistoryPoint[][]): HistoryPoint[] {
   if (sources.length === 0) return [];
   if (sources.length === 1) return sources[0];
 
-  // Create a map of timestamp -> prices
   const priceMap = new Map<number, number[]>();
   const volumeMap = new Map<number, number[]>();
 
@@ -139,7 +137,6 @@ function mergeHistoryData(sources: HistoryPoint[][]): HistoryPoint[] {
     }
   }
 
-  // Calculate median prices and average volumes
   const result: HistoryPoint[] = [];
   for (const [timestamp, prices] of priceMap.entries()) {
     if (prices.length === 0) continue;
@@ -175,7 +172,6 @@ export async function GET(req: NextRequest): Promise<Response> {
   const interval = intervalParam as "1m" | "5m" | "1h" | "1d";
   const limit = Math.min(Number(limitParam) || 24, 1000);
 
-  // Map intervals to API parameters
   const intervalMap: Record<string, { binance: string; days: number }> = {
     "1m": { binance: "1m", days: 1 },
     "5m": { binance: "5m", days: 1 },
@@ -191,14 +187,11 @@ export async function GET(req: NextRequest): Promise<Response> {
     );
   }
 
-  // Fetch from multiple sources
   let [coingeckoData, binanceData] = await Promise.all([
     getCoinGeckoHistory(vs, config.days),
     getBinanceHistory(vs, config.binance, limit),
   ]);
 
-  // Fallback: if both are empty or CoinGecko for target currency is empty,
-  // fetch USD history and convert to target currency via latest FX rate.
   if (coingeckoData.length === 0 && vs !== "USD") {
     const [usdHistory, fx] = await Promise.all([
       getCoinGeckoHistory("USD", config.days),
@@ -213,7 +206,6 @@ export async function GET(req: NextRequest): Promise<Response> {
     }
   }
 
-  // If fx for rare currencies like KZT was not available initially, try fallback FX chain
   if (coingeckoData.length === 0 && binanceData.length === 0 && vs !== 'USD') {
     const [usdCandles, altFxRates] = await Promise.all([
       (config.days > 1 ? getCoindeskUsdHistory(config.days) : getBinanceUsdHistory(config.binance, limit)),
@@ -226,7 +218,6 @@ export async function GET(req: NextRequest): Promise<Response> {
 
   let mergedData = mergeHistoryData([coingeckoData, binanceData]);
 
-  // Final fallback: if still empty, try building from one available source or convert USD candles via FX
   if (mergedData.length === 0) {
     if (coingeckoData.length > 0) {
       mergedData = coingeckoData;
@@ -261,7 +252,7 @@ export async function GET(req: NextRequest): Promise<Response> {
     base: "BTC",
     vs,
     interval,
-    data: mergedData.slice(-limit), // Take last N points
+    data: mergedData.slice(-limit), 
     updatedAt: new Date().toISOString(),
   };
 

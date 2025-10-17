@@ -19,9 +19,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     setMounted(true);
     
-    // Only run on client side
     if (typeof window !== "undefined") {
-      // Get saved theme from localStorage
       const savedTheme = localStorage.getItem("theme") as Theme | null;
       const currentTheme = savedTheme || "dark";
       
@@ -31,21 +29,16 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const applyTheme = (newTheme: Theme) => {
-    // Only run on client side
     if (typeof window === "undefined") return;
     
     const root = document.documentElement;
     
-    // Remove existing theme classes
     root.classList.remove("light", "dark");
     
-    // Apply new theme class
     root.classList.add(newTheme);
     
-    // Save to localStorage
     localStorage.setItem("theme", newTheme);
     
-    // Trigger custom event for components that need it
     window.dispatchEvent(new CustomEvent('themeChange', { 
       detail: { theme: newTheme } 
     }));
@@ -61,7 +54,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     setTheme(newTheme);
   };
 
-  // Always provide context, but with different values during SSR
   const contextValue = {
     theme,
     toggleTheme,

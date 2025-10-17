@@ -1,15 +1,14 @@
 export type Cryptocurrency = {
-  id: string; // CoinGecko ID
-  symbol: string; // e.g., BTC, ETH, ORDI
-  name: string; // Full name
-  nameRu: string; // Russian name (backwards compatibility)
-  // Localized names per language code
+  id: string;
+  symbol: string;
+  name: string; 
+  nameRu: string; 
   names?: Partial<Record<
     'en' | 'ru' | 'de' | 'fr' | 'es' | 'tr' | 'zh' | 'it' | 'pl' | 'cs' | 'nl' | 'pt' | 'ja',
     string
   >>;
-  icon?: string; // Icon URL
-  decimals: number; // Decimal places for display
+  icon?: string; 
+  decimals: number; 
 };
 
 export const SUPPORTED_CRYPTOS: Cryptocurrency[] = [

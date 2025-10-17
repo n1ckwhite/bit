@@ -30,7 +30,6 @@ const DataExport = memo(function DataExport({ currentPrice, currency, history, c
     setOpen(false);
   }, []);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -130,7 +129,6 @@ const DataExport = memo(function DataExport({ currentPrice, currency, history, c
         console.log("Share cancelled");
       }
     } else {
-      // Fallback: copy to clipboard
       try {
         await navigator.clipboard.writeText(text);
         alert(t('copied'));

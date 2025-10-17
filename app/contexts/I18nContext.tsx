@@ -36,7 +36,6 @@ const DICTS: Record<Locale, Dict> = {
     crypto: "Cryptocurrency",
     searchCurrency: "Search currency...",
     keyboardHint: "Keys: k — BTC, m — mBTC, u — µBTC, s — sats",
-    // fiat names
     fiat_USD: "US Dollar",
     fiat_EUR: "Euro",
     fiat_GBP: "British Pound",
@@ -60,7 +59,6 @@ const DICTS: Record<Locale, Dict> = {
     contact_p: "Reach us on Twitter/X for suggestions, bug reports or ads.",
     disclaimerTitle: "Disclaimer",
     disclaimer_p: "Exchange rates are for informational purposes only and may change without notice.",
-    // Additional keys for page.tsx
     priceAlert: "Price Alert",
     priceReached: "BTC price reached {price} {currency}",
     refreshData: "Refresh data",
@@ -80,7 +78,6 @@ const DICTS: Record<Locale, Dict> = {
     scrollToTop: "Scroll to top",
     noResults: "No results found",
     loading: "Loading...",
-    // PriceAlerts keys
     priceAlerts: "Price alerts",
     addAlert: "Add",
     noAlertsYet: "No alerts yet. Add your first price alert.",
@@ -165,7 +162,6 @@ const DICTS: Record<Locale, Dict> = {
     contact_p: "Свяжитесь с нами в Twitter/X для предложений, сообщений об ошибках или рекламы.",
     disclaimerTitle: "Отказ от ответственности",
     disclaimer_p: "Курсы валют предоставляются исключительно в информационных целях и могут изменяться без предварительного уведомления.",
-    // Additional keys for page.tsx
     priceAlert: "Уведомление о цене",
     priceReached: "Цена BTC достигла {price} {currency}",
     refreshData: "Обновить данные",
@@ -185,7 +181,6 @@ const DICTS: Record<Locale, Dict> = {
     scrollToTop: "Наверх",
     noResults: "Ничего не найдено",
     loading: "Загрузка...",
-    // PriceAlerts keys
     priceAlerts: "Уведомления о цене",
     addAlert: "Добавить",
     noAlertsYet: "Нет уведомлений. Добавьте первое уведомление о достижении цены.",

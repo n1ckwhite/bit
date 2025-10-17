@@ -12,18 +12,16 @@ import {
 import ThemeToggle from "./components/ThemeToggle";
 import LanguageSelector from "./components/LanguageSelector";
 import { useI18n } from "./contexts/I18nContext";
-import { DEFAULT_FIATS } from "./lib/currencies";
+import { DEFAULT_FIATS, getLocalizedCurrencyName } from "./lib/currencies";
 import { SUPPORTED_CRYPTOS, getCryptoLocalizedName } from "./lib/crypto";
 import type { FiatCurrency } from "./lib/currencies";
 import { BitcoinUnit, fromBtc, parseUnit, toBtc } from "./lib/units";
 
-// Lazy load heavy components with preload
 const PriceChart = lazy(() => import("./components/PriceChart"));
 const PriceAlerts = lazy(() => import("./components/PriceAlerts"));
 const DataExport = lazy(() => import("./components/DataExport"));
 const AdvancedChart = lazy(() => import("./components/AdvancedChart"));
 
-// Preload components after initial render
 const preloadComponents = () => {
   import("./components/PriceChart");
   import("./components/PriceAlerts");
@@ -34,7 +32,7 @@ const preloadComponents = () => {
 type Quote = {
   base: string;
   vs: string;
-  price: number; // price of 1 BTC in vs
+  price: number; 
   updatedAt: string;
   sources: { source: string; price: number }[];
 };
@@ -60,11 +58,9 @@ export default function Home() {
   const currencyRef = useRef<HTMLDivElement>(null);
   const fiatsLoadedRef = useRef(false);
 
-  // Current crypto meta
   const currentCrypto = useMemo(() => SUPPORTED_CRYPTOS.find(c => c.id === baseCoin), [baseCoin]);
   const currentSymbol = currentCrypto?.symbol || "BTC";
   const COIN_GRADIENTS: Record<string, string> = {
-    // Refined, warmer gradient for BTC
     bitcoin: "from-amber-400 via-orange-500 to-rose-500",
     ethereum: "from-indigo-500 via-purple-500 to-indigo-600",
     solana: "from-emerald-500 via-teal-500 to-emerald-600",
@@ -78,7 +74,6 @@ export default function Home() {
   };
   const priceCardGradient = useMemo(() => COIN_GRADIENTS[baseCoin] || "from-amber-400 via-orange-500 to-rose-500", [baseCoin]);
 
-  // Functions for converter links - memoized
   const scrollToConverter = useCallback(() => {
     const converterElement = document.querySelector('[data-converter]');
     if (converterElement) {
@@ -104,22 +99,18 @@ export default function Home() {
     scrollToConverter();
   }, [scrollToConverter]);
 
-  // Scroll to top function - memoized
   const scrollToTop = useCallback(() => {
     try {
-      // Method 1: Scroll main container if it exists and has scroll
       if (mainContainerRef.current && mainContainerRef.current.scrollTop > 0) {
         mainContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
         return;
       }
       
-      // Method 2: Try window scroll
       if (window.pageYOffset > 0 || document.documentElement.scrollTop > 0) {
         window.scrollTo({ top: 0, behavior: 'smooth' });
         return;
       }
       
-      // Method 3: Fallback methods
       setTimeout(() => {
         document.documentElement.scrollTop = 0;
         document.body.scrollTop = 0;
@@ -129,7 +120,6 @@ export default function Home() {
       }, 100);
     } catch (error) {
       console.error('Scroll error:', error);
-      // Fallback to instant scroll
       window.scrollTo(0, 0);
       if (mainContainerRef.current) {
         mainContainerRef.current.scrollTop = 0;
@@ -137,7 +127,6 @@ export default function Home() {
     }
   }, []);
 
-  // Close currency dropdown on outside click / ESC
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
       if (!currencyRef.current) return;
@@ -174,21 +163,17 @@ export default function Home() {
     }
   }, [baseCoin]);
 
-  // initial and vs change
   useEffect(() => {
     fetchQuote(vs);
   }, [vs, baseCoin, fetchQuote]);
 
-  // Preload components after initial render
   useEffect(() => {
     const timer = setTimeout(preloadComponents, 1000);
     return () => clearTimeout(timer);
   }, []);
 
-  // polling every 60s with optimized interval
   useEffect(() => {
     const id = setInterval(() => {
-      // Only fetch if page is visible
       if (!document.hidden) {
         fetchQuote(vs);
       }
@@ -196,17 +181,14 @@ export default function Home() {
     return () => clearInterval(id);
   }, [vs, fetchQuote]);
 
-  // recalc fiat when quote or amounts change
   useEffect(() => {
     if (!quote) return;
     const btc = toBtc(btcAmount, unit);
     setFiatAmount(btc * quote.price);
   }, [quote, btcAmount, unit]);
 
-  // keyboard shortcuts: s,u,m,k with optimized handler
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      // Only handle if no input is focused
       if (document.activeElement?.tagName === 'INPUT') return;
       
       switch (e.key) {
@@ -221,10 +203,8 @@ export default function Home() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  // Track scroll position to show/hide scroll button
   useEffect(() => {
     const handleScroll = () => {
-      // Check both window scroll and main container scroll
       const windowScrollTop = window.pageYOffset || document.documentElement.scrollTop;
       const containerScrollTop = mainContainerRef.current?.scrollTop || 0;
       const scrollTop = Math.max(windowScrollTop, containerScrollTop);
@@ -232,13 +212,11 @@ export default function Home() {
       const shouldShow = scrollTop > 100;
       setShowScrollButton(shouldShow);
       
-      // Debug logging (remove in production)
       if (process.env.NODE_ENV === 'development') {
         console.log('Scroll position:', { windowScrollTop, containerScrollTop, scrollTop, shouldShow });
       }
     };
 
-    // Add scroll listener to both window and main container
     window.addEventListener("scroll", handleScroll, { passive: true });
     
     const mainContainer = mainContainerRef.current;
@@ -246,7 +224,6 @@ export default function Home() {
       mainContainer.addEventListener("scroll", handleScroll, { passive: true });
     }
 
-    // Initial check
     handleScroll();
 
     return () => {
@@ -273,7 +250,6 @@ export default function Home() {
     }
   }, [fiatsLoading]);
 
-  // Lazy prefetch after initial idle
   useEffect(() => {
     const t = setTimeout(() => {
       fetchFiats();
@@ -281,14 +257,12 @@ export default function Home() {
     return () => clearTimeout(t);
   }, [fetchFiats]);
 
-  // Fetch when dropdown first opens
   useEffect(() => {
     if (currencyOpen) fetchFiats();
   }, [currencyOpen, fetchFiats]);
 
   const combinedFiats: FiatCurrency[] = useMemo(() => {
     const byCode = new Map<string, FiatCurrency>();
-    // Remote first to prefer enriched payload from API
     for (const c of fiatsRemote || []) byCode.set(c.code, c);
     for (const c of DEFAULT_FIATS) if (!byCode.has(c.code)) byCode.set(c.code, c);
     return Array.from(byCode.values());
@@ -299,25 +273,18 @@ export default function Home() {
     const q = currencyQuery.trim().toLowerCase();
     if (!q) return combinedFiats;
     return combinedFiats.filter(c => {
-      // Search by currency code
       if (c.code.toLowerCase().includes(q)) return true;
       
-      // Search by symbol
       if (c.symbol.toLowerCase().includes(q)) return true;
       
-      // Search by localized name in current locale
-      const localizedName = c.names?.[locale as keyof NonNullable<typeof c.names>] || c.nameRu;
+      const localizedName = getLocalizedCurrencyName(c, locale);
       if (localizedName.toLowerCase().includes(q)) return true;
       
-      // Search by all available localized names
       if (c.names) {
         for (const name of Object.values(c.names)) {
           if (name.toLowerCase().includes(q)) return true;
         }
       }
-      
-      // Search by Russian name (fallback)
-      if (c.nameRu.toLowerCase().includes(q)) return true;
       
       return false;
     });
@@ -634,7 +601,7 @@ export default function Home() {
                               >
                                 <div className="flex flex-col items-start">
                                   <span className="text-slate-900 dark:text-white font-medium">
-                                    {c.names?.[locale as keyof NonNullable<typeof c.names>] || c.nameRu}
+                                    {getLocalizedCurrencyName(c, locale)}
                                   </span>
                                   <span className="text-xs text-slate-500 dark:text-slate-400">
                                     {c.symbol} {c.code}

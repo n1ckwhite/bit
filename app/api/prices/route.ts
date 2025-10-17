@@ -1,20 +1,20 @@
 import { NextRequest } from "next/server";
 
 type VsCurrency = string;
-type BaseCoinId = string; // CoinGecko coin id, e.g., 'bitcoin', 'ethereum'
+type BaseCoinId = string; 
 
 type SourceQuote = {
   source: string;
-  price: number; // price of 1 BTC in vs currency
-  volume?: number; // 24h volume for weighting
+  price: number; 
+  volume?: number; 
 };
 
 type PricesResponse = {
-  base: string; // symbol, e.g., BTC, ETH
+  base: string; 
   vs: VsCurrency;
-  price: number; // consolidated price
+  price: number; 
   sources: SourceQuote[];
-  updatedAt: string; // ISO string
+  updatedAt: string; 
 };
 
 async function fetchWithTimeout(url: string, timeoutMs: number): Promise<Response> {
@@ -23,7 +23,7 @@ async function fetchWithTimeout(url: string, timeoutMs: number): Promise<Respons
   try {
     const res = await fetch(url, { 
       signal: controller.signal, 
-      next: { revalidate: 30 } // ISR: revalidate every 30 seconds
+      next: { revalidate: 30 } 
     });
     return res;
   } finally {
@@ -58,12 +58,11 @@ async function getKrakenUSD(): Promise<SourceQuote | null> {
   }
 }
 
-// Direct BTC/<vs> from Kraken with volume
 async function getKrakenDirect(vs: VsCurrency): Promise<SourceQuote | null> {
   try {
     const supported = new Set(["GBP", "EUR", "CAD", "AUD"]);
     if (!supported.has(vs)) return null;
-    const pair = `XBT${vs}`; // Kraken accepts XBT as base symbol
+    const pair = `XBT${vs}`; 
     const res = await fetchWithTimeout(`https://api.kraken.com/0/public/Ticker?pair=${pair}`, 4000);
     if (!res.ok) return null;
     const data: any = await res.json();
@@ -71,7 +70,7 @@ async function getKrakenDirect(vs: VsCurrency): Promise<SourceQuote | null> {
     const key = result ? Object.keys(result)[0] : undefined;
     const obj = key ? result[key] : undefined;
     const price = Number(obj?.c?.[0]);
-    const volume = Number(obj?.v?.[1]); // 24h volume
+    const volume = Number(obj?.v?.[1]); 
     if (!Number.isFinite(price)) return null;
     return { source: `kraken:${vs}`, price, volume: Number.isFinite(volume) ? volume : undefined };
   } catch {
@@ -79,7 +78,6 @@ async function getKrakenDirect(vs: VsCurrency): Promise<SourceQuote | null> {
   }
 }
 
-// Direct BTC/<vs> from Bitstamp with volume
 async function getBitstampDirect(vs: VsCurrency): Promise<SourceQuote | null> {
   try {
     const supported = new Set(["GBP", "EUR", "CAD", "AUD"]);
@@ -89,7 +87,7 @@ async function getBitstampDirect(vs: VsCurrency): Promise<SourceQuote | null> {
     if (!res.ok) return null;
     const data: any = await res.json();
     const price = Number(data?.last);
-    const volume = Number(data?.volume); // 24h base volume (BTC)
+    const volume = Number(data?.volume); 
     if (!Number.isFinite(price)) return null;
     return { source: `bitstamp:${vs}`, price, volume: Number.isFinite(volume) ? volume : undefined };
   } catch {
@@ -97,7 +95,6 @@ async function getBitstampDirect(vs: VsCurrency): Promise<SourceQuote | null> {
   }
 }
 
-// Direct BTC/<vs> from Coinbase Exchange with volume
 async function getCoinbaseDirect(vs: VsCurrency): Promise<SourceQuote | null> {
   try {
     const supported = new Set(["GBP", "EUR", "CAD", "AUD"]);
@@ -169,7 +166,6 @@ async function getFxRates(base: string): Promise<Record<string, number> | null> 
     const rates = data?.rates;
     return rates && typeof rates === "object" ? (rates as Record<string, number>) : null;
   } catch {
-    // Try Frankfurter as a backup FX provider
     try {
       const res2 = await fetchWithTimeout(
         `https://api.frankfurter.app/latest?from=${encodeURIComponent(base)}`,
@@ -180,7 +176,6 @@ async function getFxRates(base: string): Promise<Record<string, number> | null> 
       const rates2 = data2?.rates;
       return rates2 && typeof rates2 === 'object' ? (rates2 as Record<string, number>) : null;
     } catch {
-      // Third fallback: open.er-api.com
       try {
         const res3 = await fetchWithTimeout(
           `https://open.er-api.com/v6/latest/${encodeURIComponent(base)}`,
@@ -197,7 +192,6 @@ async function getFxRates(base: string): Promise<Record<string, number> | null> 
   }
 }
 
-// Our own FX aggregation: take median across providers with static last-resort values
 async function getFxRateAggregated(base: string, target: string): Promise<number | null> {
   if (base === target) return 1;
   target = target.toUpperCase();
@@ -243,7 +237,6 @@ async function getFxRateAggregated(base: string, target: string): Promise<number
     return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
   }
 
-  // Static last-resort USD-based rates; if base != USD, bail out
   const STATIC_USD_RATES: Record<string, number> = {
     EUR: 0.92,
     GBP: 0.78,
@@ -260,7 +253,6 @@ async function getFxRateAggregated(base: string, target: string): Promise<number
 function weightedAverage(quotes: SourceQuote[]): number {
   if (quotes.length === 0) return NaN;
   
-  // If no volumes available, fall back to median
   const hasVolumes = quotes.some(q => q.volume && q.volume > 0);
   if (!hasVolumes) {
     const prices = quotes.map(q => q.price);
@@ -269,7 +261,6 @@ function weightedAverage(quotes: SourceQuote[]): number {
     return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
   }
 
-  // Weighted average by volume
   let totalWeight = 0;
   let weightedSum = 0;
   
@@ -291,7 +282,6 @@ export async function GET(req: NextRequest): Promise<Response> {
   const vs = vsParam.toUpperCase();
   const isBitcoin = baseParam === "bitcoin";
 
-  // First, gather USD quotes from multiple exchanges (robust primary path)
   const [binance, kraken, bitstamp, coindesk] = await Promise.all([
     getBinanceUSD(),
     getKrakenUSD(),
@@ -300,7 +290,6 @@ export async function GET(req: NextRequest): Promise<Response> {
   ]);
   const usdSources = [binance, kraken, bitstamp, coindesk].filter(Boolean) as SourceQuote[];
 
-  // If vs is not USD, try direct quotes from major exchanges for higher quality
   const [krakenDirect, bitstampDirect, coinbaseDirect, directVsCoingecko, coingeckoUsd] = await Promise.all([
     isBitcoin ? getKrakenDirect(vs) : Promise.resolve(null),
     isBitcoin ? getBitstampDirect(vs) : Promise.resolve(null),
@@ -311,11 +300,9 @@ export async function GET(req: NextRequest): Promise<Response> {
   const fxRateToVs = vs === 'USD' ? 1 : await getFxRateAggregated('USD', vs);
 
   const consolidated: SourceQuote[] = [];
-  // Direct vs quotes preferred when available
   for (const q of [krakenDirect, bitstampDirect, coinbaseDirect, directVsCoingecko]) {
     if (q) consolidated.push(q);
   }
-  // USD quotes converted to target vs via FX
   if (usdSources.length > 0) {
     for (const s of usdSources) {
       if (vs === "USD") {
@@ -325,13 +312,11 @@ export async function GET(req: NextRequest): Promise<Response> {
       }
     }
   }
-  // CoinGecko USD converted via FX as an additional resilient source
   if (coingeckoUsd && fxRateToVs && vs !== "USD") {
     consolidated.push({ source: `coingecko:USD->${vs}`, price: coingeckoUsd.price * (fxRateToVs as number) });
   }
 
   if (consolidated.length === 0) {
-    // Fallback: try compute via USD and FX
     if (vs !== 'USD' && fxRateToVs) {
       const fx = fxRateToVs;
       if (usdSources.length > 0) {
@@ -344,7 +329,6 @@ export async function GET(req: NextRequest): Promise<Response> {
 
   let price = weightedAverage(consolidated);
   if (!Number.isFinite(price)) {
-    // Robust fallback to ensure numeric result
     const altDirect = directVsCoingecko?.price || krakenDirect?.price || bitstampDirect?.price || coinbaseDirect?.price;
     const altFx = fxRateToVs
       ? (usdSources[0]?.price ?? coingeckoUsd?.price ?? undefined) * (fxRateToVs as number)

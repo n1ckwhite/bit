@@ -17,7 +17,7 @@ type PriceAlert = {
   targetPrice: number;
   currency: string;
   unit: BitcoinUnit;
-  isAbove: boolean; // true = alert when price goes above, false = below
+  isAbove: boolean; 
   isActive: boolean;
   createdAt: string;
 };
@@ -39,7 +39,6 @@ const PriceAlerts = memo(function PriceAlerts({ currentPrice, currency, onAlertT
   });
   const [notification, setNotification] = useState<{ message: string; severity: "success" | "error" } | null>(null);
 
-  // Load alerts from localStorage
   useEffect(() => {
     const saved = localStorage.getItem("priceAlerts");
     if (saved) {
@@ -51,12 +50,10 @@ const PriceAlerts = memo(function PriceAlerts({ currentPrice, currency, onAlertT
     }
   }, []);
 
-  // Save alerts to localStorage
   useEffect(() => {
     localStorage.setItem("priceAlerts", JSON.stringify(alerts));
   }, [alerts]);
 
-  // Check for triggered alerts
   useEffect(() => {
     const triggered = alerts.filter(alert => 
       alert.isActive && 
@@ -67,7 +64,6 @@ const PriceAlerts = memo(function PriceAlerts({ currentPrice, currency, onAlertT
 
     triggered.forEach(alert => {
       onAlertTriggered(alert);
-      // Deactivate triggered alert
       setAlerts(prev => prev.map(a => 
         a.id === alert.id ? { ...a, isActive: false } : a
       ));

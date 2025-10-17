@@ -76,10 +76,9 @@ const PriceChart = memo(function PriceChart({ vs, baseSymbol, className }: Price
 
   const chartData = useMemo(() => {
     if (!history?.data) return [];
-    // Optimize data processing with reduced precision for better performance
     return history.data.map(point => ({
       timestamp: point.timestamp,
-      price: Math.round(point.price * 100) / 100, // Round to 2 decimal places
+      price: Math.round(point.price * 100) / 100, 
       time: formatXAxis(point.timestamp),
     }));
   }, [history?.data, formatXAxis]);
