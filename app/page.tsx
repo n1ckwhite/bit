@@ -11,6 +11,7 @@ import {
 } from "@heroicons/react/24/outline";
 import ThemeToggle from "./components/ThemeToggle";
 import { DEFAULT_FIATS } from "./lib/currencies";
+import { SUPPORTED_CRYPTOS } from "./lib/crypto";
 import type { FiatCurrency } from "./lib/currencies";
 import { BitcoinUnit, fromBtc, parseUnit, toBtc } from "./lib/units";
 
@@ -29,7 +30,7 @@ const preloadComponents = () => {
 };
 
 type Quote = {
-  base: "BTC";
+  base: string;
   vs: string;
   price: number; // price of 1 BTC in vs
   updatedAt: string;
@@ -39,6 +40,7 @@ type Quote = {
 export default function Home() {
   const [vs, setVs] = useState("USD");
   const [unit, setUnit] = useState<BitcoinUnit>("BTC");
+  const [baseCoin, setBaseCoin] = useState<string>("bitcoin");
   const [btcAmount, setBtcAmount] = useState<number>(1);
   const [fiatAmount, setFiatAmount] = useState<number>(0);
   const [quote, setQuote] = useState<Quote | null>(null);
@@ -54,6 +56,24 @@ export default function Home() {
   const mainContainerRef = useRef<HTMLDivElement>(null);
   const currencyRef = useRef<HTMLDivElement>(null);
   const fiatsLoadedRef = useRef(false);
+
+  // Current crypto meta
+  const currentCrypto = useMemo(() => SUPPORTED_CRYPTOS.find(c => c.id === baseCoin), [baseCoin]);
+  const currentSymbol = currentCrypto?.symbol || "BTC";
+  const COIN_GRADIENTS: Record<string, string> = {
+    // Refined, warmer gradient for BTC
+    bitcoin: "from-amber-400 via-orange-500 to-rose-500",
+    ethereum: "from-indigo-500 via-purple-500 to-indigo-600",
+    solana: "from-emerald-500 via-teal-500 to-emerald-600",
+    litecoin: "from-slate-400 via-slate-500 to-slate-600",
+    binancecoin: "from-amber-400 via-yellow-500 to-amber-600",
+    cardano: "from-blue-500 via-cyan-500 to-blue-600",
+    dogecoin: "from-yellow-400 via-amber-500 to-yellow-600",
+    polygon: "from-fuchsia-500 via-purple-500 to-fuchsia-600",
+    chainlink: "from-blue-600 via-indigo-600 to-blue-700",
+    ordinals: "from-rose-500 via-pink-500 to-rose-600",
+  };
+  const priceCardGradient = useMemo(() => COIN_GRADIENTS[baseCoin] || "from-amber-400 via-orange-500 to-rose-500", [baseCoin]);
 
   // Functions for converter links - memoized
   const scrollToConverter = useCallback(() => {
@@ -136,7 +156,7 @@ export default function Home() {
     setLoading(true);
     try {
       const [priceRes, historyRes] = await Promise.all([
-        fetch(`/api/prices?vs=${encodeURIComponent(currentVs)}`, { cache: "no-store" }),
+        fetch(`/api/prices?vs=${encodeURIComponent(currentVs)}&base=${encodeURIComponent(baseCoin)}`, { cache: "no-store" }),
         fetch(`/api/history?vs=${encodeURIComponent(currentVs)}&interval=1h&limit=24`, { cache: "no-store" })
       ]);
       
@@ -149,12 +169,12 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [baseCoin]);
 
   // initial and vs change
   useEffect(() => {
     fetchQuote(vs);
-  }, [vs, fetchQuote]);
+  }, [vs, baseCoin, fetchQuote]);
 
   // Preload components after initial render
   useEffect(() => {
@@ -329,7 +349,7 @@ export default function Home() {
                   </div>
                   <div>
                     <h1 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-slate-900 dark:text-white">
-                      Курс
+                      Курс {currentSymbol}
                     </h1>
                     <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 hidden sm:block">
                       Конвертер и график в реальном времени
@@ -359,14 +379,14 @@ export default function Home() {
           <div className="max-w-7xl mx-auto space-y-3 sm:space-y-4 lg:space-y-6 will-change-[height]">
             
             {/* Price Display Card */}
-            <div className="price-card relative overflow-hidden rounded-lg sm:rounded-xl lg:rounded-2xl xl:rounded-3xl bg-gradient-to-r from-orange-500 via-yellow-500 to-orange-600 shadow-2xl">
+            <div className={`price-card relative overflow-hidden rounded-lg sm:rounded-xl lg:rounded-2xl xl:rounded-3xl bg-gradient-to-r ${priceCardGradient} shadow-2xl`}>
               <div className="absolute inset-0 bg-black/10" />
               <div className="relative p-2.5 sm:p-3 lg:p-4 xl:p-6">
                 <div className="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between">
                   <div className="space-y-3 sm:space-y-4">
                     <div className="flex items-center space-x-2 sm:space-x-3">
                       <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 backdrop-blur-sm rounded-xl sm:rounded-2xl flex items-center justify-center">
-                        <CurrencyDollarIcon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                        <span className="text-white font-bold text-sm sm:text-base lg:text-xl">{currentSymbol}</span>
                       </div>
                       <div>
                         {loading ? (
@@ -438,6 +458,22 @@ export default function Home() {
               </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 lg:gap-4 xl:gap-6">
+                {/* Crypto Select */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                    Криптовалюта
+                  </label>
+                  <select
+                    value={baseCoin}
+                    onChange={(e) => setBaseCoin(e.target.value)}
+                    className="w-full px-2.5 sm:px-3 lg:px-4 py-2.5 sm:py-3 lg:py-3.5 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm"
+                    aria-label="Выберите криптовалюту"
+                  >
+                    {SUPPORTED_CRYPTOS.map(c => (
+                      <option key={c.id} value={c.id}>{c.symbol}</option>
+                    ))}
+                  </select>
+                </div>
                 {/* BTC Input */}
                 <div className="space-y-2">
                   <label htmlFor="btcAmount" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -615,7 +651,7 @@ export default function Home() {
                   <div className="text-slate-600 dark:text-slate-300">Загрузка графика...</div>
                 </div>
               }>
-                <PriceChart vs={vs} />
+                <PriceChart vs={vs} baseSymbol={(SUPPORTED_CRYPTOS.find(c => c.id === baseCoin)?.symbol) || 'BTC'} />
               </Suspense>
               <Suspense fallback={
                 <div className="h-64 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center">
@@ -633,7 +669,7 @@ export default function Home() {
                   <div className="text-slate-600 dark:text-slate-300">Загрузка графика...</div>
                 </div>
               }>
-                <PriceChart vs={vs} />
+                <PriceChart vs={vs} baseSymbol={(SUPPORTED_CRYPTOS.find(c => c.id === baseCoin)?.symbol) || 'BTC'} />
               </Suspense>
             </div>
 

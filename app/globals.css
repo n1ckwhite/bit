@@ -120,6 +120,16 @@ button {
   text-align: inherit;
 }
 
+/* App brand gradient using CSS variables for easy theming */
+.brand-gradient {
+  background-image: linear-gradient(
+    to right,
+    var(--brand-from, #fbbf24),
+    var(--brand-via, #f59e0b),
+    var(--brand-to, #f97316)
+  );
+}
+
 /* Prevent layout shift during loading */
 .loading-placeholder {
   min-height: 200px;

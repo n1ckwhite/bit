@@ -22,10 +22,11 @@ type HistoryData = {
 
 interface PriceChartProps {
   vs: string;
+  baseSymbol: string;
   className?: string;
 }
 
-const PriceChart = memo(function PriceChart({ vs, className }: PriceChartProps) {
+const PriceChart = memo(function PriceChart({ vs, baseSymbol, className }: PriceChartProps) {
   const [history, setHistory] = useState<HistoryData | null>(null);
   const [interval, setInterval] = useState<"1h" | "1d">("1h");
   const [loading, setLoading] = useState(false);
@@ -95,7 +96,7 @@ const PriceChart = memo(function PriceChart({ vs, className }: PriceChartProps) 
           <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
             <ChartBarIcon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
           </div>
-          <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">График цены BTC</h3>
+          <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">График цены {baseSymbol}</h3>
         </div>
         
         <div className="flex items-center space-x-2">

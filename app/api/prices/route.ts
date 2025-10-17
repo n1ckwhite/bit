@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 
 type VsCurrency = string;
+type BaseCoinId = string; // CoinGecko coin id, e.g., 'bitcoin', 'ethereum'
 
 type SourceQuote = {
   source: string;
@@ -9,7 +10,7 @@ type SourceQuote = {
 };
 
 type PricesResponse = {
-  base: "BTC";
+  base: string; // symbol, e.g., BTC, ETH
   vs: VsCurrency;
   price: number; // consolidated price
   sources: SourceQuote[];
@@ -140,15 +141,15 @@ async function getCoindeskUSD(): Promise<SourceQuote | null> {
   }
 }
 
-async function getCoinGecko(vs: VsCurrency): Promise<SourceQuote | null> {
+async function getCoinGeckoFor(vs: VsCurrency, base: BaseCoinId): Promise<SourceQuote | null> {
   try {
     const res = await fetchWithTimeout(
-      `https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=${encodeURIComponent(vs.toLowerCase())}`,
+      `https://api.coingecko.com/api/v3/simple/price?ids=${encodeURIComponent(base)}&vs_currencies=${encodeURIComponent(vs.toLowerCase())}`,
       4000
     );
     if (!res.ok) return null;
     const data: any = await res.json();
-    const raw = data?.bitcoin?.[vs.toLowerCase()];
+    const raw = data?.[base]?.[vs.toLowerCase()];
     const price = Number(raw);
     if (!Number.isFinite(price)) return null;
     return { source: `coingecko:${vs.toUpperCase()}`, price };
@@ -286,7 +287,9 @@ function weightedAverage(quotes: SourceQuote[]): number {
 export async function GET(req: NextRequest): Promise<Response> {
   const { searchParams } = new URL(req.url);
   const vsParam = searchParams.get("vs") || "USD";
+  const baseParam = (searchParams.get("base") || "bitcoin").toLowerCase();
   const vs = vsParam.toUpperCase();
+  const isBitcoin = baseParam === "bitcoin";
 
   // First, gather USD quotes from multiple exchanges (robust primary path)
   const [binance, kraken, bitstamp, coindesk] = await Promise.all([
@@ -299,11 +302,11 @@ export async function GET(req: NextRequest): Promise<Response> {
 
   // If vs is not USD, try direct quotes from major exchanges for higher quality
   const [krakenDirect, bitstampDirect, coinbaseDirect, directVsCoingecko, coingeckoUsd] = await Promise.all([
-    getKrakenDirect(vs),
-    getBitstampDirect(vs),
-    getCoinbaseDirect(vs),
-    getCoinGecko(vs),
-    getCoinGecko("USD"),
+    isBitcoin ? getKrakenDirect(vs) : Promise.resolve(null),
+    isBitcoin ? getBitstampDirect(vs) : Promise.resolve(null),
+    isBitcoin ? getCoinbaseDirect(vs) : Promise.resolve(null),
+    getCoinGeckoFor(vs, baseParam),
+    getCoinGeckoFor("USD", baseParam),
   ]);
   const fxRateToVs = vs === 'USD' ? 1 : await getFxRateAggregated('USD', vs);
 
@@ -353,7 +356,7 @@ export async function GET(req: NextRequest): Promise<Response> {
       : 0;
   }
   const body: PricesResponse = {
-    base: "BTC",
+    base: isBitcoin ? "BTC" : baseParam.toUpperCase(),
     vs,
     price,
     sources: consolidated,
