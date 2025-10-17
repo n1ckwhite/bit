@@ -90,7 +90,7 @@ const AdvancedChart = memo(function AdvancedChart({ vs, className }: AdvancedCha
 
   const formatTooltip = useCallback((value: number, name: string) => {
     if (name === "close") {
-      return [`${value.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${vs}`, "Цена"];
+      return [`${value.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${vs}`, t('price')];
     }
     return [value, name];
   }, [vs]);

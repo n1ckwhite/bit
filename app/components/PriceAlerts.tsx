@@ -76,7 +76,7 @@ const PriceAlerts = memo(function PriceAlerts({ currentPrice, currency, onAlertT
 
   const handleAddAlert = useCallback(() => {
     if (!newAlert.targetPrice || Number(newAlert.targetPrice) <= 0) {
-      setNotification({ message: locale === 'ru' ? "Введите корректную цену" : "Enter a valid price", severity: "error" });
+      setNotification({ message: t('enterValidPrice'), severity: "error" });
       return;
     }
 
@@ -93,12 +93,12 @@ const PriceAlerts = memo(function PriceAlerts({ currentPrice, currency, onAlertT
     setAlerts(prev => [...prev, alert]);
     setNewAlert({ targetPrice: "", isAbove: true, unit: "BTC" });
     setOpen(false);
-    setNotification({ message: locale === 'ru' ? "Уведомление добавлено" : "Alert added", severity: "success" });
+    setNotification({ message: t('alertAdded'), severity: "success" });
   }, [newAlert, currency]);
 
   const handleDeleteAlert = useCallback((id: string) => {
     setAlerts(prev => prev.filter(alert => alert.id !== id));
-    setNotification({ message: locale === 'ru' ? "Уведомление удалено" : "Alert deleted", severity: "success" });
+    setNotification({ message: t('alertDeleted'), severity: "success" });
   }, []);
 
   const handleToggleAlert = useCallback((id: string) => {
@@ -125,7 +125,7 @@ const PriceAlerts = memo(function PriceAlerts({ currentPrice, currency, onAlertT
             <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center">
               <BellIcon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
-            <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">{locale==='ru'? 'Уведомления о цене' : 'Price alerts'}</h3>
+            <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">{t('priceAlerts')}</h3>
           </div>
           
           <button
@@ -133,20 +133,20 @@ const PriceAlerts = memo(function PriceAlerts({ currentPrice, currency, onAlertT
             className="flex items-center space-x-2 px-3 sm:px-4 py-2 bg-amber-700 hover:bg-amber-800 text-white rounded-lg transition-all duration-200 hover:shadow-lg"
           >
             <PlusIcon className="w-4 h-4" />
-            <span className="text-sm font-medium">{locale==='ru'? 'Добавить':'Add'}</span>
+            <span className="text-sm font-medium">{t('addAlert')}</span>
           </button>
         </div>
 
         {activeAlerts.length === 0 && triggeredAlerts.length === 0 ? (
           <div className="text-center py-6 sm:py-8">
             <BellIcon className="w-10 h-10 sm:w-12 sm:h-12 text-slate-400 mx-auto mb-3 sm:mb-4" />
-            <p className="text-slate-600 dark:text-slate-300 text-sm">{locale==='ru'? 'Нет уведомлений. Добавьте первое уведомление о достижении цены.':'No alerts yet. Add your first price alert.'}</p>
+            <p className="text-slate-600 dark:text-slate-300 text-sm">{t('noAlertsYet')}</p>
           </div>
         ) : (
           <div className="space-y-4 sm:space-y-6">
             {activeAlerts.length > 0 && (
               <div>
-                <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">{locale==='ru'? 'Активные':'Active'} ({activeAlerts.length})</h4>
+                <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">{t('active')} ({activeAlerts.length})</h4>
                 <div className="space-y-2 sm:space-y-3">
                   {activeAlerts.map(alert => (
                     <div
@@ -155,18 +155,18 @@ const PriceAlerts = memo(function PriceAlerts({ currentPrice, currency, onAlertT
                     >
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
-                          {(locale==='ru'? (alert.isAbove? 'Выше':'Ниже') : (alert.isAbove? 'Above':'Below'))} {alert.targetPrice.toLocaleString()} {alert.currency}
+                          {alert.isAbove ? t('above') : t('below')} {alert.targetPrice.toLocaleString()} {alert.currency}
                         </p>
                         <p className="text-xs text-slate-600 dark:text-slate-300">
                           {new Date(alert.createdAt).toLocaleDateString()}
                         </p>
                       </div>
                       <div className="flex items-center space-x-2 ml-2">
-                        <span className="px-2 py-1 bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-300 rounded-full text-xs font-medium whitespace-nowrap">{locale==='ru'? 'Активно':'Active'}</span>
+                        <span className="px-2 py-1 bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-300 rounded-full text-xs font-medium whitespace-nowrap">{t('active')}</span>
                         <button
                           onClick={() => handleDeleteAlert(alert.id)}
                           className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors duration-200"
-                          aria-label={locale==='ru'? 'Удалить уведомление':'Delete alert'}
+                          aria-label={t('deleteAlert')}
                         >
                           <TrashIcon className="w-4 h-4" />
                         </button>
@@ -179,7 +179,7 @@ const PriceAlerts = memo(function PriceAlerts({ currentPrice, currency, onAlertT
 
             {triggeredAlerts.length > 0 && (
               <div>
-                <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">{locale==='ru'? 'Сработавшие':'Triggered'} ({triggeredAlerts.length})</h4>
+                <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">{t('triggered')} ({triggeredAlerts.length})</h4>
                 <div className="space-y-2 sm:space-y-3">
                   {triggeredAlerts.slice(0, 3).map(alert => (
                     <div
@@ -188,18 +188,18 @@ const PriceAlerts = memo(function PriceAlerts({ currentPrice, currency, onAlertT
                     >
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
-                          {(locale==='ru'? (alert.isAbove? 'Выше':'Ниже') : (alert.isAbove? 'Above':'Below'))} {alert.targetPrice.toLocaleString()} {alert.currency}
+                          {alert.isAbove ? t('above') : t('below')} {alert.targetPrice.toLocaleString()} {alert.currency}
                         </p>
                         <p className="text-xs text-slate-600 dark:text-slate-300">
                           {new Date(alert.createdAt).toLocaleDateString()}
                         </p>
                       </div>
                       <div className="flex items-center space-x-2 ml-2">
-                        <span className="px-2 py-1 bg-green-100 dark:bg-green-800 text-green-700 dark:text-green-300 rounded-full text-xs font-medium whitespace-nowrap">{locale==='ru'? 'Сработало':'Triggered'}</span>
+                        <span className="px-2 py-1 bg-green-100 dark:bg-green-800 text-green-700 dark:text-green-300 rounded-full text-xs font-medium whitespace-nowrap">{t('triggered')}</span>
                         <button
                           onClick={() => handleDeleteAlert(alert.id)}
                           className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors duration-200"
-                          aria-label="Удалить уведомление"
+                          aria-label={t('deleteAlert')}
                         >
                           <TrashIcon className="w-4 h-4" />
                         </button>
@@ -218,11 +218,11 @@ const PriceAlerts = memo(function PriceAlerts({ currentPrice, currency, onAlertT
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4">
           <div className="bg-white dark:bg-slate-800 rounded-xl sm:rounded-2xl shadow-2xl max-w-md w-full p-4 sm:p-6">
             <div className="flex items-center justify-between mb-4 sm:mb-6">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white">{locale==='ru'? 'Добавить уведомление':'Add alert'}</h3>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">{t('addPriceAlert')}</h3>
               <button
                 onClick={() => setOpen(false)}
                 className="p-1 flex items-center justify-center text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors duration-200"
-                aria-label={locale==='ru'? 'Закрыть модальное окно':'Close modal'}
+                aria-label={t('closeModal')}
               >
                 <XMarkIcon className="w-5 h-5" />
               </button>
@@ -230,7 +230,7 @@ const PriceAlerts = memo(function PriceAlerts({ currentPrice, currency, onAlertT
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{locale==='ru'? 'Целевая цена':'Target price'}</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{t('targetPrice')}</label>
                 <div className="relative">
                   <input
                     type="number"
@@ -243,11 +243,11 @@ const PriceAlerts = memo(function PriceAlerts({ currentPrice, currency, onAlertT
                     {currency}
                   </div>
                 </div>
-                <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">{locale==='ru'? 'Текущая цена':'Current price'}: {currentPrice.toLocaleString()} {currency}</p>
+                <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">{t('currentPrice')}: {currentPrice.toLocaleString()} {currency}</p>
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{locale==='ru'? 'Условие срабатывания':'Trigger condition'}</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{t('triggerCondition')}</label>
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={() => setNewAlert(prev => ({ ...prev, isAbove: true }))}
@@ -257,7 +257,7 @@ const PriceAlerts = memo(function PriceAlerts({ currentPrice, currency, onAlertT
                         : "bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600"
                     }`}
                   >
-                    {locale==='ru'? 'Выше цены':'Above'}
+                    {t('abovePrice')}
                   </button>
                   <button
                     onClick={() => setNewAlert(prev => ({ ...prev, isAbove: false }))}
@@ -267,7 +267,7 @@ const PriceAlerts = memo(function PriceAlerts({ currentPrice, currency, onAlertT
                         : "bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600"
                     }`}
                   >
-                    {locale==='ru'? 'Ниже цены':'Below'}
+                    {t('belowPrice')}
                   </button>
                 </div>
               </div>
@@ -278,13 +278,13 @@ const PriceAlerts = memo(function PriceAlerts({ currentPrice, currency, onAlertT
                 onClick={() => setOpen(false)}
                 className="flex-1 px-3 sm:px-4 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg transition-all duration-200"
               >
-                {locale==='ru'? 'Отмена':'Cancel'}
+                {t('cancel')}
               </button>
               <button
                 onClick={handleAddAlert}
                 className="flex-1 px-3 sm:px-4 py-2 bg-amber-700 hover:bg-amber-800 text-white rounded-lg transition-all duration-200 hover:shadow-lg"
               >
-                {locale==='ru'? 'Добавить':'Add'}
+                {t('add')}
               </button>
             </div>
           </div>
@@ -308,7 +308,7 @@ const PriceAlerts = memo(function PriceAlerts({ currentPrice, currency, onAlertT
             <button
               onClick={() => setNotification(null)}
               className="p-1 flex items-center justify-center hover:bg-white/20 rounded-lg transition-colors duration-200"
-              aria-label="Закрыть уведомление"
+              aria-label={t('closeNotification')}
             >
               <XMarkIcon className="w-4 h-4" />
             </button>

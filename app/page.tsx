@@ -13,7 +13,7 @@ import ThemeToggle from "./components/ThemeToggle";
 import LanguageSelector from "./components/LanguageSelector";
 import { useI18n } from "./contexts/I18nContext";
 import { DEFAULT_FIATS } from "./lib/currencies";
-import { SUPPORTED_CRYPTOS } from "./lib/crypto";
+import { SUPPORTED_CRYPTOS, getCryptoLocalizedName } from "./lib/crypto";
 import type { FiatCurrency } from "./lib/currencies";
 import { BitcoinUnit, fromBtc, parseUnit, toBtc } from "./lib/units";
 
@@ -40,7 +40,7 @@ type Quote = {
 };
 
 export default function Home() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [vs, setVs] = useState("USD");
   const [unit, setUnit] = useState<BitcoinUnit>("BTC");
   const [baseCoin, setBaseCoin] = useState<string>("bitcoin");
@@ -298,11 +298,13 @@ export default function Home() {
   const filteredFiats = useMemo(() => {
     const q = currencyQuery.trim().toLowerCase();
     if (!q) return combinedFiats;
-    return combinedFiats.filter(c =>
-      c.code.toLowerCase().includes(q) ||
-      c.nameRu.toLowerCase().includes(q)
-    );
-  }, [currencyQuery, combinedFiats]);
+    return combinedFiats.filter(c => {
+      const localizedName = c.names?.[locale as keyof NonNullable<typeof c.names>] || c.nameRu;
+      return c.code.toLowerCase().includes(q) ||
+        c.nameRu.toLowerCase().includes(q) ||
+        localizedName.toLowerCase().includes(q);
+    });
+  }, [currencyQuery, combinedFiats, locale]);
 
   const currentPrice = useMemo(() => quote?.price || 0, [quote?.price]);
   
@@ -318,15 +320,15 @@ export default function Home() {
   const handleAlertTriggered = useCallback((alert: any) => {
     if (navigator.serviceWorker && 'showNotification' in ServiceWorkerRegistration.prototype) {
       navigator.serviceWorker.ready.then(registration => {
-        registration.showNotification('Уведомление о цене', {
-          body: `Цена BTC достигла ${alert.targetPrice} ${alert.currency}`,
+        registration.showNotification(t('priceAlert'), {
+          body: t('priceReached', { price: alert.targetPrice, currency: alert.currency }),
           icon: '/icon-192.png',
           badge: '/icon-192.png',
           tag: 'price-alert',
         });
       });
     } else {
-      alert(`🚨 Цена BTC достигла ${alert.targetPrice} ${alert.currency}!`);
+      alert(`🚨 ${t('priceReached', { price: alert.targetPrice, currency: alert.currency })}!`);
     }
   }, []);
 
@@ -355,7 +357,7 @@ export default function Home() {
                       {t('title', { sym: currentSymbol })}
                     </h1>
                     <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 hidden sm:block">
-                      Конвертер и график в реальном времени
+                      {t('heroSubtitle')}
                     </p>
                   </div>
                 </div>
@@ -366,8 +368,8 @@ export default function Home() {
                   onClick={() => fetchQuote(vs)}
                   disabled={loading}
                   className="group relative p-1.5 sm:p-2 lg:p-3 rounded-lg sm:rounded-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 hover:bg-white dark:hover:bg-slate-800 transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl flex items-center justify-center"
-                  title="Обновить данные"
-                  aria-label="Обновить данные"
+                  title={t('refreshData')}
+                  aria-label={t('refreshData')}
                 >
                   <ArrowPathIcon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5 text-slate-600 dark:text-slate-300 ${loading ? 'animate-spin' : 'group-hover:rotate-180'} transition-transform duration-300`} />
                 </button>
@@ -394,7 +396,7 @@ export default function Home() {
                       </div>
                       <div>
                         {loading ? (
-                          <div className="price-skeleton h-7 sm:h-9 lg:h-10 xl:h-12 w-32 sm:w-40 lg:w-48 xl:w-56 bg-white/30 rounded animate-pulse" aria-label="Загрузка цены" />
+                          <div className="price-skeleton h-7 sm:h-9 lg:h-10 xl:h-12 w-32 sm:w-40 lg:w-48 xl:w-56 bg-white/30 rounded animate-pulse" aria-label={t('loadingPrice')} />
                         ) : (
                           <h2 className="price-display text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-white">
                             {currentPrice.toLocaleString(undefined, { maximumFractionDigits: 2 })}
@@ -419,7 +421,7 @@ export default function Home() {
                           </span>
                         </div>
                       )}
-                      <span className="text-white/90 text-xs sm:text-sm">за 24ч</span>
+                      <span className="text-white/90 text-xs sm:text-sm">{t('for24h')}</span>
                     </div>
                   </div>
                   
@@ -429,7 +431,7 @@ export default function Home() {
                       {loading ? (
                         <div className="h-3 sm:h-4 w-28 sm:w-32 bg-white/30 rounded animate-pulse" aria-hidden="true" />
                       ) : (
-                        <span className="update-time text-xs sm:text-sm font-medium font-mono">Обновлено {lastUpdated}</span>
+                        <span className="update-time text-xs sm:text-sm font-medium font-mono">{t('updated')} {lastUpdated}</span>
                       )}
                     </div>
                     
@@ -465,16 +467,18 @@ export default function Home() {
                 {/* Crypto Select */}
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-                    Криптовалюта
+                    {t('crypto')}
                   </label>
                   <select
                     value={baseCoin}
                     onChange={(e) => setBaseCoin(e.target.value)}
                     className="w-full px-2.5 sm:px-3 lg:px-4 py-2.5 sm:py-3 lg:py-3.5 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm"
-                    aria-label="Выберите криптовалюту"
+                    aria-label={t('selectCrypto')}
                   >
                     {SUPPORTED_CRYPTOS.map(c => (
-                      <option key={c.id} value={c.id}>{c.symbol}</option>
+                      <option key={c.id} value={c.id}>
+                        {getCryptoLocalizedName(c, locale)} ({c.symbol})
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -512,7 +516,7 @@ export default function Home() {
                     {/* Custom arrow buttons removed by request */}
                   </div>
                   <p className="text-xs text-slate-600 dark:text-slate-300">
-                    Клавиши: k — BTC, m — mBTC, u — µBTC, s — сатоши
+                    {t('keyboardHint')}
                   </p>
                 </div>
 
@@ -525,7 +529,7 @@ export default function Home() {
                     value={unit}
                     onChange={(e) => setUnit(parseUnit(e.target.value))}
                     className="w-full px-2.5 sm:px-3 lg:px-4 py-2.5 sm:py-3 lg:py-3.5 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm"
-                    aria-label="Выберите единицу измерения биткоина"
+                    aria-label={t('selectUnit')}
                   >
                     {(["BTC", "mBTC", "µBTC", "sats"] as BitcoinUnit[]).map((u) => (
                       <option key={u} value={u}>
@@ -593,14 +597,14 @@ export default function Home() {
                             type="text"
                             value={currencyQuery}
                             onChange={(e) => setCurrencyQuery(e.target.value)}
-                            placeholder="Поиск валюты..."
+                            placeholder={t('searchCurrency')}
                             className="w-full px-2.5 py-2 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md text-slate-900 dark:text-white text-sm"
-                            aria-label="Поиск валюты"
+                            aria-label={t('searchCurrency')}
                           />
                         </div>
                         <ul role="listbox" className="max-h-56 overflow-auto">
                           {fiatsLoading && (
-                            <li className="px-3 py-2 text-sm text-slate-500 dark:text-slate-400">Загрузка...</li>
+                            <li className="px-3 py-2 text-sm text-slate-500 dark:text-slate-400">{t('loading')}</li>
                           )}
                           {filteredFiats.map((c) => (
                             <li key={c.code}>
@@ -611,13 +615,15 @@ export default function Home() {
                                 role="option"
                                 aria-selected={vs === c.code}
                               >
-                                <span className="text-slate-900 dark:text-white font-medium">{c.nameRu}</span>
+                                <span className="text-slate-900 dark:text-white font-medium">
+                                  {c.names?.[locale as keyof NonNullable<typeof c.names>] || c.nameRu}
+                                </span>
                                 <span className="text-slate-600 dark:text-slate-300 font-mono">{c.code}</span>
                               </button>
                             </li>
                           ))}
                           {filteredFiats.length === 0 && (
-                            <li className="px-3 py-2 text-sm text-slate-500 dark:text-slate-400">Ничего не найдено</li>
+                            <li className="px-3 py-2 text-sm text-slate-500 dark:text-slate-400">{t('noResults')}</li>
                           )}
                         </ul>
                       </div>
@@ -632,14 +638,14 @@ export default function Home() {
             <div className="hidden sm:grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
               <Suspense fallback={
                 <div className="loading-placeholder h-64 rounded-lg flex items-center justify-center">
-                  <div className="text-slate-600 dark:text-slate-300">Загрузка графика...</div>
+                  <div className="text-slate-600 dark:text-slate-300">{t('loadingChart')}</div>
                 </div>
               }>
                 <PriceChart vs={vs} baseSymbol={(SUPPORTED_CRYPTOS.find(c => c.id === baseCoin)?.symbol) || 'BTC'} />
               </Suspense>
               <Suspense fallback={
                 <div className="h-64 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center">
-                  <div className="text-slate-600 dark:text-slate-300">Загрузка продвинутого графика...</div>
+                  <div className="text-slate-600 dark:text-slate-300">{t('loadingAdvancedChart')}</div>
                 </div>
               }>
                 <AdvancedChart vs={vs} />
@@ -650,7 +656,7 @@ export default function Home() {
             <div className="sm:hidden">
               <Suspense fallback={
                 <div className="loading-placeholder h-64 rounded-lg flex items-center justify-center">
-                  <div className="text-slate-600 dark:text-slate-300">Загрузка графика...</div>
+                  <div className="text-slate-600 dark:text-slate-300">{t('loadingChart')}</div>
                 </div>
               }>
                 <PriceChart vs={vs} baseSymbol={(SUPPORTED_CRYPTOS.find(c => c.id === baseCoin)?.symbol) || 'BTC'} />
@@ -661,7 +667,7 @@ export default function Home() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
               <Suspense fallback={
                 <div className="loading-placeholder h-48 rounded-lg flex items-center justify-center">
-                  <div className="text-slate-600 dark:text-slate-300">Загрузка уведомлений...</div>
+                  <div className="text-slate-600 dark:text-slate-300">{t('loadingAlerts')}</div>
                 </div>
               }>
                 <PriceAlerts 
@@ -672,7 +678,7 @@ export default function Home() {
               </Suspense>
               <Suspense fallback={
                 <div className="h-48 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center">
-                  <div className="text-slate-600 dark:text-slate-300">Загрузка экспорта...</div>
+                  <div className="text-slate-600 dark:text-slate-300">{t('loadingExport')}</div>
                 </div>
               }>
                 <DataExport 
@@ -713,7 +719,7 @@ export default function Home() {
                       <p>{t('usage_p3')}</p>
                       <p>{t('usage_p4')}</p>
                       <p>
-                        <strong>Конвертация в меньшие единицы:</strong> Используйте единицы <button onClick={setConverterToSats} className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 underline">сатоши (s)</button>, <button onClick={setConverterToMBTC} className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 underline">микробиткоины (μ)</button>, <button onClick={setConverterToBTC} className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 underline">миллибиткоины (m)</button> и горячие клавиши (S, u, m, k) для переключения.
+                        <strong>{t('conversionUnits')}:</strong> {t('conversionUnitsDesc')} <button onClick={setConverterToSats} className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 underline">{t('sats')} (s)</button>, <button onClick={setConverterToMBTC} className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 underline">{t('microbtc')} (μ)</button>, <button onClick={setConverterToBTC} className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 underline">{t('millibtc')} (m)</button> {t('andHotkeys')} (S, u, m, k) {t('forSwitching')}.
                       </p>
                     </div>
                   </section>
@@ -750,8 +756,8 @@ export default function Home() {
         className={`fixed bottom-6 right-6 z-50 p-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 active:scale-95 border border-blue-500/20 ${
           showScrollButton ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
         }`}
-        title="Наверх"
-        aria-label="Прокрутить наверх"
+        title={t('scrollToTop')}
+        aria-label={t('scrollToTop')}
       >
         <ChevronUpIcon className="w-5 h-5" />
       </button>

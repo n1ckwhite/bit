@@ -1,11 +1,12 @@
 import { NextRequest } from "next/server";
-import { SUPPORTED_CRYPTOS } from "../../lib/crypto";
+import { SUPPORTED_CRYPTOS, getCryptoLocalizedName } from "../../lib/crypto";
 
 type MultiPriceQuote = {
   id: string;
   symbol: string;
   name: string;
   nameRu: string;
+  names?: Record<string, string>;
   price: number;
   change24h: number;
   volume24h?: number;
@@ -52,6 +53,7 @@ async function getCoinGeckoMultiPrices(vs: string): Promise<MultiPriceQuote[]> {
           symbol: crypto.symbol,
           name: crypto.name,
           nameRu: crypto.nameRu,
+          names: crypto.names,
           price: Number(cryptoData[vs.toLowerCase()]),
           change24h: Number(cryptoData[`${vs.toLowerCase()}_24h_change`]) || 0,
           volume24h: Number(cryptoData[`${vs.toLowerCase()}_24h_vol`]) || undefined,

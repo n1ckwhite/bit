@@ -69,7 +69,7 @@ const PriceChart = memo(function PriceChart({ vs, baseSymbol, className }: Price
 
   const formatTooltip = useCallback((value: number, name: string) => {
     if (name === "price") {
-      return [`${value.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${vs}`, "Цена"];
+      return [`${value.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${vs}`, t('price')];
     }
     return [value, name];
   }, [vs]);
@@ -148,7 +148,7 @@ const PriceChart = memo(function PriceChart({ vs, baseSymbol, className }: Price
                       <span>{Math.abs(priceChange).toFixed(2)}%</span>
                     </div>
                     <span className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm">
-                      за {interval === "1h" ? "24 часа" : "30 дней"}
+                      {interval === "1h" ? t('for24h') : t('for30d')}
                     </span>
                   </div>
                 </div>
@@ -188,7 +188,7 @@ const PriceChart = memo(function PriceChart({ vs, baseSymbol, className }: Price
                 />
                 <Tooltip 
                   formatter={formatTooltip}
-                  labelFormatter={(label) => `Время: ${label}`}
+                  labelFormatter={(label) => `${t('time')}: ${label}`}
                   contentStyle={{
                     backgroundColor: isDark ? "#1e293b" : "#ffffff",
                     border: `1px solid ${isDark ? "#334155" : "#e2e8f0"}`,

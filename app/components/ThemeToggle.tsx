@@ -13,17 +13,15 @@ export default function ThemeToggle() {
   };
 
   const getTooltip = () => {
-    const names: Record<string, { current: string; next: string }> = {
-      en: { current: theme === 'dark' ? 'Dark' : 'Light', next: theme === 'dark' ? 'Light' : 'Dark' },
-      ru: { current: theme === 'dark' ? 'Тёмная' : 'Светлая', next: theme === 'dark' ? 'Светлую' : 'Тёмную' },
-    };
-    const n = names[locale] || names.en;
-    return `${n.current} theme. Click to switch to ${n.next}`;
+    const currentTheme = theme === 'dark' ? t('dark') : t('light');
+    const nextTheme = theme === 'dark' ? t('light') : t('dark');
+    return t('themeTooltip', { current: currentTheme, next: nextTheme });
   };
 
   const getCurrentThemeInfo = () => {
-    if (locale === 'ru') return theme === 'dark' ? '🌙 Тёмная' : '☀️ Светлая';
-    return theme === 'dark' ? '🌙 Dark' : '☀️ Light';
+    const themeName = theme === 'dark' ? t('dark') : t('light');
+    const icon = theme === 'dark' ? '🌙' : '☀️';
+    return `${icon} ${themeName}`;
   };
 
   return (
