@@ -238,11 +238,43 @@ export default function Home() {
                       type="number"
                       value={btcAmount}
                       onChange={(e) => setBtcAmount(Number(e.target.value))}
-                      className="w-full px-2 sm:px-2.5 lg:px-3 xl:px-4 py-1.5 sm:py-2 lg:py-2.5 xl:py-3 pl-8 sm:pl-10 lg:pl-12 xl:pl-16 pr-2 sm:pr-2.5 lg:pr-3 xl:pr-4 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm"
+                      onKeyDown={(e) => {
+                        if (e.key === 'ArrowUp') {
+                          e.preventDefault();
+                          setBtcAmount(prev => prev + 0.1);
+                        } else if (e.key === 'ArrowDown') {
+                          e.preventDefault();
+                          setBtcAmount(prev => Math.max(0, prev - 0.1));
+                        }
+                      }}
+                      className="w-full px-2.5 sm:px-3 lg:px-4 py-2 sm:py-2.5 lg:py-3 pl-10 sm:pl-12 lg:pl-16 pr-2.5 sm:pr-3 lg:pr-4 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm"
                       placeholder="1.0"
+                      step="0.1"
+                      min="0"
                     />
-                    <div className="absolute left-1.5 sm:left-2 lg:left-2.5 xl:left-3 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-500 dark:text-slate-400">
+                    <div className="absolute left-2 sm:left-2.5 lg:left-3 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-500 dark:text-slate-400">
                       {unit}
+                    </div>
+                    {/* Custom arrow buttons */}
+                    <div className="absolute right-1 top-1/2 -translate-y-1/2 flex flex-col">
+                      <button
+                        type="button"
+                        onClick={() => setBtcAmount(prev => prev + 0.1)}
+                        className="custom-arrow-button w-4 h-3 flex items-center justify-center rounded-t-sm"
+                      >
+                        <svg className="w-2 h-2 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <polyline points="18,15 12,9 6,15"></polyline>
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setBtcAmount(prev => Math.max(0, prev - 0.1))}
+                        className="custom-arrow-button w-4 h-3 flex items-center justify-center rounded-b-sm"
+                      >
+                        <svg className="w-2 h-2 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <polyline points="6,9 12,15 18,9"></polyline>
+                        </svg>
+                      </button>
                     </div>
                   </div>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -283,11 +315,59 @@ export default function Home() {
                         const btc = v / quote.price;
                         setBtcAmount(fromBtc(btc, unit));
                       }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'ArrowUp') {
+                          e.preventDefault();
+                          if (!quote) return;
+                          const newFiat = fiatAmount + 100;
+                          const btc = newFiat / quote.price;
+                          setBtcAmount(fromBtc(btc, unit));
+                        } else if (e.key === 'ArrowDown') {
+                          e.preventDefault();
+                          if (!quote) return;
+                          const newFiat = Math.max(0, fiatAmount - 100);
+                          const btc = newFiat / quote.price;
+                          setBtcAmount(fromBtc(btc, unit));
+                        }
+                      }}
                       className="w-full px-2.5 sm:px-3 lg:px-4 py-2 sm:py-2.5 lg:py-3 pl-10 sm:pl-12 lg:pl-16 pr-2.5 sm:pr-3 lg:pr-4 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm"
                       placeholder="0.00"
+                      step="100"
+                      min="0"
                     />
                     <div className="absolute left-2 sm:left-2.5 lg:left-3 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-500 dark:text-slate-400">
                       {vs}
+                    </div>
+                    {/* Custom arrow buttons */}
+                    <div className="absolute right-1 top-1/2 -translate-y-1/2 flex flex-col">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!quote) return;
+                          const newFiat = fiatAmount + 100;
+                          const btc = newFiat / quote.price;
+                          setBtcAmount(fromBtc(btc, unit));
+                        }}
+                        className="custom-arrow-button w-4 h-3 flex items-center justify-center rounded-t-sm"
+                      >
+                        <svg className="w-2 h-2 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <polyline points="18,15 12,9 6,15"></polyline>
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!quote) return;
+                          const newFiat = Math.max(0, fiatAmount - 100);
+                          const btc = newFiat / quote.price;
+                          setBtcAmount(fromBtc(btc, unit));
+                        }}
+                        className="custom-arrow-button w-4 h-3 flex items-center justify-center rounded-b-sm"
+                      >
+                        <svg className="w-2 h-2 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <polyline points="6,9 12,15 18,9"></polyline>
+                        </svg>
+                      </button>
                     </div>
                   </div>
                 </div>

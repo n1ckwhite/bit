@@ -16,7 +16,6 @@ export const metadata: Metadata = {
   title: "Курс Биткоина · Конвертер",
   description: "Онлайн‑конвертер BTC ↔ фиат. Котировки c бирж, обновление каждые 60 секунд.",
   manifest: "/manifest.json",
-  themeColor: "#f59e0b",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -27,6 +26,10 @@ export const metadata: Metadata = {
     description: "BTC ↔ фиат. Источники: Binance, Kraken, Bitstamp, CoinGecko. Обновление раз в минуту.",
     type: "website",
   },
+};
+
+export const viewport = {
+  themeColor: "#f59e0b",
 };
 
 export default function RootLayout({
