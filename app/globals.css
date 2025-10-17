@@ -153,6 +153,11 @@ button,
   cursor: pointer;
 }
 
+/* Improve contrast for dark theme secondary buttons */
+.dark .text-slate-200 { /* ensure text appears brighter on dark bg */
+  color: #e5e7eb !important;
+}
+
 /* Ensure pointer also when hovering inner elements like SVGs inside buttons */
 button *,
 [role="button"] * {
@@ -220,6 +225,14 @@ input[type="number"]:focus, input[type="text"]:focus, select:focus {
   /* Override global minimum touch target for these tiny in-input controls */
   min-height: 0;
   min-width: 0;
+}
+
+/* Increase tap targets and spacing on mobile */
+@media (max-width: 640px) {
+  .custom-arrow-button {
+    min-width: 40px;
+    min-height: 40px;
+  }
 }
 
 .custom-arrow-button:hover {

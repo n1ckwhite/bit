@@ -135,8 +135,8 @@ const AdvancedChart = memo(function AdvancedChart({ vs, className }: AdvancedCha
               onClick={() => setShowMA7(v => !v)}
               className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
                 showMA7
-                  ? "bg-emerald-600 text-white shadow-lg"
-                  : "bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600"
+                  ? "bg-emerald-700 text-white shadow-lg"
+                  : "bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-600"
               }`}
               title="Скользящая средняя 7 часов"
             >
@@ -148,8 +148,8 @@ const AdvancedChart = memo(function AdvancedChart({ vs, className }: AdvancedCha
               onClick={() => setHours(168)}
               className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
                 hours === 168
-                  ? "bg-purple-600 text-white shadow-lg"
-                  : "bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600"
+                  ? "bg-purple-700 text-white shadow-lg"
+                  : "bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-600"
               }`}
             >
               7д
@@ -158,8 +158,8 @@ const AdvancedChart = memo(function AdvancedChart({ vs, className }: AdvancedCha
               onClick={() => setHours(336)}
               className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
                 hours === 336
-                  ? "bg-purple-600 text-white shadow-lg"
-                  : "bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600"
+                  ? "bg-purple-700 text-white shadow-lg"
+                  : "bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-600"
               }`}
             >
               14д

@@ -379,7 +379,7 @@ export default function Home() {
                           setBtcAmount(prev => Math.max(0, prev - 0.1));
                         }
                       }}
-                      className="w-full px-2.5 sm:px-3 lg:px-4 py-2 sm:py-2.5 lg:py-3 pl-10 sm:pl-12 lg:pl-16 pr-10 sm:pr-12 lg:pr-14 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm"
+                      className="w-full px-2.5 sm:px-3 lg:px-4 py-2.5 sm:py-3 lg:py-3.5 pl-10 sm:pl-12 lg:pl-16 pr-14 sm:pr-16 lg:pr-20 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm"
                       placeholder="1.0"
                       step="0.1"
                       min="0"
@@ -387,33 +387,7 @@ export default function Home() {
                     <div className="absolute left-2 sm:left-2.5 lg:left-3 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-600 dark:text-slate-300">
                       {unit}
                     </div>
-                    {/* Custom arrow buttons */}
-                    <div className="absolute right-1 inset-y-1 flex flex-col justify-between">
-                      <button
-                        type="button"
-                        onClick={() => setBtcAmount(prev => prev + 0.1)}
-                        className="custom-arrow-button w-6 h-5 flex items-center justify-center rounded-t-sm"
-                        style={{ cursor: 'pointer' }}
-                        title="Увеличить на 0.1"
-                        aria-label="Увеличить на 0.1"
-                      >
-                        <svg className="w-3.5 h-3.5 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                          <polyline points="18,15 12,9 6,15"></polyline>
-                        </svg>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setBtcAmount(prev => Math.max(0, prev - 0.1))}
-                        className="custom-arrow-button w-6 h-5 flex items-center justify-center rounded-b-sm"
-                        style={{ cursor: 'pointer' }}
-                        title="Уменьшить на 0.1"
-                        aria-label="Уменьшить на 0.1"
-                      >
-                        <svg className="w-3.5 h-3.5 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                          <polyline points="6,9 12,15 18,9"></polyline>
-                        </svg>
-                      </button>
-                    </div>
+                    {/* Custom arrow buttons removed by request */}
                   </div>
                   <p className="text-xs text-slate-600 dark:text-slate-300">
                     Клавиши: k — BTC, m — mBTC, u — µBTC, s — сатоши
@@ -428,7 +402,7 @@ export default function Home() {
                   <select
                     value={unit}
                     onChange={(e) => setUnit(parseUnit(e.target.value))}
-                    className="w-full px-2.5 sm:px-3 lg:px-4 py-2 sm:py-2.5 lg:py-3 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm"
+                    className="w-full px-2.5 sm:px-3 lg:px-4 py-2.5 sm:py-3 lg:py-3.5 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm"
                     aria-label="Выберите единицу измерения биткоина"
                   >
                     {(["BTC", "mBTC", "µBTC", "sats"] as BitcoinUnit[]).map((u) => (
@@ -470,7 +444,7 @@ export default function Home() {
                           setBtcAmount(fromBtc(btc, unit));
                         }
                       }}
-                      className="w-full px-2.5 sm:px-3 lg:px-4 py-2 sm:py-2.5 lg:py-3 pl-10 sm:pl-12 lg:pl-16 pr-10 sm:pr-12 lg:pr-14 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm"
+                      className="w-full px-2.5 sm:px-3 lg:px-4 py-2.5 sm:py-3 lg:py-3.5 pl-10 sm:pl-12 lg:pl-16 pr-14 sm:pr-16 lg:pr-20 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm"
                       placeholder="0.00"
                       step="100"
                       min="0"
@@ -478,43 +452,7 @@ export default function Home() {
                     <div className="absolute left-2 sm:left-2.5 lg:left-3 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-600 dark:text-slate-300">
                       {vs}
                     </div>
-                    {/* Custom arrow buttons */}
-                    <div className="absolute right-1 inset-y-1 flex flex-col justify-between">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (!quote) return;
-                          const newFiat = fiatAmount + 100;
-                          const btc = newFiat / quote.price;
-                          setBtcAmount(fromBtc(btc, unit));
-                        }}
-                        className="custom-arrow-button w-6 h-5 flex items-center justify-center rounded-t-sm"
-                        style={{ cursor: 'pointer' }}
-                        title="Увеличить на 100"
-                        aria-label="Увеличить на 100"
-                      >
-                        <svg className="w-3.5 h-3.5 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                          <polyline points="18,15 12,9 6,15"></polyline>
-                        </svg>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (!quote) return;
-                          const newFiat = Math.max(0, fiatAmount - 100);
-                          const btc = newFiat / quote.price;
-                          setBtcAmount(fromBtc(btc, unit));
-                        }}
-                        className="custom-arrow-button w-6 h-5 flex items-center justify-center rounded-b-sm"
-                        style={{ cursor: 'pointer' }}
-                        title="Уменьшить на 100"
-                        aria-label="Уменьшить на 100"
-                      >
-                        <svg className="w-3.5 h-3.5 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                          <polyline points="6,9 12,15 18,9"></polyline>
-                        </svg>
-                      </button>
-                    </div>
+                    {/* Custom arrow buttons removed by request */}
                   </div>
                 </div>
 
@@ -526,7 +464,7 @@ export default function Home() {
                   <select
                     value={vs}
                     onChange={(e) => setVs(e.target.value)}
-                    className="w-full px-2.5 sm:px-3 lg:px-4 py-2 sm:py-2.5 lg:py-3 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm"
+                    className="w-full px-2.5 sm:px-3 lg:px-4 py-2.5 sm:py-3 lg:py-3.5 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm"
                     aria-label="Выберите валюту для конвертации"
                   >
                     {fiatOptions.map((c) => (
