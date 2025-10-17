@@ -110,7 +110,7 @@ export default function PriceAlerts({ currentPrice, currency, onAlertTriggered }
 
   return (
     <>
-      <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 dark:border-slate-700/50 p-4 sm:p-6 lg:p-8">
+      <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-lg sm:rounded-xl lg:rounded-2xl xl:rounded-3xl shadow-xl border border-slate-200/50 dark:border-slate-700/50 p-2.5 sm:p-3 lg:p-4 xl:p-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3 sm:gap-0">
           <div className="flex items-center space-x-2 sm:space-x-3">
             <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center">
@@ -129,35 +129,35 @@ export default function PriceAlerts({ currentPrice, currency, onAlertTriggered }
         </div>
 
         {activeAlerts.length === 0 && triggeredAlerts.length === 0 ? (
-          <div className="text-center py-8">
-            <BellIcon className="w-12 h-12 text-slate-400 mx-auto mb-4" />
-            <p className="text-slate-500 dark:text-slate-400">
+          <div className="text-center py-6 sm:py-8">
+            <BellIcon className="w-10 h-10 sm:w-12 sm:h-12 text-slate-400 mx-auto mb-3 sm:mb-4" />
+            <p className="text-slate-500 dark:text-slate-400 text-sm">
               Нет уведомлений. Добавьте первое уведомление о достижении цены.
             </p>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {activeAlerts.length > 0 && (
               <div>
                 <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
                   Активные ({activeAlerts.length})
                 </h4>
-                <div className="space-y-3">
+                <div className="space-y-2 sm:space-y-3">
                   {activeAlerts.map(alert => (
                     <div
                       key={alert.id}
-                      className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200/50 dark:border-blue-800/50"
+                      className="flex items-center justify-between p-3 sm:p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg sm:rounded-xl border border-blue-200/50 dark:border-blue-800/50"
                     >
-                      <div>
-                        <p className="text-sm font-medium text-slate-900 dark:text-white">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
                           {alert.isAbove ? "Выше" : "Ниже"} {alert.targetPrice.toLocaleString()} {alert.currency}
                         </p>
                         <p className="text-xs text-slate-500 dark:text-slate-400">
                           {new Date(alert.createdAt).toLocaleDateString()}
                         </p>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <span className="px-2 py-1 bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-300 rounded-full text-xs font-medium">
+                      <div className="flex items-center space-x-2 ml-2">
+                        <span className="px-2 py-1 bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-300 rounded-full text-xs font-medium whitespace-nowrap">
                           Активно
                         </span>
                         <button
@@ -178,22 +178,22 @@ export default function PriceAlerts({ currentPrice, currency, onAlertTriggered }
                 <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
                   Сработавшие ({triggeredAlerts.length})
                 </h4>
-                <div className="space-y-3">
+                <div className="space-y-2 sm:space-y-3">
                   {triggeredAlerts.slice(0, 3).map(alert => (
                     <div
                       key={alert.id}
-                      className="flex items-center justify-between p-4 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200/50 dark:border-green-800/50"
+                      className="flex items-center justify-between p-3 sm:p-4 bg-green-50 dark:bg-green-900/20 rounded-lg sm:rounded-xl border border-green-200/50 dark:border-green-800/50"
                     >
-                      <div>
-                        <p className="text-sm font-medium text-slate-900 dark:text-white">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
                           {alert.isAbove ? "Выше" : "Ниже"} {alert.targetPrice.toLocaleString()} {alert.currency}
                         </p>
                         <p className="text-xs text-slate-500 dark:text-slate-400">
                           {new Date(alert.createdAt).toLocaleDateString()}
                         </p>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <span className="px-2 py-1 bg-green-100 dark:bg-green-800 text-green-700 dark:text-green-300 rounded-full text-xs font-medium">
+                      <div className="flex items-center space-x-2 ml-2">
+                        <span className="px-2 py-1 bg-green-100 dark:bg-green-800 text-green-700 dark:text-green-300 rounded-full text-xs font-medium whitespace-nowrap">
                           Сработало
                         </span>
                         <button
@@ -214,9 +214,9 @@ export default function PriceAlerts({ currentPrice, currency, onAlertTriggered }
 
       {/* Add Alert Modal */}
       {open && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full p-6">
-            <div className="flex items-center justify-between mb-6">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-xl sm:rounded-2xl shadow-2xl max-w-md w-full p-4 sm:p-6">
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
               <h3 className="text-lg font-bold text-slate-900 dark:text-white">Добавить уведомление</h3>
               <button
                 onClick={() => setOpen(false)}
@@ -236,10 +236,10 @@ export default function PriceAlerts({ currentPrice, currency, onAlertTriggered }
                     type="number"
                     value={newAlert.targetPrice}
                     onChange={(e) => setNewAlert(prev => ({ ...prev, targetPrice: e.target.value }))}
-                    className="w-full px-4 py-3 pr-16 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 pr-12 sm:pr-16 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm sm:text-base"
                     placeholder="0.00"
                   />
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-medium text-slate-500 dark:text-slate-400">
+                  <div className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">
                     {currency}
                   </div>
                 </div>
@@ -255,7 +255,7 @@ export default function PriceAlerts({ currentPrice, currency, onAlertTriggered }
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={() => setNewAlert(prev => ({ ...prev, isAbove: true }))}
-                    className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    className={`flex-1 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
                       newAlert.isAbove
                         ? "bg-amber-500 text-white shadow-lg"
                         : "bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600"
@@ -265,7 +265,7 @@ export default function PriceAlerts({ currentPrice, currency, onAlertTriggered }
                   </button>
                   <button
                     onClick={() => setNewAlert(prev => ({ ...prev, isAbove: false }))}
-                    className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    className={`flex-1 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
                       !newAlert.isAbove
                         ? "bg-amber-500 text-white shadow-lg"
                         : "bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600"
@@ -277,16 +277,16 @@ export default function PriceAlerts({ currentPrice, currency, onAlertTriggered }
               </div>
             </div>
             
-            <div className="flex items-center space-x-3 mt-6">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 mt-4 sm:mt-6">
               <button
                 onClick={() => setOpen(false)}
-                className="flex-1 px-4 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg transition-all duration-200"
+                className="flex-1 px-3 sm:px-4 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg transition-all duration-200"
               >
                 Отмена
               </button>
               <button
                 onClick={handleAddAlert}
-                className="flex-1 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg transition-all duration-200 hover:shadow-lg"
+                className="flex-1 px-3 sm:px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg transition-all duration-200 hover:shadow-lg"
               >
                 Добавить
               </button>

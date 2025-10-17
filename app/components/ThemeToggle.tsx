@@ -35,9 +35,11 @@ export default function ThemeToggle() {
 
   const applyTheme = (newTheme: "light" | "dark" | "system") => {
     const root = document.documentElement;
+    const body = document.body;
     
     // Remove existing theme classes
     root.classList.remove("light", "dark");
+    body.classList.remove("light", "dark");
     
     let effectiveTheme: "light" | "dark";
     
@@ -49,13 +51,16 @@ export default function ThemeToggle() {
     
     console.log("Applying theme:", newTheme, "effective:", effectiveTheme);
     
-    // Apply theme class to html element (Tailwind requirement)
+    // Apply theme class to both html and body elements
     root.classList.add(effectiveTheme);
+    body.classList.add(effectiveTheme);
     
     console.log("HTML classes after applying theme:", root.className);
+    console.log("Body classes after applying theme:", body.className);
     
     // Force reflow to ensure styles are applied
     root.offsetHeight;
+    body.offsetHeight;
     
     // Trigger custom event for other components
     window.dispatchEvent(new CustomEvent('themeChange', { 
@@ -118,15 +123,15 @@ export default function ThemeToggle() {
     <div className="relative">
       <button
         onClick={cycleTheme}
-        className="group relative p-2 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/20 transition-all duration-200 hover:scale-105 active:scale-95"
+        className="group relative p-1.5 sm:p-2 rounded-lg bg-slate-100/80 dark:bg-slate-700/80 backdrop-blur-sm border border-slate-200/50 dark:border-slate-600/50 hover:bg-slate-200/80 dark:hover:bg-slate-600/80 transition-all duration-200 hover:scale-105 active:scale-95 shadow-sm"
         title={getTooltip()}
       >
-        <div className="text-white group-hover:text-yellow-300 transition-colors duration-200">
+        <div className="text-slate-600 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-slate-100 transition-colors duration-200">
           {getIcon()}
         </div>
         
         {/* Ripple effect */}
-        <div className="absolute inset-0 rounded-lg bg-white/10 scale-0 group-active:scale-100 transition-transform duration-150" />
+        <div className="absolute inset-0 rounded-lg bg-slate-200/50 dark:bg-slate-600/50 scale-0 group-active:scale-100 transition-transform duration-150" />
       </button>
       
       {/* Theme indicator */}

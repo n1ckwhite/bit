@@ -46,8 +46,9 @@ export default function RootLayout({
                   var systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
                   var effectiveTheme = theme === 'system' ? systemTheme : theme;
                   
-                  // Apply theme class to html element (Tailwind requirement)
+                  // Apply theme class to both html and body elements
                   document.documentElement.classList.add(effectiveTheme);
+                  document.body.classList.add(effectiveTheme);
                 } catch (e) {}
               })();
             `,

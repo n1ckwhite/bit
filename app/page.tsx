@@ -112,7 +112,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-900">
+    <div className="h-screen bg-white dark:bg-slate-900 overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-40">
         <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900" />
@@ -121,18 +121,18 @@ export default function Home() {
         }} />
       </div>
       
-      <div className="relative z-10">
+      <div className="relative z-10 h-full flex flex-col">
         {/* Header */}
-        <header className="px-3 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-6">
+        <header className="px-3 sm:px-4 lg:px-6 xl:px-8 py-2 sm:py-3 lg:py-4 flex-shrink-0">
           <div className="max-w-7xl mx-auto">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div className="flex items-center space-x-3 sm:space-x-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+              <div className="flex items-center space-x-2 sm:space-x-3 lg:space-x-4">
                 <div className="flex items-center space-x-2 sm:space-x-3">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-orange-400 to-yellow-500 rounded-xl flex items-center justify-center shadow-lg">
-                    <span className="text-white font-bold text-sm sm:text-lg">₿</span>
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-orange-400 to-yellow-500 rounded-lg sm:rounded-xl flex items-center justify-center shadow-lg">
+                    <span className="text-white font-bold text-xs sm:text-sm lg:text-lg">₿</span>
                   </div>
                   <div>
-                    <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
+                    <h1 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
                       Курс Биткоина
                     </h1>
                     <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 hidden sm:block">
@@ -146,10 +146,10 @@ export default function Home() {
                 <button
                   onClick={() => fetchQuote(vs)}
                   disabled={loading}
-                  className="group relative p-2 sm:p-3 rounded-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 hover:bg-white dark:hover:bg-slate-800 transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl"
+                  className="group relative p-1.5 sm:p-2 lg:p-3 rounded-lg sm:rounded-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 hover:bg-white dark:hover:bg-slate-800 transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl"
                   title="Обновить данные"
                 >
-                  <ArrowPathIcon className={`w-4 h-4 sm:w-5 sm:h-5 text-slate-600 dark:text-slate-300 ${loading ? 'animate-spin' : 'group-hover:rotate-180'} transition-transform duration-300`} />
+                  <ArrowPathIcon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5 text-slate-600 dark:text-slate-300 ${loading ? 'animate-spin' : 'group-hover:rotate-180'} transition-transform duration-300`} />
                 </button>
                 <ThemeToggle />
               </div>
@@ -158,13 +158,13 @@ export default function Home() {
         </header>
 
         {/* Main Content */}
-        <main className="px-3 sm:px-4 lg:px-6 xl:px-8 pb-8 sm:pb-12">
-          <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
+        <main className="flex-1 overflow-y-auto px-3 sm:px-4 lg:px-6 xl:px-8 pb-3 sm:pb-4 lg:pb-6">
+          <div className="max-w-7xl mx-auto space-y-3 sm:space-y-4 lg:space-y-6">
             
             {/* Price Display Card */}
-            <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-r from-orange-500 via-yellow-500 to-orange-600 shadow-2xl">
+            <div className="relative overflow-hidden rounded-lg sm:rounded-xl lg:rounded-2xl xl:rounded-3xl bg-gradient-to-r from-orange-500 via-yellow-500 to-orange-600 shadow-2xl">
               <div className="absolute inset-0 bg-black/10" />
-              <div className="relative p-4 sm:p-6 lg:p-8 xl:p-12">
+              <div className="relative p-2.5 sm:p-3 lg:p-4 xl:p-6">
                 <div className="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between">
                   <div className="space-y-3 sm:space-y-4">
                     <div className="flex items-center space-x-2 sm:space-x-3">
@@ -218,15 +218,15 @@ export default function Home() {
             </div>
 
             {/* Converter Card */}
-            <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 dark:border-slate-700/50 p-4 sm:p-6 lg:p-8">
-              <div className="flex items-center space-x-2 sm:space-x-3 mb-4 sm:mb-6">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-                  <CurrencyDollarIcon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+            <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-lg sm:rounded-xl lg:rounded-2xl xl:rounded-3xl shadow-xl border border-slate-200/50 dark:border-slate-700/50 p-2.5 sm:p-3 lg:p-4 xl:p-6">
+              <div className="flex items-center space-x-2 sm:space-x-3 mb-2.5 sm:mb-3 lg:mb-4">
+                <div className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 xl:w-10 xl:h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-md sm:rounded-lg lg:rounded-xl flex items-center justify-center">
+                  <CurrencyDollarIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4 xl:w-5 xl:h-5 text-white" />
                 </div>
-                <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">Конвертер</h3>
+                <h3 className="text-sm sm:text-base lg:text-lg xl:text-xl font-bold text-slate-900 dark:text-white">Конвертер</h3>
               </div>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 lg:gap-4 xl:gap-6">
                 {/* BTC Input */}
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -238,10 +238,10 @@ export default function Home() {
                       type="number"
                       value={btcAmount}
                       onChange={(e) => setBtcAmount(Number(e.target.value))}
-                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 pl-12 sm:pl-16 pr-3 sm:pr-4 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm sm:text-base"
+                      className="w-full px-2 sm:px-2.5 lg:px-3 xl:px-4 py-1.5 sm:py-2 lg:py-2.5 xl:py-3 pl-8 sm:pl-10 lg:pl-12 xl:pl-16 pr-2 sm:pr-2.5 lg:pr-3 xl:pr-4 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm"
                       placeholder="1.0"
                     />
-                    <div className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">
+                    <div className="absolute left-1.5 sm:left-2 lg:left-2.5 xl:left-3 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-500 dark:text-slate-400">
                       {unit}
                     </div>
                   </div>
@@ -258,7 +258,7 @@ export default function Home() {
                   <select
                     value={unit}
                     onChange={(e) => setUnit(parseUnit(e.target.value))}
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm sm:text-base"
+                    className="w-full px-2.5 sm:px-3 lg:px-4 py-2 sm:py-2.5 lg:py-3 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm"
                   >
                     {(["BTC", "mBTC", "µBTC", "sats"] as BitcoinUnit[]).map((u) => (
                       <option key={u} value={u}>
@@ -283,10 +283,10 @@ export default function Home() {
                         const btc = v / quote.price;
                         setBtcAmount(fromBtc(btc, unit));
                       }}
-                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 pl-12 sm:pl-16 pr-3 sm:pr-4 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm sm:text-base"
+                      className="w-full px-2.5 sm:px-3 lg:px-4 py-2 sm:py-2.5 lg:py-3 pl-10 sm:pl-12 lg:pl-16 pr-2.5 sm:pr-3 lg:pr-4 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm"
                       placeholder="0.00"
                     />
-                    <div className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">
+                    <div className="absolute left-2 sm:left-2.5 lg:left-3 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-500 dark:text-slate-400">
                       {vs}
                     </div>
                   </div>
@@ -300,7 +300,7 @@ export default function Home() {
                   <select
                     value={vs}
                     onChange={(e) => setVs(e.target.value)}
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm sm:text-base"
+                    className="w-full px-2.5 sm:px-3 lg:px-4 py-2 sm:py-2.5 lg:py-3 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm"
                   >
                     {fiatOptions.map((c) => (
                       <option key={c} value={c}>
@@ -312,10 +312,15 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Charts */}
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
+            {/* Charts - Hidden on mobile, shown on tablet+ */}
+            <div className="hidden sm:grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
               <PriceChart vs={vs} />
               <AdvancedChart vs={vs} />
+            </div>
+
+            {/* Mobile Chart - Single chart on mobile */}
+            <div className="sm:hidden">
+              <PriceChart vs={vs} />
             </div>
 
             {/* Additional Features */}

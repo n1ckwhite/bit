@@ -148,18 +148,18 @@ export default function PriceChart({ vs, className }: PriceChartProps) {
             </div>
           )}
 
-          <div className="h-[250px] sm:h-[300px]">
+          <div className="h-[150px] sm:h-[200px] lg:h-[250px] xl:h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="currentColor" opacity={0.1} />
                 <XAxis 
                   dataKey="time" 
-                  tick={{ fontSize: 10, fill: "currentColor" }}
+                  tick={{ fontSize: 9, fill: "currentColor" }}
                   stroke="currentColor"
                   opacity={0.7}
                 />
                 <YAxis 
-                  tick={{ fontSize: 10, fill: "currentColor" }}
+                  tick={{ fontSize: 9, fill: "currentColor" }}
                   stroke="currentColor"
                   opacity={0.7}
                   tickFormatter={(value) => value.toLocaleString()}
@@ -172,7 +172,7 @@ export default function PriceChart({ vs, className }: PriceChartProps) {
                     border: "1px solid var(--tw-border-opacity)",
                     borderRadius: "12px",
                     boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
-                    fontSize: "12px",
+                    fontSize: "11px",
                   }}
                 />
                 <Line 
@@ -182,7 +182,7 @@ export default function PriceChart({ vs, className }: PriceChartProps) {
                   strokeWidth={2}
                   dot={false}
                   activeDot={{ 
-                    r: 4, 
+                    r: 3, 
                     stroke: "currentColor", 
                     strokeWidth: 2,
                     fill: "white",
