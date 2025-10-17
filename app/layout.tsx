@@ -23,9 +23,9 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://bitcoin-price-converter.com'),
-  title: "Курс Биткоина · Конвертер",
+  title: "Курс · Конвертер",
   description: "Онлайн‑конвертер BTC ↔ фиат. Котировки c бирж, обновление каждые 60 секунд.",
-  keywords: "биткоин, курс биткоина, конвертер биткоин, BTC, криптовалюта, обменник, курс валют, сатоши, mBTC, µBTC",
+  keywords: "биткоин, курс, конвертер биткоин, BTC, криптовалюта, обменник, курс валют, сатоши, mBTC, µBTC",
   authors: [{ name: "Bitcoin Price Converter" }],
   creator: "Bitcoin Price Converter",
   publisher: "Bitcoin Price Converter",
@@ -37,23 +37,23 @@ export const metadata: Metadata = {
     title: "BTC Конвертер",
   },
   openGraph: {
-    title: "Курс Биткоина — быстрый конвертер",
+    title: "Курс — быстрый конвертер",
     description: "BTC ↔ фиат. Источники: Binance, Kraken, Bitstamp, CoinGecko. Обновление раз в минуту.",
     type: "website",
     locale: "ru_RU",
-    siteName: "Курс Биткоина",
+    siteName: "Курс",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Курс Биткоина - Конвертер",
+        alt: "Курс - Конвертер",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Курс Биткоина — быстрый конвертер",
+    title: "Курс — быстрый конвертер",
     description: "BTC ↔ фиат. Источники: Binance, Kraken, Bitstamp, CoinGecko. Обновление раз в минуту.",
     images: ["/og-image.png"],
   },
@@ -124,7 +124,7 @@ export default function RootLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "WebApplication",
-              "name": "Курс Биткоина - Конвертер",
+              "name": "Курс - Конвертер",
               "description": "Онлайн‑конвертер BTC ↔ фиат. Котировки c бирж, обновление каждые 60 секунд.",
               "url": "https://bitcoin-price-converter.com",
               "applicationCategory": "FinanceApplication",
@@ -146,7 +146,7 @@ export default function RootLayout({
               "dateModified": new Date().toISOString().split('T')[0],
               "inLanguage": "ru",
               "isAccessibleForFree": true,
-              "keywords": "биткоин, курс биткоина, конвертер биткоин, BTC, криптовалюта, обменник, курс валют, сатоши, mBTC, µBTC"
+              "keywords": "биткоин, курс, конвертер биткоин, BTC, криптовалюта, обменник, курс валют, сатоши, mBTC, µBTC"
             })
           }}
         />

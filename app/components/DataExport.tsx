@@ -120,7 +120,7 @@ const DataExport = memo(function DataExport({ currentPrice, currency, history, c
     if (navigator.share) {
       try {
         await navigator.share({
-          title: "Курс Биткоина",
+          title: "Курс",
           text,
           url: window.location.href,
         });

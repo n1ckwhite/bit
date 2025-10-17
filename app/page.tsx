@@ -11,6 +11,7 @@ import {
 } from "@heroicons/react/24/outline";
 import ThemeToggle from "./components/ThemeToggle";
 import { DEFAULT_FIATS } from "./lib/currencies";
+import type { FiatCurrency } from "./lib/currencies";
 import { BitcoinUnit, fromBtc, parseUnit, toBtc } from "./lib/units";
 
 // Lazy load heavy components with preload
@@ -45,8 +46,14 @@ export default function Home() {
   const [lastUpdated, setLastUpdated] = useState<string>("");
   const [historyData, setHistoryData] = useState<Array<{ timestamp: number; price: number }>>([]);
   const [showScrollButton, setShowScrollButton] = useState(false);
+  const [currencyOpen, setCurrencyOpen] = useState(false);
+  const [currencyQuery, setCurrencyQuery] = useState("");
+  const [fiatsRemote, setFiatsRemote] = useState<FiatCurrency[] | null>(null);
+  const [fiatsLoading, setFiatsLoading] = useState(false);
   const inputBtcRef = useRef<HTMLInputElement>(null);
   const mainContainerRef = useRef<HTMLDivElement>(null);
+  const currencyRef = useRef<HTMLDivElement>(null);
+  const fiatsLoadedRef = useRef(false);
 
   // Functions for converter links - memoized
   const scrollToConverter = useCallback(() => {
@@ -105,6 +112,24 @@ export default function Home() {
         mainContainerRef.current.scrollTop = 0;
       }
     }
+  }, []);
+
+  // Close currency dropdown on outside click / ESC
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      if (!currencyRef.current) return;
+      if (!(e.target instanceof Node)) return;
+      if (!currencyRef.current.contains(e.target)) setCurrencyOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setCurrencyOpen(false);
+    };
+    document.addEventListener('click', onClick);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('click', onClick);
+      document.removeEventListener('keydown', onKey);
+    };
   }, []);
 
   const fetchQuote = useCallback(async (currentVs: string) => {
@@ -209,7 +234,52 @@ export default function Home() {
     };
   }, []);
 
-  const fiatOptions = useMemo(() => DEFAULT_FIATS.map((c) => c.code), []);
+  const fetchFiats = useCallback(async () => {
+    if (fiatsLoadedRef.current || fiatsLoading) return;
+    setFiatsLoading(true);
+    try {
+      const res = await fetch("/api/fiats", { cache: "force-cache" });
+      if (!res.ok) return;
+      const json = await res.json();
+      if (Array.isArray(json?.data)) {
+        setFiatsRemote(json.data as FiatCurrency[]);
+        fiatsLoadedRef.current = true;
+      }
+    } finally {
+      setFiatsLoading(false);
+    }
+  }, [fiatsLoading]);
+
+  // Lazy prefetch after initial idle
+  useEffect(() => {
+    const t = setTimeout(() => {
+      fetchFiats();
+    }, 1500);
+    return () => clearTimeout(t);
+  }, [fetchFiats]);
+
+  // Fetch when dropdown first opens
+  useEffect(() => {
+    if (currencyOpen) fetchFiats();
+  }, [currencyOpen, fetchFiats]);
+
+  const combinedFiats: FiatCurrency[] = useMemo(() => {
+    const byCode = new Map<string, FiatCurrency>();
+    // Remote first to prefer enriched payload from API
+    for (const c of fiatsRemote || []) byCode.set(c.code, c);
+    for (const c of DEFAULT_FIATS) if (!byCode.has(c.code)) byCode.set(c.code, c);
+    return Array.from(byCode.values());
+  }, [fiatsRemote]);
+
+  const fiatOptions = useMemo(() => combinedFiats.map((c) => c.code), [combinedFiats]);
+  const filteredFiats = useMemo(() => {
+    const q = currencyQuery.trim().toLowerCase();
+    if (!q) return combinedFiats;
+    return combinedFiats.filter(c =>
+      c.code.toLowerCase().includes(q) ||
+      c.nameRu.toLowerCase().includes(q)
+    );
+  }, [currencyQuery, combinedFiats]);
 
   const currentPrice = useMemo(() => quote?.price || 0, [quote?.price]);
   
@@ -259,7 +329,7 @@ export default function Home() {
                   </div>
                   <div>
                     <h1 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-slate-900 dark:text-white">
-                      Курс Биткоина
+                      Курс
                     </h1>
                     <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 hidden sm:block">
                       Конвертер и график в реальном времени
@@ -359,7 +429,7 @@ export default function Home() {
             </div>
 
             {/* Converter Card */}
-            <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-lg sm:rounded-xl lg:rounded-2xl xl:rounded-3xl shadow-xl border border-slate-200/50 dark:border-slate-700/50 p-2.5 sm:p-3 lg:p-4 xl:p-6" data-converter>
+            <div className="relative z-40 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-lg sm:rounded-xl lg:rounded-2xl xl:rounded-3xl shadow-xl border border-slate-200/50 dark:border-slate-700/50 p-2.5 sm:p-3 lg:p-4 xl:p-6" data-converter>
               <div className="flex items-center space-x-2 sm:space-x-3 mb-2.5 sm:mb-3 lg:mb-4">
                 <div className="w-7 h-7 sm:w-8 sm:h-8 lg:w-10 lg:h-10 xl:w-12 xl:h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-md sm:rounded-lg lg:rounded-xl flex items-center justify-center">
                   <CurrencyDollarIcon className="w-4 h-4 sm:w-4 sm:h-4 lg:w-5 lg:h-5 xl:w-6 xl:h-6 text-white" />
@@ -479,25 +549,61 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* Currency Select */}
-                <div className="space-y-2">
-                  <label htmlFor="currencySelect" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                {/* Currency Select with search */}
+                <div className="space-y-2" ref={currencyRef}>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                     Валюта
                   </label>
-                  <select
-                    id="currencySelect"
-                    name="currency"
-                    value={vs}
-                    onChange={(e) => setVs(e.target.value)}
-                    className="w-full px-2.5 sm:px-3 lg:px-4 py-2.5 sm:py-3 lg:py-3.5 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm"
-                    aria-label="Выберите валюту для конвертации"
-                  >
-                    {fiatOptions.map((c) => (
-                      <option key={c} value={c}>
-                        {c}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setCurrencyOpen(v => !v)}
+                      className="w-full px-2.5 sm:px-3 lg:px-4 py-2.5 sm:py-3 lg:py-3.5 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm flex items-center justify-between"
+                      aria-haspopup="listbox"
+                      aria-expanded={currencyOpen}
+                    >
+                      <span className="font-medium">{vs}</span>
+                      <svg className={`w-4 h-4 transition-transform ${currencyOpen ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clipRule="evenodd"/></svg>
+                    </button>
+
+                    {currencyOpen && (
+                      <div className="absolute z-50 mt-2 w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md sm:rounded-lg shadow-lg overflow-hidden">
+                        <div className="p-2 border-b border-slate-200 dark:border-slate-700">
+                          <input
+                            autoFocus
+                            type="text"
+                            value={currencyQuery}
+                            onChange={(e) => setCurrencyQuery(e.target.value)}
+                            placeholder="Поиск валюты..."
+                            className="w-full px-2.5 py-2 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md text-slate-900 dark:text-white text-sm"
+                            aria-label="Поиск валюты"
+                          />
+                        </div>
+                        <ul role="listbox" className="max-h-56 overflow-auto">
+                          {fiatsLoading && (
+                            <li className="px-3 py-2 text-sm text-slate-500 dark:text-slate-400">Загрузка...</li>
+                          )}
+                          {filteredFiats.map((c) => (
+                            <li key={c.code}>
+                              <button
+                                type="button"
+                                onClick={() => { setVs(c.code); setCurrencyOpen(false); setCurrencyQuery(""); }}
+                                className="w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center justify-between text-sm"
+                                role="option"
+                                aria-selected={vs === c.code}
+                              >
+                                <span className="text-slate-900 dark:text-white font-medium">{c.nameRu}</span>
+                                <span className="text-slate-600 dark:text-slate-300 font-mono">{c.code}</span>
+                              </button>
+                            </li>
+                          ))}
+                          {filteredFiats.length === 0 && (
+                            <li className="px-3 py-2 text-sm text-slate-500 dark:text-slate-400">Ничего не найдено</li>
+                          )}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -570,7 +676,7 @@ export default function Home() {
                     <ul className="space-y-2 text-slate-700 dark:text-slate-300 text-sm sm:text-base">
                       <li className="flex items-start">
                         <span className="text-blue-500 mr-2">•</span>
-                        Просматривать текущий курс биткоина в реальном времени
+                        Просматривать текущий курс в реальном времени
                       </li>
                       <li className="flex items-start">
                         <span className="text-blue-500 mr-2">•</span>
