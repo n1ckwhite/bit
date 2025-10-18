@@ -725,12 +725,12 @@ export default function Home() {
                     <button
                       type='button'
                       onClick={() => setCurrencyOpen((v) => !v)}
-                      className='absolute z-10 left-2 top-1/2 -translate-y-1/2 h-8 sm:h-9 group flex items-center gap-1.5 text-xs sm:text-sm font-semibold tracking-wide bg-slate-100 text-slate-800 dark:bg-slate-600 dark:text-white px-3 rounded-md border border-slate-300 dark:border-slate-500 hover:bg-slate-200 dark:hover:bg-slate-500 transition-colors'
+                      className='absolute z-10 left-2 top-1/2 -translate-y-1/2 h-6 sm:h-7 min-h-[28px] min-w-[40px] group flex items-center gap-1 justify-center text-[10px] sm:text-[11px] font-medium tracking-wide bg-slate-100 text-slate-800 dark:bg-slate-600 dark:text-white px-2 rounded border border-slate-300 dark:border-slate-500 hover:bg-slate-200 dark:hover:bg-slate-500 transition-colors'
                       aria-haspopup='listbox'
                       aria-expanded={currencyOpen}
                     >
                       <span className='px-0'>{vs}</span>
-                      <ChevronDownIcon className={`w-3 h-3 opacity-80 transition-transform duration-200 ${currencyOpen ? 'rotate-180' : ''}`} />
+                      <ChevronDownIcon className={`w-2.5 h-2.5 opacity-80 transition-transform duration-200 ${currencyOpen ? 'rotate-180' : ''}`} />
                     </button>
                     {currencyOpen && (
                       <div className='absolute z-50 mt-2 w-72 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-2xl shadow-2xl overflow-hidden'>
