@@ -72,7 +72,11 @@ const PriceChart = memo(function PriceChart({
   }, [mounted, loading, history?.data?.length]);
 
   const fetchHistory = useCallback(
-    async (currentVs: string, currentInterval: "1h" | "1d") => {
+    async (
+      currentVs: string,
+      currentInterval: "1h" | "1d",
+      currentBaseId: string
+    ) => {
       setLoading(true);
       try {
         const limit = currentInterval === "1h" ? "24" : "30";
@@ -80,14 +84,14 @@ const PriceChart = memo(function PriceChart({
           `/api/history?vs=${encodeURIComponent(
             currentVs
           )}&base=${encodeURIComponent(
-            baseId
+            currentBaseId
           )}&interval=${currentInterval}&limit=${limit}`,
           { cache: "no-store" }
         );
         const json: any = await res.json();
         if (!res.ok || !json || !Array.isArray(json.data)) {
           setHistory({
-            base: "BTC",
+            base: currentBaseId.toUpperCase(),
             vs: currentVs,
             interval: currentInterval,
             data: [],
@@ -99,7 +103,7 @@ const PriceChart = memo(function PriceChart({
       } catch (error) {
         console.error("Failed to fetch history:", error);
         setHistory({
-          base: "BTC",
+          base: currentBaseId.toUpperCase(),
           vs: currentVs,
           interval: currentInterval,
           data: [],
@@ -113,7 +117,7 @@ const PriceChart = memo(function PriceChart({
   );
 
   useEffect(() => {
-    fetchHistory(vs, interval);
+    fetchHistory(vs, interval, baseId);
   }, [vs, interval, baseId, fetchHistory]);
 
   const formatXAxis = useCallback(

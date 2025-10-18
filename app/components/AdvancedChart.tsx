@@ -194,7 +194,9 @@ const AdvancedChart = memo(function AdvancedChart({
             <ChartBarSquareIcon className='w-4 h-4 sm:w-5 sm:h-5 text-white' />
           </div>
           <h3 className='text-lg sm:text-xl font-bold text-slate-900 dark:text-white'>
-            {t("priceChart", { sym: "BTC" }) || "Price Chart"}
+            {t("priceChart", {
+              sym: String(baseSymbol || baseId?.toUpperCase() || ""),
+            }) || "Price Chart"}
           </h3>
         </div>
 

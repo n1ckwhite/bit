@@ -159,7 +159,7 @@ export default function Home() {
           fetch(
             `/api/history?vs=${encodeURIComponent(
               currentVs
-            )}&interval=1h&limit=24`,
+            )}&base=${encodeURIComponent(baseCoin)}&interval=1h&limit=24`,
             { cache: "no-store" }
           ),
         ]);
