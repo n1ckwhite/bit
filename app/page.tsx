@@ -460,16 +460,18 @@ export default function Home() {
                     <div className='flex items-center space-x-2'>
                       {loading ? (
                         <div
-                          className='h-5 sm:h-6 w-16 sm:w-20 bg-white/30 rounded-full animate-pulse'
+                          className='h-5 sm:h-6 w-16 sm:w-20 bg-white/60 dark:bg-slate-500/70 rounded-full animate-pulse'
                           aria-hidden='true'
                         />
                       ) : (
                         <div
                           className={`flex items-center space-x-1 px-2 sm:px-3 py-1 rounded-full ${
                             isPositive
-                              ? "bg-green-600 text-white"
-                              : "bg-red-700 text-white"
+                              ? "bg-green-700 text-white"
+                              : "bg-red-800 text-white"
                           }`}
+                          role='status'
+                          aria-label={isPositive ? t("for24h") : t("for24h")}
                         >
                           {isPositive ? (
                             <ArrowTrendingUpIcon className='w-3 h-3 sm:w-4 sm:h-4' />
@@ -512,7 +514,7 @@ export default function Home() {
                           {quote.sources.slice(0, 3).map((source) => (
                             <span
                               key={source.source}
-                              className='source-tag px-1.5 sm:px-2 py-0.5 sm:py-1 bg-white/20 backdrop-blur-sm rounded text-xs text-white font-medium inline-block'
+                              className='source-tag px-1.5 sm:px-2 py-0.5 sm:py-1 bg-white/90 text-slate-900 dark:bg-slate-700 dark:text-slate-100 rounded text-xs font-semibold inline-block'
                             >
                               {source.source.split(":")[0]}
                             </span>
@@ -731,7 +733,7 @@ export default function Home() {
                       <ChevronDownIcon className={`w-3 h-3 opacity-80 transition-transform duration-200 ${currencyOpen ? 'rotate-180' : ''}`} />
                     </button>
                     {currencyOpen && (
-                      <div className='absolute z-50 mt-2 w-72 bg-white/95 dark:bg-slate-800/95 backdrop-blur border border-slate-200/80 dark:border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden'>
+                      <div className='absolute z-50 mt-2 w-72 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-2xl shadow-2xl overflow-hidden'>
                         <div className='p-2.5 border-b border-slate-200/70 dark:border-slate-700/70'>
                           <label htmlFor='currencySearch' className='sr-only'>
                             {t("searchCurrency")}
@@ -919,8 +921,10 @@ export default function Home() {
                       <a
                         href='https://bitcoin.org'
                         target='_blank'
+                        aria-label={t("learnMoreAboutBitcoin")}
+                        title={t("learnMoreAboutBitcoin")}
                         rel='noopener noreferrer'
-                        className='text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 underline'
+                        className='text-blue-700 hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-200 underline decoration-2 underline-offset-2'
                       >
                         {t("learnMore")}
                       </a>
@@ -962,7 +966,7 @@ export default function Home() {
                         href='https://twitter.com'
                         target='_blank'
                         rel='noopener noreferrer'
-                        className='text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 underline'
+                        className='text-blue-700 hover:text-blue-800 focus:text-blue-900 dark:text-blue-300 dark:hover:text-blue-200 underline decoration-2 underline-offset-2'
                       >
                         Twitter/X
                       </a>

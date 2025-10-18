@@ -69,6 +69,7 @@ const DICTS: Record<Locale, Dict> = {
     desc_p1:
       "Bitcoin is a digital currency that allows sending money online without intermediaries.",
     learnMore: "Learn more",
+    learnMoreAboutBitcoin: "Learn more about Bitcoin",
     usageTitle: "Usage",
     usage_p1: "Keep the site open in a tab to monitor price.",
     usage_p2: "Use inputs to see equivalent amounts in crypto and fiat.",
@@ -177,6 +178,7 @@ const DICTS: Record<Locale, Dict> = {
     desc_p1:
       "Биткоин — это цифровая валюта, которая позволяет отправлять деньги онлайн без посредников.",
     learnMore: "Подробнее",
+    learnMoreAboutBitcoin: "Подробнее о Биткоине",
     usageTitle: "Использование",
     usage_p1: "Оставьте сайт открытым во вкладке для мониторинга цены.",
     usage_p2:
