@@ -54,10 +54,12 @@ const AdvancedChart = memo(function AdvancedChart({ vs }: AdvancedChartProps) {
       if (r)
         setDims({ width: Math.floor(r.width), height: Math.floor(r.height) });
     };
+    // initial measurement
     update();
     window.addEventListener("resize", update, { passive: true });
     return () => window.removeEventListener("resize", update as any);
-  }, [mounted]);
+    // re-run when loading or data length changes
+  }, [mounted, loading, data.length]);
 
   const fetchCandleData = useCallback(
     async (
@@ -291,12 +293,14 @@ const AdvancedChart = memo(function AdvancedChart({ vs }: AdvancedChartProps) {
             {chartData && chartData.length > 0 ? (
               mounted && dims.width > 0 && dims.height > 0 ? (
                 <ResponsiveContainer
+                  key={`${vs}-${hours}-${data[0]?.timestamp || ""}`}
                   width={dims.width}
                   height={dims.height}
                   minWidth={300}
                   minHeight={300}
                 >
                   <AreaChart
+                    key={`${vs}-${hours}-${data[0]?.timestamp || ""}`}
                     data={chartData}
                     margin={{ top: 10, right: 24, left: 8, bottom: 0 }}
                   >

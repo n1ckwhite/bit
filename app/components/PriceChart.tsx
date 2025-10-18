@@ -62,10 +62,12 @@ const PriceChart = memo(function PriceChart({
       if (r)
         setDims({ width: Math.floor(r.width), height: Math.floor(r.height) });
     };
+    // run an initial update (useful when chartRef becomes available after loading)
     update();
     window.addEventListener("resize", update, { passive: true });
     return () => window.removeEventListener("resize", update as any);
-  }, [mounted]);
+    // Re-run when loading or data length changes so we measure after the chart is rendered
+  }, [mounted, loading, history?.data?.length]);
 
   const fetchHistory = useCallback(
     async (currentVs: string, currentInterval: "1h" | "1d") => {
@@ -75,7 +77,8 @@ const PriceChart = memo(function PriceChart({
         const res = await fetch(
           `/api/history?vs=${encodeURIComponent(
             currentVs
-          )}&interval=${currentInterval}&limit=${limit}`
+          )}&interval=${currentInterval}&limit=${limit}`,
+          { cache: "no-store" }
         );
         const json: any = await res.json();
         if (!res.ok || !json || !Array.isArray(json.data)) {
@@ -252,16 +255,21 @@ const PriceChart = memo(function PriceChart({
             </div>
           )}
 
-          <div className='chart-container h-[150px] sm:h-[200px] lg:h-[250px] xl:h-[300px] min-h-[150px] w-full'>
+          <div
+            ref={chartRef}
+            className='chart-container h-[150px] sm:h-[200px] lg:h-[250px] xl:h-[300px] min-h-[150px] w-full'
+          >
             {chartData && chartData.length > 0 ? (
               mounted && dims.width > 0 && dims.height > 0 ? (
                 <ResponsiveContainer
+                  key={`${vs}-${interval}-${history?.updatedAt || ""}`}
                   width='100%'
                   height='100%'
                   minWidth={150}
                   minHeight={150}
                 >
                   <LineChart
+                    key={`${vs}-${interval}-${history?.updatedAt || ""}`}
                     data={chartData}
                     margin={{ top: 8, right: 20, left: 6, bottom: 0 }}
                   >
