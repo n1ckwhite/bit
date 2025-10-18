@@ -555,10 +555,10 @@ export async function GET(req: NextRequest): Promise<Response> {
   // Получаем данные из всех доступных источников параллельно
   const [binance, kraken, bitstamp, coindesk, coinbase, kucoin] = await Promise.all([
     getBinanceUSD(baseParam, vs),
-    getKrakenUSD(),
+    isBitcoin ? getKrakenUSD() : Promise.resolve(null),
     getBitstampUSD(baseParam, vs),
     getCoindeskUSD(),
-    getCoinbaseUSD(),
+    isBitcoin ? getCoinbaseUSD() : Promise.resolve(null),
     getKuCoinUSD(baseParam),
   ]);
   const usdSources = dedupeQuotes([binance, kraken, bitstamp, coindesk, coinbase, kucoin]);
@@ -578,6 +578,13 @@ export async function GET(req: NextRequest): Promise<Response> {
   ]);
   // Include CoinGecko direct quote (if any) in consolidation along with other sources
   const fxRateToVs = vs === "USD" ? 1 : await getFxRateAggregated("USD", vs);
+  // Some targets like XAG/XAU are not supported by standard FX providers.
+  // In that case, derive USD->VS using CoinGecko quotes for the same base asset.
+  const derivedFxFromCoingecko =
+    vs !== "USD" && coingeckoUsd && directVsCoingecko && coingeckoUsd.price > 0
+      ? directVsCoingecko.price / coingeckoUsd.price
+      : null;
+  const effectiveFxToVs = fxRateToVs ?? derivedFxFromCoingecko;
 
   const consolidated: SourceQuote[] = dedupeQuotes([
     krakenDirect,
@@ -600,38 +607,41 @@ export async function GET(req: NextRequest): Promise<Response> {
           price: s.price,
           volume: s.volume,
         });
-      } else if (isUsdDenominated && fxRateToVs) {
+      } else if (isUsdDenominated && effectiveFxToVs) {
         // source is USD-denominated (or USDT); convert to target currency
         consolidated.push({
           source: `${s.source}->${vs}`,
-          price: s.price * fxRateToVs,
+          price: s.price * (effectiveFxToVs as number),
           volume: s.volume,
         });
-      } else {
+      } else if (!isUsdDenominated) {
         // source already in target currency (e.g. binance:BTCRUB) - use as-is
         consolidated.push({
           source: s.source,
           price: s.price,
           volume: s.volume,
         });
+      } else {
+        // USD-denominated source but no FX available → skip to avoid mixing units
+        continue;
       }
     }
   }
-  if (coingeckoUsd && fxRateToVs && vs !== "USD") {
+  if (coingeckoUsd && effectiveFxToVs && vs !== "USD") {
     consolidated.push({
       source: `coingecko:USD->${vs}`,
-      price: coingeckoUsd.price * (fxRateToVs as number),
+      price: coingeckoUsd.price * (effectiveFxToVs as number),
     });
   }
 
   if (consolidated.length === 0) {
-    if (vs !== "USD" && fxRateToVs) {
+    if (vs !== "USD" && effectiveFxToVs) {
       const fx = fxRateToVs;
       if (usdSources.length > 0) {
         for (const s of usdSources) {
           consolidated.push({
             source: `${s.source}->${vs}`,
-            price: s.price * fx,
+            price: s.price * (effectiveFxToVs as number),
           });
         }
       }
