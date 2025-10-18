@@ -72,7 +72,8 @@ const AdvancedChart = memo(function AdvancedChart({
     async (
       currentVs: string,
       currentTimeframe: "1h",
-      limitHours: 168 | 336
+      limitHours: 168 | 336,
+      currentBaseId?: string
     ) => {
       setLoading(true);
       // clear previous data so UI shows clean loading state
@@ -90,7 +91,7 @@ const AdvancedChart = memo(function AdvancedChart({
           `/api/history?vs=${encodeURIComponent(
             currentVs
           )}&base=${encodeURIComponent(
-            baseId || "bitcoin"
+            currentBaseId || baseId || "bitcoin"
           )}&interval=${interval}&limit=${limit}`,
           { cache: "no-store" }
         );
@@ -126,7 +127,7 @@ const AdvancedChart = memo(function AdvancedChart({
   );
 
   useEffect(() => {
-    fetchCandleData(vs, timeframe, hours);
+    fetchCandleData(vs, timeframe, hours, baseId);
   }, [vs, baseId, timeframe, hours, fetchCandleData]);
 
   const priceChange = useMemo(() => {
