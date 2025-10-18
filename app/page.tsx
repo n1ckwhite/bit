@@ -577,7 +577,8 @@ export default function Home() {
                       type='number'
                       id='btcAmount'
                       name='btcAmount'
-                      value={btcAmount}
+                      value={loading ? '' : btcAmount}
+                      placeholder={loading ? t("loading") : "1"}
                       onChange={(e) => {
                         const value = Number(e.target.value);
                         if (!isNaN(value)) setBtcAmount(value);
@@ -600,8 +601,9 @@ export default function Home() {
                           }
                         }
                       }}
+                      disabled={loading}
+                      aria-busy={loading}
                       className='w-full px-2.5 sm:px-3 lg:px-4 py-2.5 sm:py-3 lg:py-3.5 pl-10 sm:pl-12 lg:pl-16 pr-14 sm:pr-16 lg:pr-20 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm'
-                      placeholder='1.0'
                       step='0.1'
                       min='0'
                     />
@@ -656,7 +658,8 @@ export default function Home() {
                       type='number'
                       id='fiatAmount'
                       name='fiatAmount'
-                      value={fiatAmount.toFixed(2)}
+                      value={loading ? '' : fiatAmount.toFixed(2)}
+                      placeholder={loading ? t("loading") : "0.00"}
                       disabled={loading}
                       aria-busy={loading}
                       onChange={(e) => {
@@ -697,7 +700,6 @@ export default function Home() {
                       className={`w-full px-2.5 sm:px-3 lg:px-4 py-2.5 sm:py-3 lg:py-3.5 pl-16 sm:pl-20 lg:pl-24 pr-14 sm:pr-16 lg:pr-20 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm ${
                         loading ? "text-transparent caret-transparent" : ""
                       }`}
-                      placeholder='0.00'
                       step='100'
                       min='0'
                     />

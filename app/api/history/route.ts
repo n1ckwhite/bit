@@ -16,19 +16,45 @@ type HistoryResponse = {
 
 async function fetchWithTimeout(
   url: string,
-  timeoutMs: number
+  timeoutMs: number,
+  retries: number = 2
 ): Promise<Response> {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    const res = await fetch(url, {
-      signal: controller.signal,
-      next: { revalidate: 300 },
-    });
-    return res;
-  } finally {
-    clearTimeout(timeout);
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    
+    try {
+      const res = await fetch(url, {
+        signal: controller.signal,
+        next: { revalidate: 180 }, // Более частое обновление для графиков
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; CryptoPriceBot/1.0)',
+          'Accept': 'application/json',
+        },
+      });
+      
+      if (res.ok) {
+        clearTimeout(timeout);
+        return res;
+      }
+      
+      if (attempt < retries) {
+        await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+        continue;
+      }
+      
+      clearTimeout(timeout);
+      return res;
+    } catch (error) {
+      clearTimeout(timeout);
+      if (attempt === retries) {
+        throw error;
+      }
+      await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt)));
+    }
   }
+  
+  throw new Error('Max retries exceeded');
 }
 
 async function getCoinGeckoHistory(
@@ -43,16 +69,39 @@ async function getCoinGeckoHistory(
       )}/market_chart?vs_currency=${encodeURIComponent(
         vs.toLowerCase()
       )}&days=${days}&interval=${days <= 1 ? "hourly" : "daily"}`,
-      8000
+      5000
     );
-    if (!res.ok) return [];
+    
+    if (!res.ok) {
+      console.warn(`CoinGecko history API returned ${res.status}: ${res.statusText}`);
+      return [];
+    }
+    
     const data: any = await res.json();
-    const prices = data?.prices || [];
-    return prices.map(([timestamp, price]: [number, number]) => ({
-      timestamp: Math.floor(timestamp / 1000),
-      price: Number(price),
-    }));
-  } catch {
+    
+    if (!data?.prices || !Array.isArray(data.prices)) {
+      console.warn('Invalid CoinGecko history response format');
+      return [];
+    }
+    
+    const prices = data.prices;
+    const volumes = data.total_volumes || [];
+    
+    return prices.map(([timestamp, price]: [number, number], index: number) => {
+      const volume = volumes[index] ? volumes[index][1] : undefined;
+      
+      return {
+        timestamp: Math.floor(timestamp / 1000),
+        price: Number(price),
+        volume: volume ? Number(volume) : undefined,
+      };
+    }).filter((point: HistoryPoint) => 
+      Number.isFinite(point.price) && 
+      point.price > 0 && 
+      point.timestamp > 0
+    );
+  } catch (error) {
+    console.warn(`CoinGecko history API error for ${baseId}/${vs}:`, error);
     return [];
   }
 }
@@ -158,15 +207,19 @@ function mergeHistoryData(sources: HistoryPoint[][]): HistoryPoint[] {
 
   const priceMap = new Map<number, number[]>();
   const volumeMap = new Map<number, number[]>();
+  const sourceCount = new Map<number, number>();
 
   for (const source of sources) {
     for (const point of source) {
       if (!priceMap.has(point.timestamp)) {
         priceMap.set(point.timestamp, []);
         volumeMap.set(point.timestamp, []);
+        sourceCount.set(point.timestamp, 0);
       }
       priceMap.get(point.timestamp)!.push(point.price);
-      if (point.volume !== undefined) {
+      sourceCount.set(point.timestamp, sourceCount.get(point.timestamp)! + 1);
+      
+      if (point.volume !== undefined && point.volume > 0) {
         volumeMap.get(point.timestamp)!.push(point.volume);
       }
     }
@@ -176,27 +229,55 @@ function mergeHistoryData(sources: HistoryPoint[][]): HistoryPoint[] {
   for (const [timestamp, prices] of priceMap.entries()) {
     if (prices.length === 0) continue;
 
+    // Улучшенный алгоритм агрегации цен
     const sortedPrices = [...prices].sort((a, b) => a - b);
-    const mid = Math.floor(sortedPrices.length / 2);
-    const medianPrice =
-      sortedPrices.length % 2 === 0
-        ? (sortedPrices[mid - 1] + sortedPrices[mid]) / 2
-        : sortedPrices[mid];
+    
+    // Удаляем выбросы (цены, которые сильно отличаются от медианы)
+    const median = sortedPrices[Math.floor(sortedPrices.length / 2)];
+    const filteredPrices = sortedPrices.filter(price => {
+      const deviation = Math.abs(price - median) / median;
+      return deviation < 0.5; // Убираем цены, которые отличаются более чем на 50%
+    });
+    
+    // Если после фильтрации осталось мало данных, используем исходные
+    const finalPrices = filteredPrices.length >= Math.max(1, prices.length / 2) 
+      ? filteredPrices 
+      : sortedPrices;
+    
+    const mid = Math.floor(finalPrices.length / 2);
+    const medianPrice = finalPrices.length % 2 === 0
+      ? (finalPrices[mid - 1] + finalPrices[mid]) / 2
+      : finalPrices[mid];
 
     const volumes = volumeMap.get(timestamp) || [];
-    const avgVolume =
-      volumes.length > 0
-        ? volumes.reduce((sum, v) => sum + v, 0) / volumes.length
-        : undefined;
+    const avgVolume = volumes.length > 0
+      ? volumes.reduce((sum, v) => sum + v, 0) / volumes.length
+      : undefined;
 
-    result.push({
-      timestamp,
-      price: medianPrice,
-      volume: avgVolume,
-    });
+    // Дополнительная валидация перед добавлением
+    if (Number.isFinite(medianPrice) && medianPrice > 0 && timestamp > 0) {
+      result.push({
+        timestamp,
+        price: medianPrice,
+        volume: avgVolume,
+      });
+    }
   }
 
-  return result.sort((a, b) => a.timestamp - b.timestamp);
+  // Финальная фильтрация - убираем дубликаты и некорректные данные
+  const finalResult = result
+    .filter((point, index, arr) => {
+      // Убираем дубликаты по timestamp
+      return arr.findIndex(p => p.timestamp === point.timestamp) === index;
+    })
+    .filter(point => 
+      Number.isFinite(point.price) && 
+      point.price > 0 && 
+      point.timestamp > 0
+    )
+    .sort((a, b) => a.timestamp - b.timestamp);
+
+  return finalResult;
 }
 
 export async function GET(req: NextRequest): Promise<Response> {
@@ -286,6 +367,7 @@ export async function GET(req: NextRequest): Promise<Response> {
   }
 
   if (mergedData.length === 0) {
+    console.warn(`No historical data available for ${baseParam}/${vs} with interval ${interval}`);
     const empty: HistoryResponse = {
       base: baseParam.toUpperCase(),
       vs,
@@ -299,15 +381,41 @@ export async function GET(req: NextRequest): Promise<Response> {
     });
   }
 
+  // Фильтруем и валидируем финальные данные
+  const filteredData = mergedData.filter(point => 
+    Number.isFinite(point.price) && 
+    point.price > 0 && 
+    point.timestamp > 0
+  );
+
+  if (filteredData.length === 0) {
+    console.error(`All historical data filtered out for ${baseParam}/${vs}`);
+    return new Response(JSON.stringify({ 
+      error: "No valid historical data available",
+      base: baseParam.toUpperCase(),
+      vs,
+      interval,
+      updatedAt: new Date().toISOString()
+    }), {
+      status: 502,
+      headers: { "content-type": "application/json; charset=utf-8" },
+    });
+  }
+
+  console.log(`Historical data fetched for ${baseParam}/${vs}: ${filteredData.length} points`);
+
   const body: HistoryResponse = {
     base: baseParam.toUpperCase(),
     vs,
     interval,
-    data: mergedData.slice(-limit),
+    data: filteredData.slice(-limit),
     updatedAt: new Date().toISOString(),
   };
 
   return new Response(JSON.stringify(body), {
-    headers: { "content-type": "application/json; charset=utf-8" },
+    headers: { 
+      "content-type": "application/json; charset=utf-8",
+      "Cache-Control": "public, max-age=180, s-maxage=180", // Кэширование на 3 минуты
+    },
   });
 }
