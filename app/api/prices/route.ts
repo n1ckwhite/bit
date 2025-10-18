@@ -378,19 +378,7 @@ export async function GET(req: NextRequest): Promise<Response> {
     getCoinGeckoFor(vs, baseParam),
     getCoinGeckoFor("USD", baseParam),
   ]);
-  // If CoinGecko provides a direct quote for this base and vs, prefer it and return immediately
-  if (directVsCoingecko) {
-    const body: PricesResponse = {
-      base: baseParam.toUpperCase(),
-      vs,
-      price: directVsCoingecko.price,
-      sources: [directVsCoingecko],
-      updatedAt: new Date().toISOString(),
-    };
-    return new Response(JSON.stringify(body), {
-      headers: { "content-type": "application/json; charset=utf-8" },
-    });
-  }
+  // Include CoinGecko direct quote (if any) in consolidation along with other sources
   const fxRateToVs = vs === "USD" ? 1 : await getFxRateAggregated("USD", vs);
 
   const consolidated: SourceQuote[] = [];
