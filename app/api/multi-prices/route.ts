@@ -180,7 +180,12 @@ async function getBinanceMultiPrices(vs: string): Promise<MultiPriceQuote[]> {
     });
     
     const results = await Promise.all(promises);
-    return results.filter((quote): quote is MultiPriceQuote => quote !== null);
+    // Use reduce to produce a strongly-typed non-null array to satisfy TS in strict mode
+    const nonNullResults = results.reduce<MultiPriceQuote[]>((acc, item) => {
+      if (item) acc.push(item);
+      return acc;
+    }, []);
+    return nonNullResults;
   } catch (error) {
     console.error('Binance multi-price fetch failed:', error);
     return [];
