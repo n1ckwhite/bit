@@ -27,14 +27,21 @@ type CandleData = {
 
 type AdvancedChartProps = {
   vs: string;
+  baseId?: string;
+  baseSymbol?: string;
   className?: string;
 };
 
-const AdvancedChart = memo(function AdvancedChart({ vs }: AdvancedChartProps) {
+const AdvancedChart = memo(function AdvancedChart({
+  vs,
+  baseId,
+  baseSymbol,
+}: AdvancedChartProps) {
   const [timeframe] = useState<"1h">("1h");
   const [hours, setHours] = useState<168 | 336>(168);
   const [showMA7, setShowMA7] = useState<boolean>(true);
   const [data, setData] = useState<CandleData[]>([]);
+  const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const { theme } = useTheme();
   const { t } = useI18n();
@@ -68,6 +75,9 @@ const AdvancedChart = memo(function AdvancedChart({ vs }: AdvancedChartProps) {
       limitHours: 168 | 336
     ) => {
       setLoading(true);
+      // clear previous data so UI shows clean loading state
+      setData([]);
+      setUpdatedAt(null);
       try {
         const intervalMap = {
           "1h": "1h",
@@ -79,6 +89,8 @@ const AdvancedChart = memo(function AdvancedChart({ vs }: AdvancedChartProps) {
         const res = await fetch(
           `/api/history?vs=${encodeURIComponent(
             currentVs
+          )}&base=${encodeURIComponent(
+            baseId || "bitcoin"
           )}&interval=${interval}&limit=${limit}`,
           { cache: "no-store" }
         );
@@ -102,6 +114,8 @@ const AdvancedChart = memo(function AdvancedChart({ vs }: AdvancedChartProps) {
           volume: p.volume ?? 0,
         }));
         setData(candleData);
+        // record updatedAt from API so we can force fresh renders
+        if (json?.updatedAt) setUpdatedAt(String(json.updatedAt));
       } catch (error) {
         console.error("Failed to fetch candle data:", error);
       } finally {
@@ -113,7 +127,7 @@ const AdvancedChart = memo(function AdvancedChart({ vs }: AdvancedChartProps) {
 
   useEffect(() => {
     fetchCandleData(vs, timeframe, hours);
-  }, [vs, timeframe, hours, fetchCandleData]);
+  }, [vs, baseId, timeframe, hours, fetchCandleData]);
 
   const priceChange = useMemo(() => {
     if (data.length < 2) return 0;
@@ -293,14 +307,18 @@ const AdvancedChart = memo(function AdvancedChart({ vs }: AdvancedChartProps) {
             {chartData && chartData.length > 0 ? (
               mounted && dims.width > 0 && dims.height > 0 ? (
                 <ResponsiveContainer
-                  key={`${vs}-${hours}-${data[0]?.timestamp || ""}`}
+                  key={`${vs}-${hours}-${
+                    updatedAt || data[0]?.timestamp || ""
+                  }`}
                   width={dims.width}
                   height={dims.height}
                   minWidth={300}
                   minHeight={300}
                 >
                   <AreaChart
-                    key={`${vs}-${hours}-${data[0]?.timestamp || ""}`}
+                    key={`${vs}-${hours}-${
+                      updatedAt || data[0]?.timestamp || ""
+                    }`}
                     data={chartData}
                     margin={{ top: 10, right: 24, left: 8, bottom: 0 }}
                   >

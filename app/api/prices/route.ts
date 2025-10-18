@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { getCryptoById } from "../../lib/crypto";
 
 type VsCurrency = string;
 type BaseCoinId = string;
@@ -34,10 +35,17 @@ async function fetchWithTimeout(
   }
 }
 
-async function getBinanceUSD(): Promise<SourceQuote | null> {
+async function getBinanceUSD(
+  baseId: string,
+  vs: string = "USD"
+): Promise<SourceQuote | null> {
   try {
+    const baseSym = getCryptoById(baseId)?.symbol || baseId.toUpperCase();
+    const symbol = vs === "USD" ? `${baseSym}USDT` : `${baseSym}${vs}`;
     const res = await fetchWithTimeout(
-      "https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT",
+      `https://api.binance.com/api/v3/ticker/24hr?symbol=${encodeURIComponent(
+        symbol
+      )}`,
       4000
     );
     if (!res.ok) return null;
@@ -45,7 +53,7 @@ async function getBinanceUSD(): Promise<SourceQuote | null> {
     const price = Number(data.lastPrice);
     const volume = Number(data.volume);
     if (!Number.isFinite(price) || !Number.isFinite(volume)) return null;
-    return { source: "binance:USDT", price, volume };
+    return { source: `binance:${vs === "USD" ? "USDT" : vs}`, price, volume };
   } catch {
     return null;
   }
@@ -142,17 +150,22 @@ async function getCoinbaseDirect(vs: VsCurrency): Promise<SourceQuote | null> {
   }
 }
 
-async function getBitstampUSD(): Promise<SourceQuote | null> {
+async function getBitstampUSD(
+  baseId: string,
+  vs: string = "USD"
+): Promise<SourceQuote | null> {
   try {
+    const baseSym = getCryptoById(baseId)?.symbol || baseId.toLowerCase();
+    const symbol = `${baseSym.toLowerCase()}${vs.toLowerCase()}`;
     const res = await fetchWithTimeout(
-      "https://www.bitstamp.net/api/v2/ticker/btcusd",
+      `https://www.bitstamp.net/api/v2/ticker/${encodeURIComponent(symbol)}`,
       4000
     );
     if (!res.ok) return null;
     const data: any = await res.json();
     const price = Number(data.last);
     if (!Number.isFinite(price)) return null;
-    return { source: "bitstamp:USD", price };
+    return { source: `bitstamp:${vs.toUpperCase()}`, price };
   } catch {
     return null;
   }
@@ -343,9 +356,9 @@ export async function GET(req: NextRequest): Promise<Response> {
   const isBitcoin = baseParam === "bitcoin";
 
   const [binance, kraken, bitstamp, coindesk] = await Promise.all([
-    getBinanceUSD(),
+    getBinanceUSD(baseParam, vs),
     getKrakenUSD(),
-    getBitstampUSD(),
+    getBitstampUSD(baseParam, vs),
     getCoindeskUSD(),
   ]);
   const usdSources = [binance, kraken, bitstamp, coindesk].filter(
@@ -358,13 +371,26 @@ export async function GET(req: NextRequest): Promise<Response> {
     coinbaseDirect,
     directVsCoingecko,
     coingeckoUsd,
-  ] = await Promise.all([
+  ]: Array<SourceQuote | null> = await Promise.all([
     isBitcoin ? getKrakenDirect(vs) : Promise.resolve(null),
     isBitcoin ? getBitstampDirect(vs) : Promise.resolve(null),
     isBitcoin ? getCoinbaseDirect(vs) : Promise.resolve(null),
     getCoinGeckoFor(vs, baseParam),
     getCoinGeckoFor("USD", baseParam),
   ]);
+  // If CoinGecko provides a direct quote for this base and vs, prefer it and return immediately
+  if (directVsCoingecko) {
+    const body: PricesResponse = {
+      base: baseParam.toUpperCase(),
+      vs,
+      price: directVsCoingecko.price,
+      sources: [directVsCoingecko],
+      updatedAt: new Date().toISOString(),
+    };
+    return new Response(JSON.stringify(body), {
+      headers: { "content-type": "application/json; charset=utf-8" },
+    });
+  }
   const fxRateToVs = vs === "USD" ? 1 : await getFxRateAggregated("USD", vs);
 
   const consolidated: SourceQuote[] = [];
@@ -411,11 +437,28 @@ export async function GET(req: NextRequest): Promise<Response> {
 
   let price = weightedAverage(consolidated);
   if (!Number.isFinite(price)) {
-    const altDirect =
-      directVsCoingecko?.price ||
-      krakenDirect?.price ||
-      bitstampDirect?.price ||
-      coinbaseDirect?.price;
+    let altDirect: number | undefined = undefined;
+    if (
+      directVsCoingecko &&
+      typeof (directVsCoingecko as SourceQuote).price === "number"
+    ) {
+      altDirect = (directVsCoingecko as SourceQuote).price;
+    } else if (
+      krakenDirect &&
+      typeof (krakenDirect as SourceQuote).price === "number"
+    ) {
+      altDirect = (krakenDirect as SourceQuote).price;
+    } else if (
+      bitstampDirect &&
+      typeof (bitstampDirect as SourceQuote).price === "number"
+    ) {
+      altDirect = (bitstampDirect as SourceQuote).price;
+    } else if (
+      coinbaseDirect &&
+      typeof (coinbaseDirect as SourceQuote).price === "number"
+    ) {
+      altDirect = (coinbaseDirect as SourceQuote).price;
+    }
     const altFx = fxRateToVs
       ? (usdSources[0]?.price ?? coingeckoUsd?.price ?? undefined) *
         (fxRateToVs as number)

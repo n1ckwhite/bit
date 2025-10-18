@@ -7,7 +7,7 @@ type HistoryPoint = {
 };
 
 type HistoryResponse = {
-  base: "BTC";
+  base: string;
   vs: string;
   interval: "1m" | "5m" | "1h" | "1d";
   data: HistoryPoint[];
@@ -33,11 +33,14 @@ async function fetchWithTimeout(
 
 async function getCoinGeckoHistory(
   vs: string,
-  days: number
+  days: number,
+  baseId: string = "bitcoin"
 ): Promise<HistoryPoint[]> {
   try {
     const res = await fetchWithTimeout(
-      `https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=${encodeURIComponent(
+      `https://api.coingecko.com/api/v3/coins/${encodeURIComponent(
+        baseId
+      )}/market_chart?vs_currency=${encodeURIComponent(
         vs.toLowerCase()
       )}&days=${days}&interval=${days <= 1 ? "hourly" : "daily"}`,
       8000
@@ -76,12 +79,27 @@ async function getCoindeskUsdHistory(days: number): Promise<HistoryPoint[]> {
 }
 
 async function getBinanceHistory(
+  baseId: string,
   vs: string,
   interval: string,
   limit: number
 ): Promise<HistoryPoint[]> {
   try {
-    const symbol = vs === "USD" ? "BTCUSDT" : `BTC${vs}`;
+    // symbol: if baseId is bitcoin use BTCUSDT/BTC{vs} else try {BASE}{vs} where BASE is uppercase symbol
+    const baseSymbolMap: Record<string, string> = {
+      bitcoin: "BTC",
+      ethereum: "ETH",
+      binancecoin: "BNB",
+      solana: "SOL",
+      litecoin: "LTC",
+      cardano: "ADA",
+      dogecoin: "DOGE",
+      polygon: "MATIC",
+      chainlink: "LINK",
+      ordinals: "ORDI",
+    };
+    const baseSym = baseSymbolMap[baseId] || baseId.toUpperCase();
+    const symbol = vs === "USD" ? `${baseSym}USDT` : `${baseSym}${vs}`;
     const res = await fetchWithTimeout(
       `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`,
       6000
@@ -206,14 +224,16 @@ export async function GET(req: NextRequest): Promise<Response> {
     });
   }
 
+  const baseParam = (searchParams.get("base") || "bitcoin").toLowerCase();
+
   let [coingeckoData, binanceData] = await Promise.all([
-    getCoinGeckoHistory(vs, config.days),
-    getBinanceHistory(vs, config.binance, limit),
+    getCoinGeckoHistory(vs, config.days, baseParam),
+    getBinanceHistory(baseParam, vs, config.binance, limit),
   ]);
 
   if (coingeckoData.length === 0 && vs !== "USD") {
     const [usdHistory, fx] = await Promise.all([
-      getCoinGeckoHistory("USD", config.days),
+      getCoinGeckoHistory("USD", config.days, baseParam),
       getFxRate("USD", vs),
     ]);
     if (usdHistory.length > 0 && fx) {
@@ -267,7 +287,7 @@ export async function GET(req: NextRequest): Promise<Response> {
 
   if (mergedData.length === 0) {
     const empty: HistoryResponse = {
-      base: "BTC",
+      base: baseParam.toUpperCase(),
       vs,
       interval,
       data: [],
@@ -280,7 +300,7 @@ export async function GET(req: NextRequest): Promise<Response> {
   }
 
   const body: HistoryResponse = {
-    base: "BTC",
+    base: baseParam.toUpperCase(),
     vs,
     interval,
     data: mergedData.slice(-limit),

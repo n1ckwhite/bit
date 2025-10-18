@@ -23,7 +23,7 @@ type HistoryPoint = {
 };
 
 type HistoryData = {
-  base: "BTC";
+  base: string;
   vs: string;
   interval: "1m" | "5m" | "1h" | "1d";
   data: HistoryPoint[];
@@ -32,12 +32,14 @@ type HistoryData = {
 
 interface PriceChartProps {
   vs: string;
-  baseSymbol: string;
+  baseId: string;
+  baseSymbol?: string;
   className?: string;
 }
 
 const PriceChart = memo(function PriceChart({
   vs,
+  baseId,
   baseSymbol,
   className,
 }: PriceChartProps) {
@@ -77,6 +79,8 @@ const PriceChart = memo(function PriceChart({
         const res = await fetch(
           `/api/history?vs=${encodeURIComponent(
             currentVs
+          )}&base=${encodeURIComponent(
+            baseId
           )}&interval=${currentInterval}&limit=${limit}`,
           { cache: "no-store" }
         );
@@ -110,7 +114,7 @@ const PriceChart = memo(function PriceChart({
 
   useEffect(() => {
     fetchHistory(vs, interval);
-  }, [vs, interval, fetchHistory]);
+  }, [vs, interval, baseId, fetchHistory]);
 
   const formatXAxis = useCallback(
     (timestamp: number) => {
@@ -167,7 +171,7 @@ const PriceChart = memo(function PriceChart({
             <ChartBarIcon className='w-4 h-4 sm:w-5 sm:h-5 text-white' />
           </div>
           <h3 className='text-lg sm:text-xl font-bold text-slate-900 dark:text-white'>
-            {t("priceChart", { sym: baseSymbol })}
+            {t("priceChart", { sym: baseSymbol || baseId.toUpperCase() })}
           </h3>
         </div>
 

@@ -201,8 +201,11 @@ export default function Home() {
 
   useEffect(() => {
     if (!quote) return;
-    const btc = toBtc(btcAmount, unit);
-    setFiatAmount(btc * quote.price);
+    // If baseCoin is bitcoin, btcAmount represents BTC in selected unit and needs conversion
+    // Otherwise btcAmount is the amount of the selected crypto (e.g., ETH) and used directly
+    const cryptoAmount =
+      baseCoin === "bitcoin" ? toBtc(btcAmount, unit) : btcAmount;
+    setFiatAmount(cryptoAmount * quote.price);
   }, [quote, btcAmount, unit]);
 
   useEffect(() => {
@@ -558,13 +561,15 @@ export default function Home() {
                     ))}
                   </select>
                 </div>
-                {/* BTC Input */}
+                {/* Crypto Amount Input */}
                 <div className='space-y-2'>
                   <label
                     htmlFor='btcAmount'
                     className='block text-sm font-medium text-slate-700 dark:text-slate-300'
                   >
-                    {t("bitcoin")}
+                    {currentCrypto
+                      ? getCryptoLocalizedName(currentCrypto, locale)
+                      : t("bitcoin")}
                   </label>
                   <div className='relative'>
                     <input
@@ -580,10 +585,19 @@ export default function Home() {
                       onKeyDown={(e) => {
                         if (e.key === "ArrowUp") {
                           e.preventDefault();
-                          setBtcAmount((prev) => prev + 0.1);
+                          // increment differently for BTC unit vs other cryptos
+                          if (baseCoin === "bitcoin") {
+                            setBtcAmount((prev) => prev + 0.1);
+                          } else {
+                            setBtcAmount((prev) => prev + 1);
+                          }
                         } else if (e.key === "ArrowDown") {
                           e.preventDefault();
-                          setBtcAmount((prev) => Math.max(0, prev - 0.1));
+                          if (baseCoin === "bitcoin") {
+                            setBtcAmount((prev) => Math.max(0, prev - 0.1));
+                          } else {
+                            setBtcAmount((prev) => Math.max(0, prev - 1));
+                          }
                         }
                       }}
                       className='w-full px-2.5 sm:px-3 lg:px-4 py-2.5 sm:py-3 lg:py-3.5 pl-10 sm:pl-12 lg:pl-16 pr-14 sm:pr-16 lg:pr-20 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm'
@@ -592,7 +606,7 @@ export default function Home() {
                       min='0'
                     />
                     <div className='absolute left-2 sm:left-2.5 lg:left-3 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-600 dark:text-slate-300'>
-                      {unit}
+                      {baseCoin === "bitcoin" ? unit : currentSymbol}
                     </div>
                     {/* Custom arrow buttons removed by request */}
                   </div>
@@ -601,31 +615,33 @@ export default function Home() {
                   </p>
                 </div>
 
-                {/* Unit Select */}
-                <div className='space-y-2'>
-                  <label
-                    htmlFor='unitSelect'
-                    className='block text-sm font-medium text-slate-700 dark:text-slate-300'
-                  >
-                    {t("unit")}
-                  </label>
-                  <select
-                    id='unitSelect'
-                    name='unit'
-                    value={unit}
-                    onChange={(e) => setUnit(parseUnit(e.target.value))}
-                    className='w-full px-2.5 sm:px-3 lg:px-4 py-2.5 sm:py-3 lg:py-3.5 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm'
-                    aria-label={t("selectUnit")}
-                  >
-                    {(["BTC", "mBTC", "µBTC", "sats"] as BitcoinUnit[]).map(
-                      (u) => (
-                        <option key={u} value={u}>
-                          {u}
-                        </option>
-                      )
-                    )}
-                  </select>
-                </div>
+                {/* Unit Select (only for Bitcoin) */}
+                {baseCoin === "bitcoin" && (
+                  <div className='space-y-2'>
+                    <label
+                      htmlFor='unitSelect'
+                      className='block text-sm font-medium text-slate-700 dark:text-slate-300'
+                    >
+                      {t("unit")}
+                    </label>
+                    <select
+                      id='unitSelect'
+                      name='unit'
+                      value={unit}
+                      onChange={(e) => setUnit(parseUnit(e.target.value))}
+                      className='w-full px-2.5 sm:px-3 lg:px-4 py-2.5 sm:py-3 lg:py-3.5 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm'
+                      aria-label={t("selectUnit")}
+                    >
+                      {(["BTC", "mBTC", "µBTC", "sats"] as BitcoinUnit[]).map(
+                        (u) => (
+                          <option key={u} value={u}>
+                            {u}
+                          </option>
+                        )
+                      )}
+                    </select>
+                  </div>
+                )}
 
                 {/* Fiat Amount with inline currency picker */}
                 <div className='space-y-2'>
@@ -646,8 +662,13 @@ export default function Home() {
                       onChange={(e) => {
                         const v = Number(e.target.value);
                         if (!isNaN(v) && quote) {
-                          const btc = v / quote.price;
-                          setBtcAmount(fromBtc(btc, unit));
+                          const cryptoAmount = v / quote.price;
+                          if (baseCoin === "bitcoin") {
+                            const btc = cryptoAmount;
+                            setBtcAmount(fromBtc(btc, unit));
+                          } else {
+                            setBtcAmount(cryptoAmount);
+                          }
                         }
                       }}
                       onKeyDown={(e) => {
@@ -655,14 +676,22 @@ export default function Home() {
                           e.preventDefault();
                           if (!quote) return;
                           const newFiat = fiatAmount + 100;
-                          const btc = newFiat / quote.price;
-                          setBtcAmount(fromBtc(btc, unit));
+                          const cryptoAmount = newFiat / quote.price;
+                          if (baseCoin === "bitcoin") {
+                            setBtcAmount(fromBtc(cryptoAmount, unit));
+                          } else {
+                            setBtcAmount(cryptoAmount);
+                          }
                         } else if (e.key === "ArrowDown") {
                           e.preventDefault();
                           if (!quote) return;
                           const newFiat = Math.max(0, fiatAmount - 100);
-                          const btc = newFiat / quote.price;
-                          setBtcAmount(fromBtc(btc, unit));
+                          const cryptoAmount = newFiat / quote.price;
+                          if (baseCoin === "bitcoin") {
+                            setBtcAmount(fromBtc(cryptoAmount, unit));
+                          } else {
+                            setBtcAmount(cryptoAmount);
+                          }
                         }
                       }}
                       className={`w-full px-2.5 sm:px-3 lg:px-4 py-2.5 sm:py-3 lg:py-3.5 pl-16 sm:pl-20 lg:pl-24 pr-14 sm:pr-16 lg:pr-20 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm ${
@@ -770,6 +799,7 @@ export default function Home() {
               >
                 <PriceChart
                   vs={vs}
+                  baseId={baseCoin}
                   baseSymbol={
                     SUPPORTED_CRYPTOS.find((c) => c.id === baseCoin)?.symbol ||
                     "BTC"
@@ -785,7 +815,13 @@ export default function Home() {
                   </div>
                 }
               >
-                <AdvancedChart vs={vs} />
+                <AdvancedChart
+                  vs={vs}
+                  baseId={baseCoin}
+                  baseSymbol={
+                    SUPPORTED_CRYPTOS.find((c) => c.id === baseCoin)?.symbol
+                  }
+                />
               </Suspense>
             </div>
 
@@ -802,6 +838,7 @@ export default function Home() {
               >
                 <PriceChart
                   vs={vs}
+                  baseId={baseCoin}
                   baseSymbol={
                     SUPPORTED_CRYPTOS.find((c) => c.id === baseCoin)?.symbol ||
                     "BTC"
