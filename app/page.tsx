@@ -17,6 +17,8 @@ import {
   CurrencyDollarIcon,
   ClockIcon,
   ChevronUpIcon,
+  ChevronDownIcon,
+  CheckIcon,
 } from "@heroicons/react/24/outline";
 import ThemeToggle from "./components/ThemeToggle";
 import LanguageSelector from "./components/LanguageSelector";
@@ -578,7 +580,7 @@ export default function Home() {
                       id='btcAmount'
                       name='btcAmount'
                       value={loading ? '' : btcAmount}
-                      placeholder={loading ? t("loading") : "1"}
+                      placeholder={loading ? '' : "1"}
                       onChange={(e) => {
                         const value = Number(e.target.value);
                         if (!isNaN(value)) setBtcAmount(value);
@@ -603,11 +605,19 @@ export default function Home() {
                       }}
                       disabled={loading}
                       aria-busy={loading}
-                      className='w-full px-2.5 sm:px-3 lg:px-4 py-2.5 sm:py-3 lg:py-3.5 pl-10 sm:pl-12 lg:pl-16 pr-14 sm:pr-16 lg:pr-20 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm'
+                      className={`w-full px-2.5 sm:px-3 lg:px-4 py-2.5 sm:py-3 lg:py-3.5 pl-10 sm:pl-12 lg:pl-16 pr-14 sm:pr-16 lg:pr-20 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm ${
+                        loading ? 'text-transparent caret-transparent' : ''
+                      }`}
                       step='0.1'
                       min='0'
                     />
-                    <div className='absolute left-2 sm:left-2.5 lg:left-3 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-600 dark:text-slate-300'>
+                    {loading && (
+                      <div
+                        className='absolute left-10 sm:left-12 lg:left-16 right-14 sm:right-16 lg:right-20 top-1/2 -translate-y-1/2 h-3.5 sm:h-4 bg-slate-300/60 dark:bg-slate-500/50 rounded animate-pulse'
+                        aria-hidden='true'
+                      />
+                    )}
+                      <div className='absolute left-2 sm:left-2.5 lg:left-3 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-600 dark:text-slate-300 pointer-events-none select-none'>
                       {baseCoin === "bitcoin" ? unit : currentSymbol}
                     </div>
                     {/* Custom arrow buttons removed by request */}
@@ -659,7 +669,7 @@ export default function Home() {
                       id='fiatAmount'
                       name='fiatAmount'
                       value={loading ? '' : fiatAmount.toFixed(2)}
-                      placeholder={loading ? t("loading") : "0.00"}
+                      placeholder={loading ? '' : "0.00"}
                       disabled={loading}
                       aria-busy={loading}
                       onChange={(e) => {
@@ -697,7 +707,7 @@ export default function Home() {
                           }
                         }
                       }}
-                      className={`w-full px-2.5 sm:px-3 lg:px-4 py-2.5 sm:py-3 lg:py-3.5 pl-16 sm:pl-20 lg:pl-24 pr-14 sm:pr-16 lg:pr-20 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm ${
+                      className={`w-full px-2.5 sm:px-3 lg:px-4 py-2.5 sm:py-3 lg:py-3.5 pl-20 sm:pl-24 lg:pl-28 pr-14 sm:pr-16 lg:pr-20 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md sm:rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 dark:text-white text-sm ${
                         loading ? "text-transparent caret-transparent" : ""
                       }`}
                       step='100'
@@ -705,22 +715,24 @@ export default function Home() {
                     />
                     {loading && (
                       <div
-                        className='absolute left-16 sm:left-20 lg:left-24 right-14 sm:right-16 lg:right-20 top-1/2 -translate-y-1/2 h-3.5 sm:h-4 bg-slate-300/60 dark:bg-slate-500/50 rounded animate-pulse'
+                        className='absolute left-20 sm:left-24 lg:left-28 right-14 sm:right-16 lg:right-20 top-1/2 -translate-y-1/2 h-3.5 sm:h-4 bg-slate-300/60 dark:bg-slate-500/50 rounded animate-pulse'
                         aria-hidden='true'
                       />
                     )}
+                    {/* Currency picker as compact input addon */}
                     <button
                       type='button'
                       onClick={() => setCurrencyOpen((v) => !v)}
-                      className='absolute left-2 sm:left-2.5 lg:left-3 top-1/2 -translate-y-1/2 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-600 px-2 py-1 rounded-md'
+                      className='absolute z-10 left-2 top-1/2 -translate-y-1/2 h-8 sm:h-9 group flex items-center gap-1.5 text-xs sm:text-sm font-semibold tracking-wide bg-slate-100 text-slate-800 dark:bg-slate-600 dark:text-white px-3 rounded-md border border-slate-300 dark:border-slate-500 hover:bg-slate-200 dark:hover:bg-slate-500 transition-colors'
                       aria-haspopup='listbox'
                       aria-expanded={currencyOpen}
                     >
-                      {vs}
+                      <span className='px-0'>{vs}</span>
+                      <ChevronDownIcon className={`w-3 h-3 opacity-80 transition-transform duration-200 ${currencyOpen ? 'rotate-180' : ''}`} />
                     </button>
                     {currencyOpen && (
-                      <div className='absolute z-50 mt-2 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md sm:rounded-lg shadow-lg overflow-hidden'>
-                        <div className='p-2 border-b border-slate-200 dark:border-slate-700'>
+                      <div className='absolute z-50 mt-2 w-72 bg-white/95 dark:bg-slate-800/95 backdrop-blur border border-slate-200/80 dark:border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden'>
+                        <div className='p-2.5 border-b border-slate-200/70 dark:border-slate-700/70'>
                           <label htmlFor='currencySearch' className='sr-only'>
                             {t("searchCurrency")}
                           </label>
@@ -731,11 +743,11 @@ export default function Home() {
                             value={currencyQuery}
                             onChange={(e) => setCurrencyQuery(e.target.value)}
                             placeholder={t("searchCurrency")}
-                            className='w-full px-2.5 py-2 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md text-slate-900 dark:text-white text-sm'
+                            className='w-full px-3 py-2 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 outline-none'
                             aria-label={t("searchCurrency")}
                           />
                         </div>
-                        <ul role='listbox' className='max-h-56 overflow-auto'>
+                        <ul role='listbox' className='max-h-60 overflow-auto py-1'>
                           {fiatsLoading && (
                             <li className='px-3 py-2 text-sm text-slate-500 dark:text-slate-400'>
                               {t("loading")}
@@ -750,9 +762,9 @@ export default function Home() {
                                   setCurrencyOpen(false);
                                   setCurrencyQuery("");
                                 }}
-                                className={`w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center justify-between text-sm ${
+                                className={`w-full text-left px-3 py-2 hover:bg-slate-50 dark:hover:bg-slate-700/80 transition-colors flex items-center justify-between text-sm ${
                                   vs === c.code
-                                    ? "bg-blue-50 dark:bg-blue-900/20"
+                                    ? "bg-blue-50/60 dark:bg-blue-900/20"
                                     : ""
                                 }`}
                                 role='option'
@@ -767,8 +779,8 @@ export default function Home() {
                                   </span>
                                 </div>
                                 {vs === c.code && (
-                                  <span className='text-blue-600 dark:text-blue-400 text-xs font-medium'>
-                                    ✓
+                                  <span className='inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white'>
+                                    <CheckIcon className='w-3.5 h-3.5' />
                                   </span>
                                 )}
                               </button>
